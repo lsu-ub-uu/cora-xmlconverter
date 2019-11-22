@@ -19,6 +19,34 @@
 
 package se.uu.ub.cora.xmlconverter;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
+
+import org.testng.annotations.Test;
+
+import se.uu.ub.cora.converter.Converter;
+import se.uu.ub.cora.converter.ConverterFactory;
+
 public class XmlConverterFactoryTest {
+
+	@Test
+	public void testXmlConverterFactoryImplementsConverterFactory() {
+		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
+		assertTrue(xmlConverterFactory instanceof ConverterFactory);
+
+	}
+
+	@Test
+	public void testFactorConverter() {
+		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
+		Converter factoredConverter = xmlConverterFactory.factorConverter();
+		assertTrue(factoredConverter instanceof XmlConverter);
+	}
+
+	@Test
+	public void testFactoryName() {
+		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
+		assertEquals(xmlConverterFactory.getName(), "xml");
+	}
 
 }

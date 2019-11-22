@@ -16,28 +16,31 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package se.uu.ub.cora.xmlconverter;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.TransformerFactory;
+
 import se.uu.ub.cora.converter.Converter;
-import se.uu.ub.cora.converter.ConverterFactory;
+import se.uu.ub.cora.data.DataElement;
+import se.uu.ub.cora.xmlconverter.converter.DataElementToXml;
 
-/**
- * Implementation of {@link ConverterFactory} for XmlConverter.
- */
-
-public class XmlConverterFactory implements ConverterFactory {
-
-	private static final String NAME = "xml";
+public class XmlConverter implements Converter {
 
 	@Override
-	public Converter factorConverter() {
-		return new XmlConverter();
+	public String convert(DataElement dataElement) {
+
+		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+
+		return new DataElementToXml(documentBuilderFactory, transformerFactory)
+				.convert(dataElement);
 	}
 
 	@Override
-	public String getName() {
-		return NAME;
+	public DataElement convert(String dataString) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

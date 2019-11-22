@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2015, 2018 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -17,27 +17,18 @@
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package se.uu.ub.cora.xmlconverter;
+package se.uu.ub.cora.xmlconverter.converter;
 
-import se.uu.ub.cora.converter.Converter;
-import se.uu.ub.cora.converter.ConverterFactory;
+public class ConverterException extends RuntimeException {
 
-/**
- * Implementation of {@link ConverterFactory} for XmlConverter.
- */
+	private static final long serialVersionUID = 6721892121477803630L;
 
-public class XmlConverterFactory implements ConverterFactory {
-
-	private static final String NAME = "xml";
-
-	@Override
-	public Converter factorConverter() {
-		return new XmlConverter();
+	public ConverterException(String message) {
+		super(message);
 	}
 
-	@Override
-	public String getName() {
-		return NAME;
+	public ConverterException(String message, Exception exception) {
+		super(message, exception);
 	}
 
 }
