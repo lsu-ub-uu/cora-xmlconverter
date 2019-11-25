@@ -9,6 +9,7 @@ import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataElement;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.xmlconverter.converter.XmlConverterException;
 import se.uu.ub.cora.xmlconverter.spy.DataAtomicFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DataGroupFactorySpy;
 
@@ -59,14 +60,13 @@ public class XmlConverterXmlToDataElementTest {
 
 	}
 
-	// TODO: Vi tar den senare
-	// @Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
-	// + "Unable to convert from dataElement to xml")
-	// public void testConvertXmlWithSingleAtomicChildWithoutValue() {
-	// String xmlToconvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-	// + "<person><firstname></firstname></person>";
-	//
-	// XmlConverter xmlConverter = new XmlConverter();
-	// assertTrue(false);
-	// }
+	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement due to NULL value on AtomicGroup firstname")
+	public void testConvertXmlWithSingleAtomicChildWithoutValue() {
+		String xmlToconvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person><firstname></firstname></person>";
+
+		XmlConverter xmlConverter = new XmlConverter();
+		xmlConverter.convert(xmlToconvert);
+	}
 }

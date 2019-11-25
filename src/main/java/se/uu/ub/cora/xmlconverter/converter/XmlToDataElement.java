@@ -67,13 +67,18 @@ public class XmlToDataElement {
 	}
 
 	private boolean hasChildren(Node currentNode) {
+		if (currentNode.getFirstChild() == null) {
+			throw new XmlConverterException("Unable to convert from xml to dataElement due to "
+					+ "NULL value on AtomicGroup " + currentNode.getNodeName());
+		}
 		return currentNode.getFirstChild().getNodeType() == Node.ELEMENT_NODE;
 	}
 
 	private void convertDataAtomic(DataGroup parentDataGroup, Node currentNode) {
 		String nodeName = currentNode.getNodeName();
+		String textContent = currentNode.getTextContent();
 		DataAtomic dataAtomicUsingNameInDataAndValue = DataAtomicProvider
-				.getDataAtomicUsingNameInDataAndValue(nodeName, currentNode.getTextContent());
+				.getDataAtomicUsingNameInDataAndValue(nodeName, textContent);
 		parentDataGroup.addChild(dataAtomicUsingNameInDataAndValue);
 	}
 
