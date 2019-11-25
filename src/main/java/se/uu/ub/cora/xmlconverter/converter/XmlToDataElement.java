@@ -43,6 +43,7 @@ public class XmlToDataElement {
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
 		Document domDocument = documentBuilder.parse(new InputSource(new StringReader(dataString)));
+
 		return domDocument.getDocumentElement();
 	}
 

@@ -188,13 +188,16 @@ public class XmlConverterDataElementToXmlTest {
 	}
 
 	@Test
-	public void testContainsCorrectEncodingUTF8() throws Exception {
+	public void testContainsCorrectEncodingUTF8AndVersion1() throws Exception {
 		String expectedEncoding = "encoding=\"UTF-8\"";
-		DataGroup person = new DataGroupSpy("person");
+		String expectedVersion = "version=\"1.0\"";
 
+		DataGroup person = new DataGroupSpy("person");
 		XmlConverter xmlConverter = new XmlConverter();
 		String xml = xmlConverter.convert(person);
+
 		assertTrue(xml.contains(expectedEncoding));
+		assertTrue(xml.contains(expectedVersion));
 	}
 
 }

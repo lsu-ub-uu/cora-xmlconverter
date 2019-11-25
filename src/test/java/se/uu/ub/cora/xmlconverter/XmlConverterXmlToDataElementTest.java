@@ -69,4 +69,7 @@ public class XmlConverterXmlToDataElementTest {
 		XmlConverter xmlConverter = new XmlConverter();
 		xmlConverter.convert(xmlToconvert);
 	}
+
+	// TODO: Test trhow Exception if incomming xml document does not have encoding=UTF-8
+	// TODO: Test throw Excpetion if incomming xml document does not have xml version = 1.0
 }
