@@ -1,4 +1,4 @@
-package se.uu.ub.cora.xmlconverter;
+package se.uu.ub.cora.xmlconverter.spy;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +16,7 @@ public class DataGroupSpy implements DataGroup {
 	public Map<String, DataGroup> dataGroups = new HashMap<>();
 	public Map<String, String> attributes = new HashMap<>();
 	private String repeatId;
+	public Map<String, String> atomicValues = new HashMap<>();
 
 	public DataGroupSpy(String nameIndata) {
 		this.nameIndata = nameIndata;
@@ -34,8 +35,7 @@ public class DataGroupSpy implements DataGroup {
 
 	@Override
 	public String getFirstAtomicValueWithNameInData(String nameInData) {
-		// TODO Auto-generated method stub
-		return null;
+		return atomicValues.get(nameInData);
 	}
 
 	@Override
@@ -48,6 +48,11 @@ public class DataGroupSpy implements DataGroup {
 		if (dataElement instanceof DataGroup) {
 			dataGroups.put(dataElement.getNameInData(), (DataGroup) dataElement);
 		}
+		if (dataElement instanceof DataAtomicSpy) {
+			DataAtomicSpy atomicSpyChild = (DataAtomicSpy) dataElement;
+			atomicValues.put(atomicSpyChild.nameInData, atomicSpyChild.value);
+
+		}
 		children.add(dataElement);
 	}
 
@@ -59,7 +64,9 @@ public class DataGroupSpy implements DataGroup {
 
 	@Override
 	public boolean containsChildWithNameInData(String nameInData) {
-		// TODO Auto-generated method stub
+		if (atomicValues.containsKey(nameInData) || dataGroups.containsKey(nameInData)) {
+			return true;
+		}
 		return false;
 	}
 

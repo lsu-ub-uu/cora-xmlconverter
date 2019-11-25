@@ -27,8 +27,10 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.converter.Converter;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.xmlconverter.spy.DataAtomicSpy;
+import se.uu.ub.cora.xmlconverter.spy.DataGroupSpy;
 
-public class XmlConverterTest {
+public class XmlConverterDataElementToXmlTest {
 
 	@Test
 	public void testXmlConverterFactoryImplementsConverterFactory() {
@@ -183,6 +185,16 @@ public class XmlConverterTest {
 		XmlConverter xmlConverter = new XmlConverter();
 		String xml = xmlConverter.convert(person);
 		assertEquals(xml, expectedXml);
+	}
+
+	@Test
+	public void testContainsCorrectEncodingUTF8() throws Exception {
+		String expectedEncoding = "encoding=\"UTF-8\"";
+		DataGroup person = new DataGroupSpy("person");
+
+		XmlConverter xmlConverter = new XmlConverter();
+		String xml = xmlConverter.convert(person);
+		assertTrue(xml.contains(expectedEncoding));
 	}
 
 }

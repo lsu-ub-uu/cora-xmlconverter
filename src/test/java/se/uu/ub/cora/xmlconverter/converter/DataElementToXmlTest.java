@@ -26,7 +26,7 @@ import javax.xml.transform.TransformerException;
 
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.xmlconverter.DataGroupSpy;
+import se.uu.ub.cora.xmlconverter.spy.DataGroupSpy;
 
 public class DataElementToXmlTest {
 

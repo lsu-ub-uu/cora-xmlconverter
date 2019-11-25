@@ -24,6 +24,7 @@ import javax.xml.transform.TransformerFactory;
 import se.uu.ub.cora.converter.Converter;
 import se.uu.ub.cora.data.DataElement;
 import se.uu.ub.cora.xmlconverter.converter.DataElementToXml;
+import se.uu.ub.cora.xmlconverter.converter.XmlToDataElement;
 
 public class XmlConverter implements Converter {
 
@@ -39,8 +40,7 @@ public class XmlConverter implements Converter {
 
 	@Override
 	public DataElement convert(String dataString) {
-		// TODO Auto-generated method stub
-		return null;
+		return new XmlToDataElement().convert(dataString);
 	}
 
 }

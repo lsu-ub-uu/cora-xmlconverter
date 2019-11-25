@@ -1,4 +1,4 @@
-package se.uu.ub.cora.xmlconverter;
+package se.uu.ub.cora.xmlconverter.spy;
 
 import se.uu.ub.cora.data.DataAtomic;
 
