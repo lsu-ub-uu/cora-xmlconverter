@@ -30,7 +30,7 @@ import se.uu.ub.cora.xmlconverter.spy.DataGroupSpy;
 
 public class DataElementToXmlTest {
 
-	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from dataElement to xml")
 	public void testParseExceptionOnCreateDocument() {
 		DocumentBuilderFactorySpy documentBuildeFactorySpy = new DocumentBuilderFactorySpy();
@@ -52,7 +52,7 @@ public class DataElementToXmlTest {
 		}
 	}
 
-	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from dataElement to xml")
 	public void testTransformerExceptionOnTransformDomDocumentToXml() {
 		DocumentBuilderFactory documentBuildeFactory = DocumentBuilderFactory.newInstance();

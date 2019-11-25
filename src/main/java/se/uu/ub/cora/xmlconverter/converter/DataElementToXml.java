@@ -57,7 +57,7 @@ public class DataElementToXml {
 			Document domDocument = createDomDocument(topDataGroup);
 			xml = transformDomDocumentToString(domDocument, transformerFactory);
 		} catch (ParserConfigurationException exception) {
-			throw new ConverterException("Unable to convert from dataElement to xml", exception);
+			throw new XmlConverterException("Unable to convert from dataElement to xml", exception);
 		}
 
 		return xml;
@@ -156,7 +156,7 @@ public class DataElementToXml {
 
 			xml = xmlWriter.toString();
 		} catch (TransformerException exception) {
-			throw new ConverterException("Unable to convert from dataElement to xml", exception);
+			throw new XmlConverterException("Unable to convert from dataElement to xml", exception);
 		}
 
 		return xml;

@@ -48,9 +48,7 @@ public class XmlToDataElement {
 
 	private DataGroup createTopDataGroup(Element domElement) {
 		String nodeName = domElement.getNodeName();
-
-		DataGroup convertedDataElement = DataGroupProvider.getDataGroupUsingNameInData(nodeName);
-		return convertedDataElement;
+		return DataGroupProvider.getDataGroupUsingNameInData(nodeName);
 	}
 
 	private void convertChildren(DataGroup parentElement, NodeList domChildren) {
@@ -72,18 +70,18 @@ public class XmlToDataElement {
 		return currentNode.getFirstChild().getNodeType() == Node.ELEMENT_NODE;
 	}
 
-	private void convertDataAtomic(DataGroup parentElement, Node currentNode) {
+	private void convertDataAtomic(DataGroup parentDataGroup, Node currentNode) {
 		String nodeName = currentNode.getNodeName();
 		DataAtomic dataAtomicUsingNameInDataAndValue = DataAtomicProvider
 				.getDataAtomicUsingNameInDataAndValue(nodeName, currentNode.getTextContent());
-		parentElement.addChild(dataAtomicUsingNameInDataAndValue);
+		parentDataGroup.addChild(dataAtomicUsingNameInDataAndValue);
 	}
 
-	private void convertDataGroup(DataGroup parentElement, Node currentNode) {
+	private void convertDataGroup(DataGroup parentDataGroup, Node currentNode) {
 		String nodeName = currentNode.getNodeName();
 		DataGroup dataGroup = DataGroupProvider.getDataGroupUsingNameInData(nodeName);
 		convertChildren(dataGroup, currentNode.getChildNodes());
-		parentElement.addChild(dataGroup);
+		parentDataGroup.addChild(dataGroup);
 	}
 
 }

@@ -60,9 +60,13 @@ public class XmlConverterXmlToDataElementTest {
 	}
 
 	// TODO: Vi tar den senare
-	@Test
-	public void testConvertXmlWithSingleAtomicChildWithoutValue() {
-		String xmlToconvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<person><firstname></firstname></person>";
-	}
+	// @Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	// + "Unable to convert from dataElement to xml")
+	// public void testConvertXmlWithSingleAtomicChildWithoutValue() {
+	// String xmlToconvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+	// + "<person><firstname></firstname></person>";
+	//
+	// XmlConverter xmlConverter = new XmlConverter();
+	// assertTrue(false);
+	// }
 }
