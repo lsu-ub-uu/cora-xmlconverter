@@ -76,4 +76,6 @@ public class XmlConverterXmlToDataElementTest {
 	// TODO: Test trhow Exception if incomming xml document does not have encoding=UTF-8
 	// TODO: Test throw Excpetion if incomming xml document does not have xml version = 1.0
 	// TODO: Test to handle SAXException | IOException | ParserConfigurationException
+	// TODO: Test malformed XML
+	// TODO: Test empty XML
 }
