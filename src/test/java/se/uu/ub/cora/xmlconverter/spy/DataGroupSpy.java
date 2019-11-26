@@ -14,6 +14,7 @@ public class DataGroupSpy implements DataGroup {
 	public String nameIndata;
 	public List<DataElement> children = new ArrayList<>();
 	public Map<String, DataGroup> dataGroups = new HashMap<>();
+	public Map<String, DataAtomic> dataAtomics = new HashMap<>();
 	public Map<String, String> attributes = new HashMap<>();
 	private String repeatId;
 	public Map<String, String> atomicValues = new HashMap<>();
@@ -51,6 +52,7 @@ public class DataGroupSpy implements DataGroup {
 		if (dataElement instanceof DataAtomicSpy) {
 			DataAtomicSpy atomicSpyChild = (DataAtomicSpy) dataElement;
 			atomicValues.put(atomicSpyChild.nameInData, atomicSpyChild.value);
+			dataAtomics.put(dataElement.getNameInData(), (DataAtomic) dataElement);
 
 		}
 		children.add(dataElement);
@@ -82,8 +84,10 @@ public class DataGroupSpy implements DataGroup {
 
 	@Override
 	public DataElement getFirstChildWithNameInData(String nameInData) {
-		// TODO Auto-generated method stub
-		return children.get(0);
+		if (dataGroups.containsKey(nameInData)) {
+			return dataGroups.get(nameInData);
+		}
+		return dataAtomics.get(nameInData);
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import static org.testng.Assert.assertEquals;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataElement;
 import se.uu.ub.cora.data.DataGroup;
@@ -70,13 +71,10 @@ public class XmlConverterXmlToDataElementTest {
 		xmlConverter.convert(xmlToconvert);
 	}
 
-	// TODO: Test att repeatId adderas båda i DataGroup och DataAtomic
-	// TODO: Test xml med flera barn med djup minst två
 	// TODO: test throw Exception om attributes finns för DataAtomic
 	// TODO: Test trhow Exception if incomming xml document does not have encoding=UTF-8
 	// TODO: Test throw Excpetion if incomming xml document does not have xml version = 1.0
-	// TODO: Test to handle SAXException | IOException | ParserConfigurationException
-<<<<<<< HEAD
+	// TODO: Test malformed XML
 
 	@Test
 	public void testAttributesAddedOnlyToDataGroup() {
@@ -93,7 +91,7 @@ public class XmlConverterXmlToDataElementTest {
 	@Test
 	public void testAttributesRepeatId() {
 		String xmlToconvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<person><name type=\"authenticated\" repeatId=\"1\"><firstname repeatId=\"1\">Janne</firstname></name></person>";
+				+ "<person><name type=\"authenticated\" repeatId=\"1\"><firstname repeatId=\"2\">Janne</firstname></name></person>";
 
 		XmlConverter xmlConverter = new XmlConverter();
 		DataGroup convertedDataElement = (DataGroup) xmlConverter.convert(xmlToconvert);
@@ -101,22 +99,60 @@ public class XmlConverterXmlToDataElementTest {
 		DataGroup firstDataGroup = convertedDataElement.getFirstGroupWithNameInData("name");
 		assertEquals(firstDataGroup.getRepeatId(), "1");
 
-		// DataAtomic dataAtomic = (DataAtomic) firstDataGroup
-		// .getFirstChildWithNameInData("firstname");
-		// assertEquals(dataAtomic.getRepeatId(), "1");
+		DataAtomic dataAtomic = (DataAtomic) firstDataGroup
+				.getFirstChildWithNameInData("firstname");
+
+		assertEquals(dataAtomic.getRepeatId(), "2");
 	}
-	// @Test
-	// public void testAttributesAddedOnlyToDataGroup() {
-	// String xmlToconvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-	// + "<person gender=\"man\"><firstname>Janne</firstname></person>";
-	//
-	// XmlConverter xmlConverter = new XmlConverter();
-	// DataGroup convertedDataElement = (DataGroup) xmlConverter.convert(xmlToconvert);
-	// assertEquals(convertedDataElement.getAttribute("gender"), "man");
-	//
-	// }
-=======
-	// TODO: Test malformed XML
-	// TODO: Test empty XML
->>>>>>> branch 'master' of https://github.com/lsu-ub-uu/cora-xmlconverter.git
+
+	@Test
+	public void testMultipleAttributes() {
+		String xmlToconvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person><name type=\"authenticated\" multiple=\"yes\" repeatId=\"1\"><firstname repeatId=\"2\">Janne</firstname></name></person>";
+
+		XmlConverter xmlConverter = new XmlConverter();
+		DataGroup convertedDataElement = (DataGroup) xmlConverter.convert(xmlToconvert);
+		assertEquals(convertedDataElement.getFirstGroupWithNameInData("name").getAttribute("type"),
+				"authenticated");
+		assertEquals(
+				convertedDataElement.getFirstGroupWithNameInData("name").getAttribute("multiple"),
+				"yes");
+	}
+
+	@Test
+	public void testAttributesOnParentGroup() {
+		String xmlToconvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person gender=\"man\"><firstname>Janne</firstname></person>";
+
+		XmlConverter xmlConverter = new XmlConverter();
+		DataGroup convertedDataElement = (DataGroup) xmlConverter.convert(xmlToconvert);
+		assertEquals(convertedDataElement.getAttribute("gender"), "man");
+
+	}
+
+	@Test
+	public void testcompleteExample() {
+		String xmlToconvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person>"
+				+ "<name type=\"authenticated\" multiple=\"yes\" repeatId=\"1\">"
+				+ "<firstname repeatId=\"2\">Janne</firstname>"
+				+ "<secondname repeatId=\"3\">Fonda</secondname>"
+				+ "<nickname><short>Fondis</short></nickname>" + "</name>"
+				+ "<shoesize>14</shoesize>" + "</person>";
+
+		XmlConverter xmlConverter = new XmlConverter();
+		DataGroup convertedDataElement = (DataGroup) xmlConverter.convert(xmlToconvert);
+		assertEquals(convertedDataElement.getNameInData(), "person");
+		DataGroup nameGroup = convertedDataElement.getFirstGroupWithNameInData("name");
+		assertEquals(nameGroup.getAttribute("type"), "authenticated");
+		assertEquals(nameGroup.getAttribute("multiple"), "yes");
+		DataAtomic secondnameAtomic = (DataAtomic) nameGroup
+				.getFirstChildWithNameInData("secondname");
+		assertEquals(secondnameAtomic.getRepeatId(), "3");
+		assertEquals(secondnameAtomic.getValue(), "Fonda");
+		assertEquals(convertedDataElement.getFirstChildWithNameInData("shoesize").getRepeatId(),
+				null);
+		DataGroup nicknameGroup = nameGroup.getFirstGroupWithNameInData("nickname");
+		assertEquals(nicknameGroup.getFirstAtomicValueWithNameInData("short"), "Fondis");
+	}
+
 }
