@@ -9,6 +9,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -85,7 +86,18 @@ public class XmlToDataElement {
 
 	private void convertDataGroup(DataGroup parentDataGroup, Node currentNode) {
 		String nodeName = currentNode.getNodeName();
+		NamedNodeMap attributes = currentNode.getAttributes();
+
 		DataGroup dataGroup = DataGroupProvider.getDataGroupUsingNameInData(nodeName);
+		for (int i = 0; i < attributes.getLength(); i++) {
+			Node attribute = attributes.item(i);
+			if (attribute.getNodeName().equals("repeatId")) {
+				dataGroup.setRepeatId(attribute.getTextContent());
+			} else {
+				dataGroup.addAttributeByIdWithValue(attribute.getNodeName(),
+						attribute.getTextContent());
+			}
+		}
 		convertChildren(dataGroup, currentNode.getChildNodes());
 		parentDataGroup.addChild(dataGroup);
 	}
