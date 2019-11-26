@@ -26,6 +26,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -50,17 +51,14 @@ public class DataElementToXml {
 	}
 
 	public String convert(DataElement dataElement) {
-		String xml = "";
 		DataGroup topDataGroup = (DataGroup) dataElement;
-
 		try {
 			Document domDocument = createDomDocument(topDataGroup);
-			xml = transformDomDocumentToString(domDocument, transformerFactory);
+			return transformDomDocumentToString(domDocument, transformerFactory);
 		} catch (ParserConfigurationException exception) {
 			throw new XmlConverterException("Unable to convert from dataElement to xml", exception);
 		}
 
-		return xml;
 	}
 
 	private Document createDomDocument(DataGroup dataGroupToConvert)
@@ -79,7 +77,7 @@ public class DataElementToXml {
 	private Document generateDomDocumentFromDataGroup(DataGroup dataGroupToConvert,
 			Document domDocument) {
 		generateRootElement(dataGroupToConvert, domDocument);
-		iterateAndGenerateChildrenElements(dataGroupToConvert, domDocument,
+		iterateAndGenerateChildElements(dataGroupToConvert, domDocument,
 				domDocument.getDocumentElement());
 		return domDocument;
 	}
@@ -90,9 +88,8 @@ public class DataElementToXml {
 		return domDocument;
 	}
 
-	private void iterateAndGenerateChildrenElements(DataGroup dataGroup, Document domDocument,
+	private void iterateAndGenerateChildElements(DataGroup dataGroup, Document domDocument,
 			Element parentXmlDomElement) {
-
 		for (DataElement childDataElement : dataGroup.getChildren()) {
 			generateChildElement(domDocument, parentXmlDomElement, childDataElement);
 		}
@@ -108,7 +105,7 @@ public class DataElementToXml {
 		} else {
 			DataGroup childDataGroup = (DataGroup) childDataElement;
 			addAttributesIfExistsToElementForDataGroup(childDataGroup, domElement);
-			iterateAndGenerateChildrenElements(childDataGroup, domDocument, domElement);
+			iterateAndGenerateChildElements(childDataGroup, domDocument, domElement);
 		}
 		parentXmlDomElement.appendChild(domElement);
 	}
@@ -143,23 +140,24 @@ public class DataElementToXml {
 
 	private static String transformDomDocumentToString(Document domDocument,
 			TransformerFactory transformerFactory) {
-		Transformer transformer;
-		String xml = "";
-
 		try {
-			StringWriter xmlWriter = new StringWriter();
-			DOMSource domSource = new DOMSource(domDocument);
-			StreamResult xmlResult = new StreamResult(xmlWriter);
-
-			// transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			transformer = transformerFactory.newTransformer();
-			transformer.transform(domSource, xmlResult);
-
-			xml = xmlWriter.toString();
+			return tryToTransformDomDocumentToString(domDocument, transformerFactory);
 		} catch (TransformerException exception) {
 			throw new XmlConverterException("Unable to convert from dataElement to xml", exception);
 		}
 
-		return xml;
+	}
+
+	private static String tryToTransformDomDocumentToString(Document domDocument,
+			TransformerFactory transformerFactory)
+			throws TransformerConfigurationException, TransformerException {
+		StringWriter xmlWriter = new StringWriter();
+		DOMSource domSource = new DOMSource(domDocument);
+		StreamResult xmlResult = new StreamResult(xmlWriter);
+
+		Transformer transformer = transformerFactory.newTransformer();
+		transformer.transform(domSource, xmlResult);
+
+		return xmlWriter.toString();
 	}
 }

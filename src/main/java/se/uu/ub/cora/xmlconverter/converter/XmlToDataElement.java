@@ -1,3 +1,21 @@
+/*
+ * Copyright 2019 Uppsala University Library
+ *
+ * This file is part of Cora.
+ *
+ *     Cora is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     Cora is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package se.uu.ub.cora.xmlconverter.converter;
 
 import java.io.IOException;
@@ -27,7 +45,7 @@ import se.uu.ub.cora.data.DataGroupProvider;
 public class XmlToDataElement {
 
 	private static final String ATTRIBUTES = "attributes";
-	private static final String REPEAT_IDS = "repeatIds";
+	// private static final String REPEAT_ID = "repeatIds";
 	private static final String REPEAT_ID = "repeatId";
 	private DocumentBuilderFactory documentBuilderFactory;
 
@@ -36,20 +54,23 @@ public class XmlToDataElement {
 	}
 
 	public DataElement convert(String dataString) {
-		DataGroup convertedDataElement = null;
 		try {
-			Element domElement = initializeDomElement(dataString);
-			convertedDataElement = createTopDataGroup(domElement);
-			convertChildren(convertedDataElement, domElement);
-
-		} catch (XmlConverterException xmlConverterException) {
-			throw xmlConverterException;
+			return tryToConvert(dataString);
 		} catch (SAXException exception) {
 			throw new XmlConverterException(
 					"Unable to convert from xml to dataElement due to malformed XML", exception);
 		} catch (Exception exception) {
-			throw new XmlConverterException("Unable to convert from xml to dataElement", exception);
+			throw new XmlConverterException(
+					"Unable to convert from xml to dataElement: " + exception.getMessage(),
+					exception);
 		}
+	}
+
+	private DataElement tryToConvert(String dataString)
+			throws ParserConfigurationException, SAXException, IOException {
+		Element domElement = initializeDomElement(dataString);
+		DataGroup convertedDataElement = createTopDataGroup(domElement);
+		convertChildren(convertedDataElement, domElement);
 		return convertedDataElement;
 	}
 
@@ -74,9 +95,39 @@ public class XmlToDataElement {
 		addAttributes(topDataGroup, attributes);
 	}
 
+	private Map<String, Map<String, String>> extractAttributesAndRepeatId(Node currentNode) {
+		Map<String, String> repeatIdHolder = new HashMap<>();
+		Map<String, String> attributes = new HashMap<>();
+
+		NamedNodeMap domAttributes = currentNode.getAttributes();
+		int domAttributesSize = domAttributes.getLength();
+		for (int position = 0; position < domAttributesSize; position++) {
+			Node attribute = domAttributes.item(position);
+			possiblyExtractAttributesOrRepeatsIds(repeatIdHolder, attributes, attribute);
+		}
+
+		return addRepeatIdAndAttributesToHolder(repeatIdHolder, attributes);
+	}
+
+	private Map<String, Map<String, String>> addRepeatIdAndAttributesToHolder(
+			Map<String, String> repeatIds, Map<String, String> attributes) {
+		Map<String, Map<String, String>> attributeMap = new HashMap<>();
+		attributeMap.put(REPEAT_ID, repeatIds);
+		attributeMap.put(ATTRIBUTES, attributes);
+		return attributeMap;
+	}
+
+	private void possiblyExtractAttributesOrRepeatsIds(Map<String, String> repeatIds,
+			Map<String, String> attributes, Node attribute) {
+		if (attribute.getNodeName().equals(REPEAT_ID)) {
+			repeatIds.put(REPEAT_ID, attribute.getTextContent());
+		} else {
+			attributes.put(attribute.getNodeName(), attribute.getTextContent());
+		}
+	}
+
 	private void convertChildren(DataGroup parentElement, Node domElement) {
 		NodeList childNodes = domElement.getChildNodes();
-
 		for (int i = 0; i < childNodes.getLength(); i++) {
 			Node currentNode = childNodes.item(i);
 			convertChild(parentElement, currentNode);
@@ -86,9 +137,9 @@ public class XmlToDataElement {
 	private void convertChild(DataGroup parentDataGroup, Node currentNode) {
 		Map<String, Map<String, String>> attributesAndRepeatId = extractAttributesAndRepeatId(
 				currentNode);
-		Map<String, String> attributes = attributesAndRepeatId.get(ATTRIBUTES);
-		Map<String, String> repeatIds = attributesAndRepeatId.get(REPEAT_IDS);
+		Map<String, String> repeatIds = attributesAndRepeatId.get(REPEAT_ID);
 		if (hasChildren(currentNode)) {
+			Map<String, String> attributes = attributesAndRepeatId.get(ATTRIBUTES);
 			convertDataGroup(parentDataGroup, currentNode, attributes, repeatIds);
 		} else {
 			convertDataAtomic(parentDataGroup, currentNode, repeatIds);
@@ -97,8 +148,8 @@ public class XmlToDataElement {
 
 	private boolean hasChildren(Node currentNode) {
 		if (currentNode.getFirstChild() == null) {
-			throw new XmlConverterException("Unable to convert from xml to dataElement due to "
-					+ "NULL value on AtomicGroup " + currentNode.getNodeName());
+			throw new XmlConverterException(
+					"" + "NULL value on element " + currentNode.getNodeName());
 		}
 		return currentNode.getFirstChild().getNodeType() == Node.ELEMENT_NODE;
 	}
@@ -142,28 +193,4 @@ public class XmlToDataElement {
 		}
 	}
 
-	private Map<String, Map<String, String>> extractAttributesAndRepeatId(Node currentNode) {
-		Map<String, Map<String, String>> attributeMap = new HashMap<>();
-		Map<String, String> repeatIds = new HashMap<>();
-		Map<String, String> attributes = new HashMap<>();
-
-		NamedNodeMap domAttributes = currentNode.getAttributes();
-		int domAttributesSize = domAttributes.getLength();
-		for (int position = 0; position < domAttributesSize; position++) {
-			possiblyExtractAttributesOrRepeatsIds(repeatIds, attributes, domAttributes, position);
-		}
-		attributeMap.put(REPEAT_IDS, repeatIds);
-		attributeMap.put(ATTRIBUTES, attributes);
-		return attributeMap;
-	}
-
-	private void possiblyExtractAttributesOrRepeatsIds(Map<String, String> repeatIds,
-			Map<String, String> attributes, NamedNodeMap domAttributes, int position) {
-		Node attribute = domAttributes.item(position);
-		if (attribute.getNodeName().equals(REPEAT_ID)) {
-			repeatIds.put(REPEAT_ID, attribute.getTextContent());
-		} else {
-			attributes.put(attribute.getNodeName(), attribute.getTextContent());
-		}
-	}
 }
