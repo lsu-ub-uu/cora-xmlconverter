@@ -151,6 +151,7 @@ public class DataElementToXml {
 			DOMSource domSource = new DOMSource(domDocument);
 			StreamResult xmlResult = new StreamResult(xmlWriter);
 
+			// transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			transformer = transformerFactory.newTransformer();
 			transformer.transform(domSource, xmlResult);
 

@@ -30,7 +30,6 @@ public class XmlConverter implements Converter {
 
 	@Override
 	public String convert(DataElement dataElement) {
-
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 
@@ -40,7 +39,8 @@ public class XmlConverter implements Converter {
 
 	@Override
 	public DataElement convert(String dataString) {
-		return new XmlToDataElement().convert(dataString);
+		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		return new XmlToDataElement(documentBuilderFactory).convert(dataString);
 	}
 
 }

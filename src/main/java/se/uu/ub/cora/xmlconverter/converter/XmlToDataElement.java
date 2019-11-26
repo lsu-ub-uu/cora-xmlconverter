@@ -22,6 +22,12 @@ import se.uu.ub.cora.data.DataGroupProvider;
 
 public class XmlToDataElement {
 
+	private DocumentBuilderFactory documentBuilderFactory;
+
+	public XmlToDataElement(DocumentBuilderFactory documentBuilderFactory) {
+		this.documentBuilderFactory = documentBuilderFactory;
+	}
+
 	public DataElement convert(String dataString) {
 		DataGroup convertedDataElement = null;
 		try {
@@ -31,16 +37,17 @@ public class XmlToDataElement {
 
 			convertChildren(convertedDataElement, childNodes);
 
-		} catch (SAXException | IOException | ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SAXException exception) {
+			throw new XmlConverterException(
+					"Unable to convert from xml to dataElement due to malformed XML", exception);
+		} catch (Exception exception) {
+			throw new XmlConverterException("Unable to convert from xml to dataElement", exception);
 		}
 		return convertedDataElement;
 	}
 
 	private Element initializeDomElement(String dataString)
 			throws ParserConfigurationException, SAXException, IOException {
-		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
 		Document domDocument = documentBuilder.parse(new InputSource(new StringReader(dataString)));
 

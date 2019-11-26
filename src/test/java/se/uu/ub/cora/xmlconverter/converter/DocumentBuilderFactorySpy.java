@@ -25,6 +25,7 @@ import javax.xml.parsers.ParserConfigurationException;
 public class DocumentBuilderFactorySpy extends DocumentBuilderFactory {
 
 	public boolean throwParserError = false;
+	public boolean throwIOException = false;
 
 	@Override
 	public Object getAttribute(String arg0) throws IllegalArgumentException {

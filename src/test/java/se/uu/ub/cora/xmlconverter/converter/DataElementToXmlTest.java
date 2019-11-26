@@ -33,17 +33,17 @@ public class DataElementToXmlTest {
 	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from dataElement to xml")
 	public void testParseExceptionOnCreateDocument() {
-		DocumentBuilderFactorySpy documentBuildeFactorySpy = new DocumentBuilderFactorySpy();
-		documentBuildeFactorySpy.throwParserError = true;
-		DataElementToXml toXmlConverter = new DataElementToXml(documentBuildeFactorySpy, null);
+		DocumentBuilderFactorySpy documentBuilderFactorySpy = new DocumentBuilderFactorySpy();
+		documentBuilderFactorySpy.throwParserError = true;
+		DataElementToXml toXmlConverter = new DataElementToXml(documentBuilderFactorySpy, null);
 		toXmlConverter.convert(new DataGroupSpy("someNameInData"));
 	}
 
 	@Test
 	public void testParseExceptionOriginalExceptionIsSentAlong() {
-		DocumentBuilderFactorySpy documentBuildeFactorySpy = new DocumentBuilderFactorySpy();
-		documentBuildeFactorySpy.throwParserError = true;
-		DataElementToXml toXmlConverter = new DataElementToXml(documentBuildeFactorySpy, null);
+		DocumentBuilderFactorySpy documentBuilderFactorySpy = new DocumentBuilderFactorySpy();
+		documentBuilderFactorySpy.throwParserError = true;
+		DataElementToXml toXmlConverter = new DataElementToXml(documentBuilderFactorySpy, null);
 		try {
 			toXmlConverter.convert(new DataGroupSpy("someNameInData"));
 
