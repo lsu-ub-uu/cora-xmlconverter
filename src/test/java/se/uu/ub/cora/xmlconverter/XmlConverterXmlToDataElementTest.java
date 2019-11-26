@@ -69,13 +69,54 @@ public class XmlConverterXmlToDataElementTest {
 		XmlConverter xmlConverter = new XmlConverter();
 		xmlConverter.convert(xmlToconvert);
 	}
-	// TODO: Test att attributes adderas som attribut BARA i DataGroup
+
 	// TODO: Test att repeatId adderas båda i DataGroup och DataAtomic
 	// TODO: Test xml med flera barn med djup minst två
 	// TODO: test throw Exception om attributes finns för DataAtomic
 	// TODO: Test trhow Exception if incomming xml document does not have encoding=UTF-8
 	// TODO: Test throw Excpetion if incomming xml document does not have xml version = 1.0
 	// TODO: Test to handle SAXException | IOException | ParserConfigurationException
+<<<<<<< HEAD
+
+	@Test
+	public void testAttributesAddedOnlyToDataGroup() {
+		String xmlToconvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person><name type=\"authenticated\"><firstname>Janne</firstname></name></person>";
+
+		XmlConverter xmlConverter = new XmlConverter();
+		DataGroup convertedDataElement = (DataGroup) xmlConverter.convert(xmlToconvert);
+		assertEquals(convertedDataElement.getFirstGroupWithNameInData("name").getAttribute("type"),
+				"authenticated");
+
+	}
+
+	@Test
+	public void testAttributesRepeatId() {
+		String xmlToconvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person><name type=\"authenticated\" repeatId=\"1\"><firstname repeatId=\"1\">Janne</firstname></name></person>";
+
+		XmlConverter xmlConverter = new XmlConverter();
+		DataGroup convertedDataElement = (DataGroup) xmlConverter.convert(xmlToconvert);
+
+		DataGroup firstDataGroup = convertedDataElement.getFirstGroupWithNameInData("name");
+		assertEquals(firstDataGroup.getRepeatId(), "1");
+
+		// DataAtomic dataAtomic = (DataAtomic) firstDataGroup
+		// .getFirstChildWithNameInData("firstname");
+		// assertEquals(dataAtomic.getRepeatId(), "1");
+	}
+	// @Test
+	// public void testAttributesAddedOnlyToDataGroup() {
+	// String xmlToconvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+	// + "<person gender=\"man\"><firstname>Janne</firstname></person>";
+	//
+	// XmlConverter xmlConverter = new XmlConverter();
+	// DataGroup convertedDataElement = (DataGroup) xmlConverter.convert(xmlToconvert);
+	// assertEquals(convertedDataElement.getAttribute("gender"), "man");
+	//
+	// }
+=======
 	// TODO: Test malformed XML
 	// TODO: Test empty XML
+>>>>>>> branch 'master' of https://github.com/lsu-ub-uu/cora-xmlconverter.git
 }

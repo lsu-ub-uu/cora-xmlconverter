@@ -83,7 +83,7 @@ public class DataGroupSpy implements DataGroup {
 	@Override
 	public DataElement getFirstChildWithNameInData(String nameInData) {
 		// TODO Auto-generated method stub
-		return null;
+		return children.get(0);
 	}
 
 	@Override
@@ -95,7 +95,7 @@ public class DataGroupSpy implements DataGroup {
 	@Override
 	public String getAttribute(String attributeId) {
 		// TODO Auto-generated method stub
-		return null;
+		return attributes.get(attributeId);
 	}
 
 	@Override
