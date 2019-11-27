@@ -20,8 +20,6 @@ package se.uu.ub.cora.xmlconverter.converter;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -44,8 +42,6 @@ import se.uu.ub.cora.data.DataGroupProvider;
 
 public class XmlToDataElement {
 
-	private static final String ATTRIBUTES = "attributes";
-	// private static final String REPEAT_ID = "repeatIds";
 	private static final String REPEAT_ID = "repeatId";
 	private DocumentBuilderFactory documentBuilderFactory;
 
@@ -69,6 +65,10 @@ public class XmlToDataElement {
 	private DataElement tryToConvert(String dataString)
 			throws ParserConfigurationException, SAXException, IOException {
 		Element domElement = initializeDomElement(dataString);
+		String xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		if (!dataString.startsWith(xmlHeader)) {
+			throw new XmlConverterException("Document must be: version 1.0 and UTF-8");
+		}
 		DataGroup convertedDataElement = createTopDataGroup(domElement);
 		convertChildren(convertedDataElement, domElement);
 		return convertedDataElement;
@@ -84,45 +84,36 @@ public class XmlToDataElement {
 	private DataGroup createTopDataGroup(Element domElement) {
 		String nodeName = domElement.getNodeName();
 		DataGroup topDataGroup = DataGroupProvider.getDataGroupUsingNameInData(nodeName);
-		addAttributesTopDataGroup(domElement, topDataGroup);
+		XmlAttributes xmlAttributes = extractAttributesAndRepeatId(domElement);
+		ensureNoRepeatId(xmlAttributes.repeatId);
+		addAttributes(topDataGroup, xmlAttributes);
 		return topDataGroup;
 	}
 
-	private void addAttributesTopDataGroup(Element domElement, DataGroup topDataGroup) {
-		Map<String, Map<String, String>> attributesAndRepeatId = extractAttributesAndRepeatId(
-				domElement);
-		Map<String, String> attributes = attributesAndRepeatId.get(ATTRIBUTES);
-		addAttributes(topDataGroup, attributes);
+	private void ensureNoRepeatId(String repeatId) {
+		if (!repeatId.isBlank()) {
+			throw new XmlConverterException("Top dataGroup can not have repeatId");
+		}
 	}
 
-	private Map<String, Map<String, String>> extractAttributesAndRepeatId(Node currentNode) {
-		Map<String, String> repeatIdHolder = new HashMap<>();
-		Map<String, String> attributes = new HashMap<>();
-
+	private XmlAttributes extractAttributesAndRepeatId(Node currentNode) {
+		XmlAttributes xmlAttributes = new XmlAttributes();
 		NamedNodeMap domAttributes = currentNode.getAttributes();
 		int domAttributesSize = domAttributes.getLength();
 		for (int position = 0; position < domAttributesSize; position++) {
-			Node attribute = domAttributes.item(position);
-			possiblyExtractAttributesOrRepeatsIds(repeatIdHolder, attributes, attribute);
+			Node domAttribute = domAttributes.item(position);
+			possiblyExtractAttributesOrRepeatsIds(xmlAttributes, domAttribute);
 		}
 
-		return addRepeatIdAndAttributesToHolder(repeatIdHolder, attributes);
+		return xmlAttributes;
 	}
 
-	private Map<String, Map<String, String>> addRepeatIdAndAttributesToHolder(
-			Map<String, String> repeatIds, Map<String, String> attributes) {
-		Map<String, Map<String, String>> attributeMap = new HashMap<>();
-		attributeMap.put(REPEAT_ID, repeatIds);
-		attributeMap.put(ATTRIBUTES, attributes);
-		return attributeMap;
-	}
-
-	private void possiblyExtractAttributesOrRepeatsIds(Map<String, String> repeatIdHolder,
-			Map<String, String> attributes, Node attribute) {
-		if (attribute.getNodeName().equals(REPEAT_ID)) {
-			repeatIdHolder.put(REPEAT_ID, attribute.getTextContent());
+	private void possiblyExtractAttributesOrRepeatsIds(XmlAttributes xmlattributes,
+			Node domAttribute) {
+		if (domAttribute.getNodeName().equals(REPEAT_ID)) {
+			xmlattributes.repeatId = domAttribute.getTextContent();
 		} else {
-			attributes.put(attribute.getNodeName(), attribute.getTextContent());
+			xmlattributes.setAttribute(domAttribute.getNodeName(), domAttribute.getTextContent());
 		}
 	}
 
@@ -135,45 +126,41 @@ public class XmlToDataElement {
 	}
 
 	private void convertChild(DataGroup parentDataGroup, Node currentNode) {
-		Map<String, Map<String, String>> attributesAndRepeatId = extractAttributesAndRepeatId(
-				currentNode);
-		Map<String, String> repeatIdHolder = attributesAndRepeatId.get(REPEAT_ID);
+		XmlAttributes xmlAttributes = extractAttributesAndRepeatId(currentNode);
 		if (hasChildren(currentNode)) {
-			Map<String, String> attributes = attributesAndRepeatId.get(ATTRIBUTES);
-			convertDataGroup(parentDataGroup, currentNode, attributes, repeatIdHolder);
+			convertDataGroup(parentDataGroup, currentNode, xmlAttributes);
 		} else {
-			convertDataAtomic(parentDataGroup, currentNode, repeatIdHolder);
+			convertDataAtomic(parentDataGroup, currentNode, xmlAttributes);
 		}
 	}
 
 	private boolean hasChildren(Node currentNode) {
 		if (currentNode.getFirstChild() == null) {
-			throw new XmlConverterException(
-					"" + "NULL value on element " + currentNode.getNodeName());
+			return false;
 		}
 		return currentNode.getFirstChild().getNodeType() == Node.ELEMENT_NODE;
 	}
 
 	private void convertDataGroup(DataGroup parentDataGroup, Node currentNode,
-			Map<String, String> attributes, Map<String, String> repeatIds) {
+			XmlAttributes xmlAttributes) {
 		String nodeName = currentNode.getNodeName();
 		DataGroup dataGroup = DataGroupProvider.getDataGroupUsingNameInData(nodeName);
 
-		addAttributes(dataGroup, attributes);
-		addRepeatId(dataGroup, repeatIds);
+		addAttributes(dataGroup, xmlAttributes);
+		addRepeatId(dataGroup, xmlAttributes);
 		convertChildren(dataGroup, currentNode);
 		parentDataGroup.addChild(dataGroup);
 	}
 
-	private void addAttributes(DataGroup dataGroup, Map<String, String> attributesMap) {
-		for (Entry<String, String> attribute : attributesMap.entrySet()) {
+	private void addAttributes(DataGroup dataGroup, XmlAttributes xmlAttributes) {
+		for (Entry<String, String> attribute : xmlAttributes.getAttributeSet()) {
 			dataGroup.addAttributeByIdWithValue(attribute.getKey(), attribute.getValue());
 		}
 	}
 
-	private void addRepeatId(DataElement dataElement, Map<String, String> repeatIdHolder) {
-		if (!repeatIdHolder.isEmpty()) {
-			String repeatIdValue = repeatIdHolder.get(REPEAT_ID);
+	private void addRepeatId(DataElement dataElement, XmlAttributes xmlAttributes) {
+		String repeatIdValue = xmlAttributes.repeatId;
+		if (!repeatIdValue.isEmpty()) {
 			if (dataElement instanceof DataGroup) {
 				((DataGroup) dataElement).setRepeatId(repeatIdValue);
 			} else {
@@ -183,14 +170,21 @@ public class XmlToDataElement {
 	}
 
 	private void convertDataAtomic(DataGroup parentDataGroup, Node currentNode,
-			Map<String, String> repeatIdHolder) {
+			XmlAttributes xmlAttributes) {
+		ensureNoAttributes(xmlAttributes);
 		String nodeName = currentNode.getNodeName();
 		String textContent = currentNode.getTextContent();
-
 		DataAtomic dataAtomic = DataAtomicProvider.getDataAtomicUsingNameInDataAndValue(nodeName,
 				textContent);
-		addRepeatId(dataAtomic, repeatIdHolder);
+		addRepeatId(dataAtomic, xmlAttributes);
 		parentDataGroup.addChild(dataAtomic);
+
+	}
+
+	private void ensureNoAttributes(XmlAttributes xmlAttributes) {
+		if (xmlAttributes.hasAttributes()) {
+			throw new XmlConverterException("DataAtomic can not have attributes");
+		}
 	}
 
 }

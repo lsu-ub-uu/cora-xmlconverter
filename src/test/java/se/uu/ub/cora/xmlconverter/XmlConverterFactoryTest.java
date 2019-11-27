@@ -22,7 +22,9 @@ package se.uu.ub.cora.xmlconverter;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerFactory;
 
 import org.testng.annotations.Test;
@@ -58,6 +60,29 @@ public class XmlConverterFactoryTest {
 		XmlConverter factorConverter = (XmlConverter) xmlConverterFactory.factorConverter();
 		assertTrue(factorConverter.getDocumentBuilderFactory() instanceof DocumentBuilderFactory);
 		assertTrue(factorConverter.getTransformerFactory() instanceof TransformerFactory);
-
 	}
+
+	@Test
+	public void testXmlConverterFactoryHasIncreasedSecurity() throws ParserConfigurationException {
+		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
+		XmlConverter factorConverter = (XmlConverter) xmlConverterFactory.factorConverter();
+		DocumentBuilderFactory documentBuilderFactory = factorConverter.getDocumentBuilderFactory();
+		boolean feature = documentBuilderFactory
+				.getFeature("http://apache.org/xml/features/disallow-doctype-decl");
+		assertTrue(feature);
+
+		// TransformerFactory transformerFactory = factorConverter.getTransformerFactory();
+	}
+
+	@Test
+	public void testXmlDocumentBuilderFactoryHasIncreasedSecurity() {
+		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
+		XmlConverter factorConverter = (XmlConverter) xmlConverterFactory.factorConverter();
+		DocumentBuilderFactory documentBuilderFactory = factorConverter.getDocumentBuilderFactory();
+
+		TransformerFactory transformerFactory = factorConverter.getTransformerFactory();
+		boolean feature = transformerFactory.getFeature(XMLConstants.FEATURE_SECURE_PROCESSING);
+		assertEquals(feature, true);
+	}
+
 }

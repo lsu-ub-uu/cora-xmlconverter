@@ -19,6 +19,7 @@
 
 package se.uu.ub.cora.xmlconverter;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.TransformerFactory;
 
@@ -38,6 +39,25 @@ public class XmlConverterFactory implements ConverterFactory {
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 
+		try {
+
+			// TODO: READ https://portswigger.net/web-security/xxe and
+			// https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Processing
+			documentBuilderFactory
+					.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+			// documentBuilderFactory
+			// .setFeature("http://xml.org/sax/features/external-general-entities", false);
+			// documentBuilderFactory
+			// .setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+			// documentBuilderFactory.setFeature(
+			// "http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+			// documentBuilderFactory.setXIncludeAware(false);
+			// documentBuilderFactory.setExpandEntityReferences(false);
+			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return new XmlConverter(documentBuilderFactory, transformerFactory);
 	}
 

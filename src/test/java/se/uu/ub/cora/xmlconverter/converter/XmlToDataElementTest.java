@@ -39,6 +39,8 @@ import se.uu.ub.cora.xmlconverter.spy.DocumentBuilderFactorySpy;
 
 public class XmlToDataElementTest {
 
+	// TODO: Säkerhet
+
 	DataGroupFactorySpy dataGroupFactorySpy = null;
 	DataAtomicFactorySpy dataAtomicFactorySpy = null;
 
@@ -54,6 +56,15 @@ public class XmlToDataElementTest {
 
 		documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		xmlToDataElement = new XmlToDataElement(documentBuilderFactory);
+	}
+
+	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement: Document must be: version 1.0 and UTF-8")
+	public void testParseExceptionWhenNotCorrectVerisonAndEncoding() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"notUTF-8\"?>"
+				+ "<person><firstname/></person>";
+
+		xmlToDataElement.convert(xmlToConvert);
 	}
 
 	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
@@ -129,8 +140,6 @@ public class XmlToDataElementTest {
 		}
 	}
 
-	/***************************************************************************************/
-
 	@Test
 	public void testConvertSimpleXmlWithOneRootElement() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person></person>";
@@ -141,12 +150,28 @@ public class XmlToDataElementTest {
 
 	@Test
 	public void testConvertXmlWithSingleAtomicChild() {
-		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<person><firstname>Kalle</firstname></person>";
+		String xmlToConvert = createXmlSurroundingAtomicXml("<firstname>Kalle</firstname>");
 
 		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
 		assertEquals(convertedDataElement.getFirstAtomicValueWithNameInData("firstname"), "Kalle");
 
+	}
+
+	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement: DataAtomic can not have attributes")
+	public void testConvertXmlWithAttribute() {
+		String atomicXml = "<firstname someAttribute=\"attrib\">Kalle</firstname>";
+		String xmlToConvert = createXmlSurroundingAtomicXml(atomicXml);
+
+		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+		assertEquals(convertedDataElement.getFirstAtomicValueWithNameInData("firstname"), "Kalle");
+
+	}
+
+	private String createXmlSurroundingAtomicXml(String atomicXml) {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person>" + atomicXml
+				+ "</person>";
+		return xmlToConvert;
 	}
 
 	@Test
@@ -157,22 +182,26 @@ public class XmlToDataElementTest {
 		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
 		DataGroup nameGroup = convertedDataElement.getFirstGroupWithNameInData("name");
 		assertEquals(nameGroup.getFirstAtomicValueWithNameInData("firstname"), "Kalle");
-
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
-			+ "Unable to convert from xml to dataElement: NULL value on element firstname")
+	@Test
 	public void testConvertXmlWithSingleAtomicChildWithoutValue() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 				+ "<person><firstname></firstname></person>";
 
-		xmlToDataElement.convert(xmlToConvert);
+		DataElement convertedDataElement = xmlToDataElement.convert(xmlToConvert);
+		DataGroup convertedDataGroup = (DataGroup) convertedDataElement;
+		assertEquals(convertedDataGroup.getFirstAtomicValueWithNameInData("firstname"), "");
 	}
 
-	// TODO: test throw Exception om attributes finns för DataAtomic
-	// TODO: Test trhow Exception if incomming xml document does not have encoding=UTF-8
-	// TODO: Test throw Excpetion if incomming xml document does not have xml version = 1.0
-	// TODO: Test malformed XML
+	@Test
+	public void testConvertXmlWithSingleAtomicChildWithoutValue2() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person><firstname/></person>";
+		DataElement convertedDataElement = xmlToDataElement.convert(xmlToConvert);
+		DataGroup convertedDataGroup = (DataGroup) convertedDataElement;
+		assertEquals(convertedDataGroup.getFirstAtomicValueWithNameInData("firstname"), "");
+	}
 
 	@Test
 	public void testAttributesAddedToDataGroup() {
@@ -223,6 +252,16 @@ public class XmlToDataElementTest {
 
 	}
 
+	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement: Top dataGroup can not have repeatId")
+	public void testRepeatIdOnParentGroup() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person repeatId=\"someRepeatId\"><firstname>Janne</firstname></person>";
+
+		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+
+	}
+
 	@Test
 	public void testCompleteExample() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person>"
@@ -252,5 +291,27 @@ public class XmlToDataElementTest {
 
 		DataGroup nicknameGroup = nameGroup.getFirstGroupWithNameInData("nickname");
 		assertEquals(nicknameGroup.getFirstAtomicValueWithNameInData("short"), "Fondis");
+	}
+
+	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement due to malformed XML")
+	public void testWithMultipleXmlRootElements() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person gender=\"man\"><firstname>Janne</firstname></person>"
+				+ "<person gender=\"man\"><firstname>John</firstname></person>";
+		xmlToDataElement.convert(xmlToConvert);
+	}
+
+	// TODO : To finish. MaliciousXML can read internal /etc/passwd file and inject it to a
+	// DataAtomic. We should stop it.
+	// TODO : Read https://portswigger.net/web-security/xxe and
+	// https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Processing
+	@Test
+	public void testMaliciousXml() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<!DOCTYPE doc[\n"
+				+ "  <!ENTITY pwd SYSTEM \"file:///etc/passwd\">\n" + "]>"
+				+ "<person><firstname>&pwd;</firstname></person>";
+		DataGroup convert = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+		assertEquals(convert.getFirstAtomicValueWithNameInData("firstname"), "");
 	}
 }
