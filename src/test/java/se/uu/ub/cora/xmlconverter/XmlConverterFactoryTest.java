@@ -22,6 +22,9 @@ package se.uu.ub.cora.xmlconverter;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.TransformerFactory;
+
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.converter.Converter;
@@ -49,4 +52,12 @@ public class XmlConverterFactoryTest {
 		assertEquals(xmlConverterFactory.getName(), "xml");
 	}
 
+	@Test
+	public void testXmlConverterFactorySendsCorrectFactoriesToConverter() {
+		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
+		XmlConverter factorConverter = (XmlConverter) xmlConverterFactory.factorConverter();
+		assertTrue(factorConverter.getDocumentBuilderFactory() instanceof DocumentBuilderFactory);
+		assertTrue(factorConverter.getTransformerFactory() instanceof TransformerFactory);
+
+	}
 }

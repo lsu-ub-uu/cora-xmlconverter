@@ -117,10 +117,10 @@ public class XmlToDataElement {
 		return attributeMap;
 	}
 
-	private void possiblyExtractAttributesOrRepeatsIds(Map<String, String> repeatIds,
+	private void possiblyExtractAttributesOrRepeatsIds(Map<String, String> repeatIdHolder,
 			Map<String, String> attributes, Node attribute) {
 		if (attribute.getNodeName().equals(REPEAT_ID)) {
-			repeatIds.put(REPEAT_ID, attribute.getTextContent());
+			repeatIdHolder.put(REPEAT_ID, attribute.getTextContent());
 		} else {
 			attributes.put(attribute.getNodeName(), attribute.getTextContent());
 		}
@@ -137,12 +137,12 @@ public class XmlToDataElement {
 	private void convertChild(DataGroup parentDataGroup, Node currentNode) {
 		Map<String, Map<String, String>> attributesAndRepeatId = extractAttributesAndRepeatId(
 				currentNode);
-		Map<String, String> repeatIds = attributesAndRepeatId.get(REPEAT_ID);
+		Map<String, String> repeatIdHolder = attributesAndRepeatId.get(REPEAT_ID);
 		if (hasChildren(currentNode)) {
 			Map<String, String> attributes = attributesAndRepeatId.get(ATTRIBUTES);
-			convertDataGroup(parentDataGroup, currentNode, attributes, repeatIds);
+			convertDataGroup(parentDataGroup, currentNode, attributes, repeatIdHolder);
 		} else {
-			convertDataAtomic(parentDataGroup, currentNode, repeatIds);
+			convertDataAtomic(parentDataGroup, currentNode, repeatIdHolder);
 		}
 	}
 
@@ -152,17 +152,6 @@ public class XmlToDataElement {
 					"" + "NULL value on element " + currentNode.getNodeName());
 		}
 		return currentNode.getFirstChild().getNodeType() == Node.ELEMENT_NODE;
-	}
-
-	private void convertDataAtomic(DataGroup parentDataGroup, Node currentNode,
-			Map<String, String> repeatIds) {
-		String nodeName = currentNode.getNodeName();
-		String textContent = currentNode.getTextContent();
-
-		DataAtomic dataAtomic = DataAtomicProvider.getDataAtomicUsingNameInDataAndValue(nodeName,
-				textContent);
-		addRepeatId(dataAtomic, repeatIds);
-		parentDataGroup.addChild(dataAtomic);
 	}
 
 	private void convertDataGroup(DataGroup parentDataGroup, Node currentNode,
@@ -176,9 +165,15 @@ public class XmlToDataElement {
 		parentDataGroup.addChild(dataGroup);
 	}
 
-	private void addRepeatId(DataElement dataElement, Map<String, String> repeatIdsMap) {
-		if (repeatIdsMap.size() > 0) {
-			String repeatIdValue = repeatIdsMap.get(REPEAT_ID);
+	private void addAttributes(DataGroup dataGroup, Map<String, String> attributesMap) {
+		for (Entry<String, String> attribute : attributesMap.entrySet()) {
+			dataGroup.addAttributeByIdWithValue(attribute.getKey(), attribute.getValue());
+		}
+	}
+
+	private void addRepeatId(DataElement dataElement, Map<String, String> repeatIdHolder) {
+		if (!repeatIdHolder.isEmpty()) {
+			String repeatIdValue = repeatIdHolder.get(REPEAT_ID);
 			if (dataElement instanceof DataGroup) {
 				((DataGroup) dataElement).setRepeatId(repeatIdValue);
 			} else {
@@ -187,10 +182,15 @@ public class XmlToDataElement {
 		}
 	}
 
-	private void addAttributes(DataGroup dataGroup, Map<String, String> attributesMap) {
-		for (Entry<String, String> attribute : attributesMap.entrySet()) {
-			dataGroup.addAttributeByIdWithValue(attribute.getKey(), attribute.getValue());
-		}
+	private void convertDataAtomic(DataGroup parentDataGroup, Node currentNode,
+			Map<String, String> repeatIdHolder) {
+		String nodeName = currentNode.getNodeName();
+		String textContent = currentNode.getTextContent();
+
+		DataAtomic dataAtomic = DataAtomicProvider.getDataAtomicUsingNameInDataAndValue(nodeName,
+				textContent);
+		addRepeatId(dataAtomic, repeatIdHolder);
+		parentDataGroup.addChild(dataAtomic);
 	}
 
 }

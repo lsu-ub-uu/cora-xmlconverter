@@ -16,7 +16,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.xmlconverter.converter;
+package se.uu.ub.cora.xmlconverter.spy;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -26,6 +26,7 @@ public class DocumentBuilderFactorySpy extends DocumentBuilderFactory {
 
 	public boolean throwParserError = false;
 	public boolean throwIOException = false;
+	public boolean newDocumentBuilderWasCalled = false;
 
 	@Override
 	public Object getAttribute(String arg0) throws IllegalArgumentException {
@@ -41,10 +42,11 @@ public class DocumentBuilderFactorySpy extends DocumentBuilderFactory {
 
 	@Override
 	public DocumentBuilder newDocumentBuilder() throws ParserConfigurationException {
+		newDocumentBuilderWasCalled = true;
 		if (throwParserError) {
 			throw new ParserConfigurationException("some message from DocumentBuilderFactorySpy");
 		}
-		return null;
+		return new DocumentBuilderSpy();
 	}
 
 	@Override

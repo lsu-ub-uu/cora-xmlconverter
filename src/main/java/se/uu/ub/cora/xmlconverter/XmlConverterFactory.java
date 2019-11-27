@@ -19,6 +19,9 @@
 
 package se.uu.ub.cora.xmlconverter;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.TransformerFactory;
+
 import se.uu.ub.cora.converter.Converter;
 import se.uu.ub.cora.converter.ConverterFactory;
 
@@ -32,7 +35,10 @@ public class XmlConverterFactory implements ConverterFactory {
 
 	@Override
 	public Converter factorConverter() {
-		return new XmlConverter();
+		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+
+		return new XmlConverter(documentBuilderFactory, transformerFactory);
 	}
 
 	@Override

@@ -28,19 +28,34 @@ import se.uu.ub.cora.xmlconverter.converter.XmlToDataElement;
 
 public class XmlConverter implements Converter {
 
+	private DocumentBuilderFactory documentBuilderFactory;
+	private TransformerFactory transformerFactory;
+
+	public XmlConverter(DocumentBuilderFactory documentBuilderFactory,
+			TransformerFactory transformerFactory) {
+		this.documentBuilderFactory = documentBuilderFactory;
+		this.transformerFactory = transformerFactory;
+	}
+
 	@Override
 	public String convert(DataElement dataElement) {
-		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		TransformerFactory transformerFactory = TransformerFactory.newInstance();
-
 		return new DataElementToXml(documentBuilderFactory, transformerFactory)
 				.convert(dataElement);
 	}
 
 	@Override
 	public DataElement convert(String dataString) {
-		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		return new XmlToDataElement(documentBuilderFactory).convert(dataString);
+	}
+
+	public DocumentBuilderFactory getDocumentBuilderFactory() {
+		// needed for test
+		return documentBuilderFactory;
+	}
+
+	public TransformerFactory getTransformerFactory() {
+		// needed for test
+		return transformerFactory;
 	}
 
 }

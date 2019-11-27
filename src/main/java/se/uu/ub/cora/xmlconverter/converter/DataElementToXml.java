@@ -26,7 +26,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -41,12 +40,12 @@ import se.uu.ub.cora.data.DataGroup;
 
 public class DataElementToXml {
 
-	private DocumentBuilderFactory documentBuildeFactory;
+	private DocumentBuilderFactory documentBuilderFactory;
 	private TransformerFactory transformerFactory;
 
 	public DataElementToXml(DocumentBuilderFactory documentBuildeFactory,
 			TransformerFactory transformerFactory) {
-		this.documentBuildeFactory = documentBuildeFactory;
+		this.documentBuilderFactory = documentBuildeFactory;
 		this.transformerFactory = transformerFactory;
 	}
 
@@ -68,7 +67,7 @@ public class DataElementToXml {
 	}
 
 	private Document initializeDomDocument() throws ParserConfigurationException {
-		DocumentBuilder builder = documentBuildeFactory.newDocumentBuilder();
+		DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
 		Document domDocument = builder.newDocument();
 		domDocument.setXmlStandalone(true);
 		return domDocument;
@@ -149,8 +148,7 @@ public class DataElementToXml {
 	}
 
 	private static String tryToTransformDomDocumentToString(Document domDocument,
-			TransformerFactory transformerFactory)
-			throws TransformerConfigurationException, TransformerException {
+			TransformerFactory transformerFactory) throws TransformerException {
 		StringWriter xmlWriter = new StringWriter();
 		DOMSource domSource = new DOMSource(domDocument);
 		StreamResult xmlResult = new StreamResult(xmlWriter);

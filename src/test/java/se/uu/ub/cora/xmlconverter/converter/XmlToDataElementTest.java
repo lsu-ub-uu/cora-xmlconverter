@@ -18,36 +18,68 @@
  */
 package se.uu.ub.cora.xmlconverter.converter;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.xml.sax.SAXException;
 
+import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicProvider;
+import se.uu.ub.cora.data.DataElement;
+import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.xmlconverter.spy.DataAtomicFactorySpy;
+import se.uu.ub.cora.xmlconverter.spy.DataGroupFactorySpy;
+import se.uu.ub.cora.xmlconverter.spy.DocumentBuilderFactorySpy;
+
 public class XmlToDataElementTest {
+
+	DataGroupFactorySpy dataGroupFactorySpy = null;
+	DataAtomicFactorySpy dataAtomicFactorySpy = null;
+
+	private DocumentBuilderFactory documentBuilderFactory;
+	private XmlToDataElement xmlToDataElement;
+
+	@BeforeMethod
+	public void setUp() {
+		dataGroupFactorySpy = new DataGroupFactorySpy();
+		DataGroupProvider.setDataGroupFactory(dataGroupFactorySpy);
+		dataAtomicFactorySpy = new DataAtomicFactorySpy();
+		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactorySpy);
+
+		documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		xmlToDataElement = new XmlToDataElement(documentBuilderFactory);
+	}
 
 	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: some message from DocumentBuilderFactorySpy")
 	public void testParseExceptionOnCreateDocument() {
-		String xmlToconvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person></person>";
-		DocumentBuilderFactorySpy documentBuilderFactorySpy = new DocumentBuilderFactorySpy();
-		documentBuilderFactorySpy.throwParserError = true;
-		XmlToDataElement xmlToDataElement = new XmlToDataElement(documentBuilderFactorySpy);
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person></person>";
 
-		xmlToDataElement.convert(xmlToconvert);
+		setUpXmlToDataElementWithDocumentFactorySpy();
+		((DocumentBuilderFactorySpy) documentBuilderFactory).throwParserError = true;
+
+		xmlToDataElement.convert(xmlToConvert);
+	}
+
+	private void setUpXmlToDataElementWithDocumentFactorySpy() {
+		documentBuilderFactory = new DocumentBuilderFactorySpy();
+		xmlToDataElement = new XmlToDataElement(documentBuilderFactory);
 	}
 
 	@Test
 	public void testParseExceptionOriginalExceptionIsSentAlong() {
-		String xmlToconvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person></person>";
-		DocumentBuilderFactorySpy documentBuilderFactorySpy = new DocumentBuilderFactorySpy();
-		documentBuilderFactorySpy.throwParserError = true;
-		XmlToDataElement xmlToDataElement = new XmlToDataElement(documentBuilderFactorySpy);
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person></person>";
+		setUpXmlToDataElementWithDocumentFactorySpy();
+		((DocumentBuilderFactorySpy) documentBuilderFactory).throwParserError = true;
 
 		try {
-			xmlToDataElement.convert(xmlToconvert);
+			xmlToDataElement.convert(xmlToConvert);
 		} catch (Exception e) {
 			assertTrue(e.getCause() instanceof ParserConfigurationException);
 		}
@@ -56,21 +88,16 @@ public class XmlToDataElementTest {
 	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement due to malformed XML")
 	public void testSaxExceptionOnParseMalformedXML() {
-		String xmlToconvert = "noXML";
-		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		XmlToDataElement xmlToDataElement = new XmlToDataElement(documentBuilderFactory);
-
-		xmlToDataElement.convert(xmlToconvert);
+		String xmlToConvert = "noXML";
+		xmlToDataElement.convert(xmlToConvert);
 	}
 
 	@Test
 	public void testSaxExceptionOnParseMalformedXMLOriginalExceptionIsSentAlong() {
-		String xmlToconvert = "noXML";
-		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		XmlToDataElement xmlToDataElement = new XmlToDataElement(documentBuilderFactory);
+		String xmlToConvert = "noXML";
 
 		try {
-			xmlToDataElement.convert(xmlToconvert);
+			xmlToDataElement.convert(xmlToConvert);
 		} catch (Exception e) {
 			assertTrue(e.getCause() instanceof SAXException);
 		}
@@ -79,34 +106,151 @@ public class XmlToDataElementTest {
 	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: null")
 	public void testExceptionOnNullXML() {
-		String xmlToconvert = null;
-		DocumentBuilderFactorySpy documentBuilderFactorySpy = new DocumentBuilderFactorySpy();
-		documentBuilderFactorySpy.throwIOException = true;
-		XmlToDataElement xmlToDataElement = new XmlToDataElement(documentBuilderFactorySpy);
-
-		xmlToDataElement.convert(xmlToconvert);
+		String xmlToConvert = null;
+		setUpXmlToDataElementWithDocumentFactorySpy();
+		((DocumentBuilderFactorySpy) documentBuilderFactory).throwIOException = true;
+		xmlToDataElement.convert(xmlToConvert);
 	}
 
 	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement due to malformed XML")
 	public void testSaxExceptionOnParseEmptyXML() {
-		String xmlToconvert = "";
-		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		XmlToDataElement xmlToDataElement = new XmlToDataElement(documentBuilderFactory);
-
-		xmlToDataElement.convert(xmlToconvert);
+		String xmlToConvert = "";
+		xmlToDataElement.convert(xmlToConvert);
 	}
 
 	@Test
 	public void testSaxExceptionOnParseEmptyXMLOriginalExceptionIsSentAlong() {
-		String xmlToconvert = "";
-		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		XmlToDataElement xmlToDataElement = new XmlToDataElement(documentBuilderFactory);
 
 		try {
-			xmlToDataElement.convert(xmlToconvert);
+			xmlToDataElement.convert("");
 		} catch (Exception e) {
 			assertTrue(e.getCause() instanceof SAXException);
 		}
+	}
+
+	/***************************************************************************************/
+
+	@Test
+	public void testConvertSimpleXmlWithOneRootElement() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person></person>";
+
+		DataElement convertedDataElement = xmlToDataElement.convert(xmlToConvert);
+		assertEquals(convertedDataElement.getNameInData(), "person");
+	}
+
+	@Test
+	public void testConvertXmlWithSingleAtomicChild() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person><firstname>Kalle</firstname></person>";
+
+		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+		assertEquals(convertedDataElement.getFirstAtomicValueWithNameInData("firstname"), "Kalle");
+
+	}
+
+	@Test
+	public void testConvertXmlWithMultipleDataGroupAndAtomicChild() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person><name><firstname>Kalle</firstname></name></person>";
+
+		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+		DataGroup nameGroup = convertedDataElement.getFirstGroupWithNameInData("name");
+		assertEquals(nameGroup.getFirstAtomicValueWithNameInData("firstname"), "Kalle");
+
+	}
+
+	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement: NULL value on element firstname")
+	public void testConvertXmlWithSingleAtomicChildWithoutValue() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person><firstname></firstname></person>";
+
+		xmlToDataElement.convert(xmlToConvert);
+	}
+
+	// TODO: test throw Exception om attributes finns för DataAtomic
+	// TODO: Test trhow Exception if incomming xml document does not have encoding=UTF-8
+	// TODO: Test throw Excpetion if incomming xml document does not have xml version = 1.0
+	// TODO: Test malformed XML
+
+	@Test
+	public void testAttributesAddedToDataGroup() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person><name type=\"authenticated\"><firstname>Janne</firstname></name></person>";
+
+		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+		assertEquals(convertedDataElement.getFirstGroupWithNameInData("name").getAttribute("type"),
+				"authenticated");
+
+	}
+
+	@Test
+	public void testAttributesRepeatId() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person><name type=\"authenticated\" repeatId=\"1\"><firstname repeatId=\"2\">Janne</firstname></name></person>";
+
+		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+
+		DataGroup firstDataGroup = convertedDataElement.getFirstGroupWithNameInData("name");
+		assertEquals(firstDataGroup.getRepeatId(), "1");
+
+		DataAtomic dataAtomic = (DataAtomic) firstDataGroup
+				.getFirstChildWithNameInData("firstname");
+		assertEquals(dataAtomic.getRepeatId(), "2");
+	}
+
+	@Test
+	public void testMultipleAttributes() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person><name type=\"authenticated\" multiple=\"yes\" repeatId=\"1\"><firstname repeatId=\"2\">Janne</firstname></name></person>";
+
+		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+		assertEquals(convertedDataElement.getFirstGroupWithNameInData("name").getAttribute("type"),
+				"authenticated");
+		assertEquals(
+				convertedDataElement.getFirstGroupWithNameInData("name").getAttribute("multiple"),
+				"yes");
+	}
+
+	@Test
+	public void testAttributesOnParentGroup() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person gender=\"man\"><firstname>Janne</firstname></person>";
+
+		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+		assertEquals(convertedDataElement.getAttribute("gender"), "man");
+
+	}
+
+	@Test
+	public void testCompleteExample() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person>"
+				+ "<name type=\"authenticated\" multiple=\"yes\" repeatId=\"1\">"
+				+ "<firstname repeatId=\"2\">Janne</firstname>"
+				+ "<secondname repeatId=\"3\">Fonda</secondname>"
+				+ "<nickname><short>Fondis</short></nickname>" + "</name>"
+				+ "<shoesize>14</shoesize>" + "</person>";
+
+		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+
+		assertEquals(convertedDataElement.getNameInData(), "person");
+
+		DataGroup nameGroup = convertedDataElement.getFirstGroupWithNameInData("name");
+		assertEquals(nameGroup.getAttribute("type"), "authenticated");
+		assertEquals(nameGroup.getAttribute("multiple"), "yes");
+
+		DataAtomic secondnameAtomic = (DataAtomic) nameGroup
+				.getFirstChildWithNameInData("secondname");
+		assertEquals(secondnameAtomic.getRepeatId(), "3");
+		assertEquals(secondnameAtomic.getValue(), "Fonda");
+
+		DataAtomic shoeSize = (DataAtomic) convertedDataElement
+				.getFirstChildWithNameInData("shoesize");
+		assertEquals(shoeSize.getValue(), "14");
+		assertEquals(shoeSize.getRepeatId(), null);
+
+		DataGroup nicknameGroup = nameGroup.getFirstGroupWithNameInData("nickname");
+		assertEquals(nicknameGroup.getFirstAtomicValueWithNameInData("short"), "Fondis");
 	}
 }
