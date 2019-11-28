@@ -171,6 +171,7 @@ public class XmlToDataElement {
 
 	private void convertDataAtomic(DataGroup parentDataGroup, Node currentNode,
 			XmlAttributes xmlAttributes) {
+		System.out.println("Include: " + currentNode.getTextContent());
 		ensureNoAttributes(xmlAttributes);
 		String nodeName = currentNode.getNodeName();
 		String textContent = currentNode.getTextContent();

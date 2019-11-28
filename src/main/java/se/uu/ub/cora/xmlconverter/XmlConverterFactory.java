@@ -25,6 +25,7 @@ import javax.xml.transform.TransformerFactory;
 
 import se.uu.ub.cora.converter.Converter;
 import se.uu.ub.cora.converter.ConverterFactory;
+import se.uu.ub.cora.xmlconverter.converter.XmlConverterException;
 
 /**
  * Implementation of {@link ConverterFactory} for XmlConverter.
@@ -33,6 +34,11 @@ import se.uu.ub.cora.converter.ConverterFactory;
 public class XmlConverterFactory implements ConverterFactory {
 
 	private static final String NAME = "xml";
+	private boolean throwExeceptionForTest = false;
+
+	void throwExceptionForTest() {
+		throwExeceptionForTest = true;
+	}
 
 	@Override
 	public Converter factorConverter() {
@@ -41,22 +47,23 @@ public class XmlConverterFactory implements ConverterFactory {
 
 		try {
 
-			// TODO: READ https://portswigger.net/web-security/xxe and
-			// https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Processing
+			if (throwExeceptionForTest) {
+				throw new RuntimeException();
+			}
 			documentBuilderFactory
 					.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-			// documentBuilderFactory
-			// .setFeature("http://xml.org/sax/features/external-general-entities", false);
-			// documentBuilderFactory
-			// .setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-			// documentBuilderFactory.setFeature(
-			// "http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-			// documentBuilderFactory.setXIncludeAware(false);
-			// documentBuilderFactory.setExpandEntityReferences(false);
+
+			documentBuilderFactory
+					.setFeature("http://xml.org/sax/features/external-general-entities", false);
+			documentBuilderFactory
+					.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+			documentBuilderFactory.setFeature(
+					"http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+			documentBuilderFactory.setExpandEntityReferences(false);
 			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception exception) {
+			throw new XmlConverterException(
+					"Unable to set security features for XmlConverterFactory", exception);
 		}
 		return new XmlConverter(documentBuilderFactory, transformerFactory);
 	}

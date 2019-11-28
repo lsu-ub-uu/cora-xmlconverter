@@ -259,7 +259,6 @@ public class XmlToDataElementTest {
 				+ "<person repeatId=\"someRepeatId\"><firstname>Janne</firstname></person>";
 
 		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
-
 	}
 
 	@Test
@@ -300,18 +299,5 @@ public class XmlToDataElementTest {
 				+ "<person gender=\"man\"><firstname>Janne</firstname></person>"
 				+ "<person gender=\"man\"><firstname>John</firstname></person>";
 		xmlToDataElement.convert(xmlToConvert);
-	}
-
-	// TODO : To finish. MaliciousXML can read internal /etc/passwd file and inject it to a
-	// DataAtomic. We should stop it.
-	// TODO : Read https://portswigger.net/web-security/xxe and
-	// https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Processing
-	@Test
-	public void testMaliciousXml() {
-		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<!DOCTYPE doc[\n"
-				+ "  <!ENTITY pwd SYSTEM \"file:///etc/passwd\">\n" + "]>"
-				+ "<person><firstname>&pwd;</firstname></person>";
-		DataGroup convert = (DataGroup) xmlToDataElement.convert(xmlToConvert);
-		assertEquals(convert.getFirstAtomicValueWithNameInData("firstname"), "");
 	}
 }

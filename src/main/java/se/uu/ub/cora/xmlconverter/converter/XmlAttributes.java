@@ -9,15 +9,6 @@ public class XmlAttributes {
 	public String repeatId = "";
 	public Map<String, String> attributes = new HashMap<>();
 
-	public XmlAttributes() {
-		// TODO Auto-generated constructor stub
-	}
-
-	public XmlAttributes(String repeatId, Map<String, String> attributes) {
-		this.repeatId = repeatId;
-		this.attributes = attributes;
-	}
-
 	public void setAttribute(String key, String value) {
 		attributes.put(key, value);
 	}
