@@ -100,7 +100,7 @@ public class DataElementToXml {
 		possiblyAddRepeatIdAsAttribute(childDataElement, domElement);
 
 		if (childDataElement instanceof DataAtomic) {
-			possiblyAddTextToElementForDataAtomic(childDataElement, domElement);
+			possiblyAddTextToElementForDataAtomic((DataAtomic) childDataElement, domElement);
 		} else {
 			DataGroup childDataGroup = (DataGroup) childDataElement;
 			addAttributesIfExistsToElementForDataGroup(childDataGroup, domElement);
@@ -123,10 +123,9 @@ public class DataElementToXml {
 		return childDataElement.getRepeatId() != null && !childDataElement.getRepeatId().isEmpty();
 	}
 
-	private void possiblyAddTextToElementForDataAtomic(DataElement childDataElement,
+	private void possiblyAddTextToElementForDataAtomic(DataAtomic childDataAtomic,
 			Element domElement) {
-		DataAtomic childAtomic = (DataAtomic) childDataElement;
-		domElement.setTextContent(childAtomic.getValue());
+		domElement.setTextContent(childDataAtomic.getValue());
 	}
 
 	private void addAttributesIfExistsToElementForDataGroup(DataGroup childDataGroup,
