@@ -104,13 +104,12 @@ public class XmlToDataElement {
 			Node domAttribute = domAttributes.item(position);
 			possiblyExtractAttributesOrRepeatsIds(xmlAttributes, domAttribute);
 		}
-
 		return xmlAttributes;
 	}
 
 	private void possiblyExtractAttributesOrRepeatsIds(XmlAttributes xmlattributes,
 			Node domAttribute) {
-		if (domAttribute.getNodeName().equals(REPEAT_ID)) {
+		if (REPEAT_ID.equals(domAttribute.getNodeName())) {
 			xmlattributes.repeatId = domAttribute.getTextContent();
 		} else {
 			xmlattributes.setAttribute(domAttribute.getNodeName(), domAttribute.getTextContent());

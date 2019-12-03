@@ -6,8 +6,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 public class XmlAttributes {
-	public String repeatId = "";
-	public Map<String, String> attributes = new HashMap<>();
+	String repeatId = "";
+	Map<String, String> attributes = new HashMap<>();
 
 	public void setAttribute(String key, String value) {
 		attributes.put(key, value);
