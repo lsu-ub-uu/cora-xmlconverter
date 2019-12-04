@@ -129,7 +129,8 @@ public class XmlToDataElement {
 		NodeList childNodes = domElement.getChildNodes();
 		for (int i = 0; i < childNodes.getLength(); i++) {
 			Node currentNode = childNodes.item(i);
-			convertChild(parentElement, currentNode);
+			if (currentNode.getNodeType() == Node.ELEMENT_NODE)
+				convertChild(parentElement, currentNode);
 		}
 	}
 
@@ -143,6 +144,7 @@ public class XmlToDataElement {
 	}
 
 	private boolean hasChildren(Node currentNode) {
+		// TODO: Check if has childrens or not with Node.ELEMENT_NODE
 		if (currentNode.getFirstChild() == null) {
 			return false;
 		}
@@ -183,6 +185,7 @@ public class XmlToDataElement {
 
 	private void convertDataAtomic(DataGroup parentDataGroup, Node currentNode,
 			XmlAttributes xmlAttributes) {
+		System.out.println("#" + currentNode.getNodeName());
 		ensureNoAttributes(xmlAttributes);
 		String nodeName = currentNode.getNodeName();
 		String textContent = currentNode.getTextContent();

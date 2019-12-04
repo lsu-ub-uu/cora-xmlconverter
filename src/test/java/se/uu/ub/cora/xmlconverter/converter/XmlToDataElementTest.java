@@ -300,4 +300,31 @@ public class XmlToDataElementTest {
 				+ "<person gender=\"man\"><firstname>John</firstname></person>";
 		xmlToDataElement.convert(xmlToConvert);
 	}
+
+	@Test
+	public void testXmlWithSpacesBetweenTags() throws Exception {
+		String x = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<authority type=\"place\">"
+				+ " <recordinfo>" + " <id>alvin-place:22</id>" + " <type>"
+				+ " <linkedRecordType>recordType</linkedRecordType>"
+				+ " <linkRecordId>place</linkRecordId>" + " </type>" + " <createdBy>"
+				+ " <linkedRecordType>user</linkedRecordType>"
+				+ " <linkRecordId>test</linkRecordId>" + " </createdBy>"
+				+ " <tsCreated>2014-12-18 20:20:38.346 UTC</tsCreated>" + " <dataDivider>"
+				+ " <linkedRecordType>system</linkedRecordType>"
+				+ " <linkRecordId>alvin</linkRecordId>" + " </dataDivider>"
+				+ " <updated repeatId=\"0\">" + " <updatedBy>"
+				+ " <linkedRecordType>user</linkedRecordType>"
+				+ " <linkRecordId>test</linkRecordId>" + " </updatedBy>"
+				+ " <tsUpdated>2014-12-18 20:21:20.880 UTC</tsUpdated>" + " </updated>"
+				+ " </recordinfo>" + " <name type=\"authorized\">"
+				+ " <namePart>Linköping</namePart>" + " </name>" + " <coordinates>"
+				+ " <latitude>58.42</latitude>" + " <longitude>15.62</longitude>"
+				+ " </coordinates>" + " <country>SE</country>" + " <identifier repeatId=\"0\">"
+				+ " <identifierType>waller</identifierType>"
+				+ " <identifierValue>114</identifierValue>" + " </identifier>" + "</authority>";
+		// String x = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+		// + "<person><firstname>Janne</firstname> <firstname>Janne</firstname></person>";
+		DataElement convert = xmlToDataElement.convert(x);
+		String x2 = "";
+	}
 }
