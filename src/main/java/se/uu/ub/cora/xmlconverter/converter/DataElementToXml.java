@@ -50,11 +50,11 @@ public class DataElementToXml {
 	}
 
 	public String convert(DataElement dataElement) {
-		return tryToTransformDomDocumentToString(dataElement);
+		return tryToCreateAndTransformDomDocumentToString(dataElement);
 
 	}
 
-	private String tryToTransformDomDocumentToString(DataElement dataElement) {
+	private String tryToCreateAndTransformDomDocumentToString(DataElement dataElement) {
 		DataGroup topDataGroup = (DataGroup) dataElement;
 		try {
 			Document domDocument = createDomDocument(topDataGroup);
