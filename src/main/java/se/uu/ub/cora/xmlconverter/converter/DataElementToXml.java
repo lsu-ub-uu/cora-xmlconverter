@@ -50,6 +50,11 @@ public class DataElementToXml {
 	}
 
 	public String convert(DataElement dataElement) {
+		return tryToTransformDomDocumentToString(dataElement);
+
+	}
+
+	private String tryToTransformDomDocumentToString(DataElement dataElement) {
 		DataGroup topDataGroup = (DataGroup) dataElement;
 		try {
 			Document domDocument = createDomDocument(topDataGroup);
@@ -57,7 +62,6 @@ public class DataElementToXml {
 		} catch (ParserConfigurationException exception) {
 			throw new XmlConverterException("Unable to convert from dataElement to xml", exception);
 		}
-
 	}
 
 	private Document createDomDocument(DataGroup dataGroupToConvert)
@@ -98,7 +102,12 @@ public class DataElementToXml {
 			DataElement childDataElement) {
 		Element domElement = createElement(domDocument, childDataElement);
 		possiblyAddRepeatIdAsAttribute(childDataElement, domElement);
+		populateChildElements(domDocument, childDataElement, domElement);
+		parentXmlDomElement.appendChild(domElement);
+	}
 
+	private void populateChildElements(Document domDocument, DataElement childDataElement,
+			Element domElement) {
 		if (childDataElement instanceof DataAtomic) {
 			possiblyAddTextToElementForDataAtomic((DataAtomic) childDataElement, domElement);
 		} else {
@@ -106,7 +115,6 @@ public class DataElementToXml {
 			addAttributesIfExistsToElementForDataGroup(childDataGroup, domElement);
 			iterateAndGenerateChildElements(childDataGroup, domDocument, domElement);
 		}
-		parentXmlDomElement.appendChild(domElement);
 	}
 
 	private Element createElement(Document domDocument, DataElement childDataElement) {
@@ -143,13 +151,12 @@ public class DataElementToXml {
 		} catch (TransformerException exception) {
 			throw new XmlConverterException("Unable to convert from dataElement to xml", exception);
 		}
-
 	}
 
 	private static String tryToTransformDomDocumentToString(Document domDocument,
 			TransformerFactory transformerFactory) throws TransformerException {
-		StringWriter xmlWriter = new StringWriter();
 		DOMSource domSource = new DOMSource(domDocument);
+		StringWriter xmlWriter = new StringWriter();
 		StreamResult xmlResult = new StreamResult(xmlWriter);
 
 		Transformer transformer = transformerFactory.newTransformer();

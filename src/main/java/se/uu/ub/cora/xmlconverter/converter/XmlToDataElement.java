@@ -42,6 +42,7 @@ import se.uu.ub.cora.data.DataGroupProvider;
 
 public class XmlToDataElement {
 
+	private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 	private static final String REPEAT_ID = "repeatId";
 	private DocumentBuilderFactory documentBuilderFactory;
 
@@ -65,13 +66,16 @@ public class XmlToDataElement {
 	private DataElement tryToConvert(String dataString)
 			throws ParserConfigurationException, SAXException, IOException {
 		Element domElement = initializeDomElement(dataString);
-		String xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-		if (!dataString.startsWith(xmlHeader)) {
-			throw new XmlConverterException("Document must be: version 1.0 and UTF-8");
-		}
+		ensureIncommingXmlHasExpectedHeader(dataString);
 		DataGroup convertedDataElement = createTopDataGroup(domElement);
 		convertChildren(convertedDataElement, domElement);
 		return convertedDataElement;
+	}
+
+	private void ensureIncommingXmlHasExpectedHeader(String dataString) {
+		if (!dataString.startsWith(XML_HEADER)) {
+			throw new XmlConverterException("Document must be: version 1.0 and UTF-8");
+		}
 	}
 
 	private Element initializeDomElement(String dataString)
@@ -99,12 +103,17 @@ public class XmlToDataElement {
 	private XmlAttributes extractAttributesAndRepeatId(Node currentNode) {
 		XmlAttributes xmlAttributes = new XmlAttributes();
 		NamedNodeMap domAttributes = currentNode.getAttributes();
+		iterateAndExtractXmlAttributes(xmlAttributes, domAttributes);
+		return xmlAttributes;
+	}
+
+	private void iterateAndExtractXmlAttributes(XmlAttributes xmlAttributes,
+			NamedNodeMap domAttributes) {
 		int domAttributesSize = domAttributes.getLength();
 		for (int position = 0; position < domAttributesSize; position++) {
 			Node domAttribute = domAttributes.item(position);
 			possiblyExtractAttributesOrRepeatsIds(xmlAttributes, domAttribute);
 		}
-		return xmlAttributes;
 	}
 
 	private void possiblyExtractAttributesOrRepeatsIds(XmlAttributes xmlattributes,
@@ -146,7 +155,7 @@ public class XmlToDataElement {
 		DataGroup dataGroup = DataGroupProvider.getDataGroupUsingNameInData(nodeName);
 
 		addAttributes(dataGroup, xmlAttributes);
-		addRepeatId(dataGroup, xmlAttributes);
+		possiblyAddRepeatId(dataGroup, xmlAttributes);
 		convertChildren(dataGroup, currentNode);
 		parentDataGroup.addChild(dataGroup);
 	}
@@ -157,14 +166,18 @@ public class XmlToDataElement {
 		}
 	}
 
-	private void addRepeatId(DataElement dataElement, XmlAttributes xmlAttributes) {
+	private void possiblyAddRepeatId(DataElement dataElement, XmlAttributes xmlAttributes) {
 		String repeatIdValue = xmlAttributes.repeatId;
 		if (!repeatIdValue.isEmpty()) {
-			if (dataElement instanceof DataGroup) {
-				((DataGroup) dataElement).setRepeatId(repeatIdValue);
-			} else {
-				((DataAtomic) dataElement).setRepeatId(repeatIdValue);
-			}
+			addRepeatId(dataElement, repeatIdValue);
+		}
+	}
+
+	private void addRepeatId(DataElement dataElement, String repeatIdValue) {
+		if (dataElement instanceof DataGroup) {
+			((DataGroup) dataElement).setRepeatId(repeatIdValue);
+		} else {
+			((DataAtomic) dataElement).setRepeatId(repeatIdValue);
 		}
 	}
 
@@ -175,7 +188,7 @@ public class XmlToDataElement {
 		String textContent = currentNode.getTextContent();
 		DataAtomic dataAtomic = DataAtomicProvider.getDataAtomicUsingNameInDataAndValue(nodeName,
 				textContent);
-		addRepeatId(dataAtomic, xmlAttributes);
+		possiblyAddRepeatId(dataAtomic, xmlAttributes);
 		parentDataGroup.addChild(dataAtomic);
 
 	}

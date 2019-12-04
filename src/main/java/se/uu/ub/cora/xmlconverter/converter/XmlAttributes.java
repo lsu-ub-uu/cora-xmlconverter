@@ -5,19 +5,19 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-public class XmlAttributes {
+class XmlAttributes {
 	String repeatId = "";
 	Map<String, String> attributes = new HashMap<>();
 
-	public void setAttribute(String key, String value) {
+	void setAttribute(String key, String value) {
 		attributes.put(key, value);
 	}
 
-	public Set<Entry<String, String>> getAttributeSet() {
+	Set<Entry<String, String>> getAttributeSet() {
 		return attributes.entrySet();
 	}
 
-	public boolean hasAttributes() {
+	boolean hasAttributes() {
 		return attributes.size() > 0;
 	}
 }
