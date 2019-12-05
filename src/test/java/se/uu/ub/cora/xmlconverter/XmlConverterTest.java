@@ -61,9 +61,11 @@ public class XmlConverterTest {
 	@Test
 	public void testXmlToDataElementConverterUsesFactory() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person></person>";
-		xmlConverter.convert(xmlToConvert);
-
-		assertTrue(documentBuilderFactory.newDocumentBuilderWasCalled);
+		try {
+			xmlConverter.convert(xmlToConvert);
+		} catch (Exception e) {
+			assertTrue(documentBuilderFactory.newDocumentBuilderWasCalled);
+		}
 	}
 
 	@Test
