@@ -140,35 +140,91 @@ public class XmlToDataElementTest {
 		}
 	}
 
-	@Test
-	public void testConvertSimpleXmlWithOneRootElement() {
+	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement: Root element must be a DataGroup")
+	public void testIncompleteRootElement() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person></person>";
 
-		DataElement convertedDataElement = xmlToDataElement.convert(xmlToConvert);
-		assertEquals(convertedDataElement.getNameInData(), "person");
+		xmlToDataElement.convert(xmlToConvert);
+	}
+
+	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement: Root element must be a DataGroup")
+	public void testIncompleteRootElementWithSpace() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person> </person>";
+
+		xmlToDataElement.convert(xmlToConvert);
+	}
+
+	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement: Root element must be a DataGroup")
+	public void testIncompleteRootElementWithTwoSpace() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person>  </person>";
+
+		xmlToDataElement.convert(xmlToConvert);
+	}
+
+	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement: Root element must be a DataGroup")
+	public void testIncompleteRootElementWithText() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person> dummy text </person>";
+
+		xmlToDataElement.convert(xmlToConvert);
 	}
 
 	@Test
 	public void testConvertXmlWithSingleAtomicChild() {
-		String xmlToConvert = createXmlSurroundingAtomicXml("<firstname>Kalle</firstname>");
+		String xmlToConvert = surroundWithTopLevelXmlGroup("<firstname>Kalle</firstname>");
 
 		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
 		assertEquals(convertedDataElement.getFirstAtomicValueWithNameInData("firstname"), "Kalle");
+	}
 
+	@Test
+	public void testConvertXmlWithSingleAtomicChildWithSpace() {
+		String xmlToConvert = surroundWithTopLevelXmlGroup(" <firstname>Kalle</firstname> ");
+
+		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+		assertEquals(convertedDataElement.getFirstAtomicValueWithNameInData("firstname"), "Kalle");
+	}
+
+	@Test
+	public void testConvertXmlWithSingleAtomicChildWithSpaceAroundText() {
+		String xmlToConvert = surroundWithTopLevelXmlGroup("<firstname> Kalle </firstname>");
+
+		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+		assertEquals(convertedDataElement.getFirstAtomicValueWithNameInData("firstname"), "Kalle");
+	}
+
+	@Test
+	public void testConvertXmlWithSingleAtomicChildWithNewLineStartingText() {
+		String xmlToConvert = surroundWithTopLevelXmlGroup("<firstname>\nKalle</firstname>");
+
+		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+		assertEquals(convertedDataElement.getFirstAtomicValueWithNameInData("firstname"), "Kalle");
+	}
+
+	@Test
+	public void testConvertXmlWithSingleAtomicChildWithNewLineInsideText() {
+		String xmlToConvert = surroundWithTopLevelXmlGroup("<firstname>Kal\nle</firstname>");
+
+		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+		assertEquals(convertedDataElement.getFirstAtomicValueWithNameInData("firstname"),
+				"Kal\nle");
 	}
 
 	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: DataAtomic can not have attributes")
 	public void testConvertXmlWithAttribute() {
 		String atomicXml = "<firstname someAttribute=\"attrib\">Kalle</firstname>";
-		String xmlToConvert = createXmlSurroundingAtomicXml(atomicXml);
+		String xmlToConvert = surroundWithTopLevelXmlGroup(atomicXml);
 
 		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
 		assertEquals(convertedDataElement.getFirstAtomicValueWithNameInData("firstname"), "Kalle");
-
 	}
 
-	private String createXmlSurroundingAtomicXml(String atomicXml) {
+	private String surroundWithTopLevelXmlGroup(String atomicXml) {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person>" + atomicXml
 				+ "</person>";
 		return xmlToConvert;
@@ -176,8 +232,18 @@ public class XmlToDataElementTest {
 
 	@Test
 	public void testConvertXmlWithMultipleDataGroupAndAtomicChild() {
-		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<person><name><firstname>Kalle</firstname></name></person>";
+		String xmlToConvert = surroundWithTopLevelXmlGroup(
+				"<name><firstname>Kalle</firstname></name>");
+
+		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+		DataGroup nameGroup = convertedDataElement.getFirstGroupWithNameInData("name");
+		assertEquals(nameGroup.getFirstAtomicValueWithNameInData("firstname"), "Kalle");
+	}
+
+	@Test
+	public void testConvertXmlWithMultipleDataGroupAndSpaceAroundAtomicChild() {
+		String xmlToConvert = surroundWithTopLevelXmlGroup(
+				"<name> <firstname>Kalle</firstname> </name>");
 
 		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
 		DataGroup nameGroup = convertedDataElement.getFirstGroupWithNameInData("name");
@@ -186,8 +252,7 @@ public class XmlToDataElementTest {
 
 	@Test
 	public void testConvertXmlWithSingleAtomicChildWithoutValue() {
-		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<person><firstname></firstname></person>";
+		String xmlToConvert = surroundWithTopLevelXmlGroup("<firstname></firstname>");
 
 		DataElement convertedDataElement = xmlToDataElement.convert(xmlToConvert);
 		DataGroup convertedDataGroup = (DataGroup) convertedDataElement;
@@ -196,8 +261,7 @@ public class XmlToDataElementTest {
 
 	@Test
 	public void testConvertXmlWithSingleAtomicChildWithoutValue2() {
-		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<person><firstname/></person>";
+		String xmlToConvert = surroundWithTopLevelXmlGroup("<firstname/>");
 		DataElement convertedDataElement = xmlToDataElement.convert(xmlToConvert);
 		DataGroup convertedDataGroup = (DataGroup) convertedDataElement;
 		assertEquals(convertedDataGroup.getFirstAtomicValueWithNameInData("firstname"), "");
@@ -205,19 +269,19 @@ public class XmlToDataElementTest {
 
 	@Test
 	public void testAttributesAddedToDataGroup() {
-		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<person><name type=\"authenticated\"><firstname>Janne</firstname></name></person>";
+		String xmlToConvert = surroundWithTopLevelXmlGroup(
+				"<name type=\"authenticated\"><firstname>Janne</firstname></name>");
 
 		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
 		assertEquals(convertedDataElement.getFirstGroupWithNameInData("name").getAttribute("type"),
 				"authenticated");
-
 	}
 
 	@Test
 	public void testAttributesRepeatId() {
-		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<person><name type=\"authenticated\" repeatId=\"1\"><firstname repeatId=\"2\">Janne</firstname></name></person>";
+		String xmlToConvert = surroundWithTopLevelXmlGroup(
+				"<name type=\"authenticated\" repeatId=\"1\">"
+						+ "<firstname repeatId=\"2\">Janne</firstname></name>");
 
 		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
 
@@ -231,8 +295,9 @@ public class XmlToDataElementTest {
 
 	@Test
 	public void testMultipleAttributes() {
-		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<person><name type=\"authenticated\" multiple=\"yes\" repeatId=\"1\"><firstname repeatId=\"2\">Janne</firstname></name></person>";
+		String xmlToConvert = surroundWithTopLevelXmlGroup(
+				"<name type=\"authenticated\" multiple=\"yes\" repeatId=\"1\">"
+						+ "<firstname repeatId=\"2\">Janne</firstname></name>");
 
 		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
 		assertEquals(convertedDataElement.getFirstGroupWithNameInData("name").getAttribute("type"),
@@ -263,12 +328,12 @@ public class XmlToDataElementTest {
 
 	@Test
 	public void testCompleteExample() {
-		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person>"
-				+ "<name type=\"authenticated\" multiple=\"yes\" repeatId=\"1\">"
-				+ "<firstname repeatId=\"2\">Janne</firstname>"
-				+ "<secondname repeatId=\"3\">Fonda</secondname>"
-				+ "<nickname><short>Fondis</short></nickname>" + "</name>"
-				+ "<shoesize>14</shoesize>" + "</person>";
+		String xmlToConvert = surroundWithTopLevelXmlGroup(
+				"<name type=\"authenticated\" multiple=\"yes\" repeatId=\"1\">"
+						+ "<firstname repeatId=\"2\">Janne</firstname>"
+						+ "<secondname repeatId=\"3\">Fonda</secondname>"
+						+ "<nickname><short>Fondis</short></nickname>" + "</name>"
+						+ "<shoesize>14</shoesize>");
 
 		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
 
@@ -303,9 +368,9 @@ public class XmlToDataElementTest {
 
 	@Test
 	public void testXmlWithSpacesBetweenTags() throws Exception {
-		String x = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<authority type=\"place\">"
-				+ " <recordinfo>" + " <id>alvin-place:22</id>" + " <type>"
-				+ " <linkedRecordType>recordType</linkedRecordType>"
+		String xmlFromXsltAlvinFedoraToCoraPlaces = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<authority type=\"place\">" + " <recordinfo>" + " <id>alvin-place:22</id>"
+				+ " <type>" + " <linkedRecordType>recordType</linkedRecordType>"
 				+ " <linkRecordId>place</linkRecordId>" + " </type>" + " <createdBy>"
 				+ " <linkedRecordType>user</linkedRecordType>"
 				+ " <linkRecordId>test</linkRecordId>" + " </createdBy>"
@@ -322,9 +387,13 @@ public class XmlToDataElementTest {
 				+ " </coordinates>" + " <country>SE</country>" + " <identifier repeatId=\"0\">"
 				+ " <identifierType>waller</identifierType>"
 				+ " <identifierValue>114</identifierValue>" + " </identifier>" + "</authority>";
-		// String x = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-		// + "<person><firstname>Janne</firstname> <firstname>Janne</firstname></person>";
-		DataElement convert = xmlToDataElement.convert(x);
-		String x2 = "";
+		DataGroup topDataGroup = (DataGroup) xmlToDataElement
+				.convert(xmlFromXsltAlvinFedoraToCoraPlaces);
+		DataGroup identifier = (DataGroup) topDataGroup.getFirstChildWithNameInData("identifier");
+		assertEquals(identifier.getRepeatId(), "0");
+
+		DataAtomic identifierType = (DataAtomic) identifier
+				.getFirstChildWithNameInData("identifierType");
+		assertEquals(identifierType.getValue(), "waller");
 	}
 }
