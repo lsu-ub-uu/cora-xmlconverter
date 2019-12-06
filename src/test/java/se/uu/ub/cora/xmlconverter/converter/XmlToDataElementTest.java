@@ -39,8 +39,6 @@ import se.uu.ub.cora.xmlconverter.spy.DocumentBuilderFactorySpy;
 
 public class XmlToDataElementTest {
 
-	// TODO: Säkerhet
-
 	DataGroupFactorySpy dataGroupFactorySpy = null;
 	DataAtomicFactorySpy dataAtomicFactorySpy = null;
 
@@ -278,6 +276,16 @@ public class XmlToDataElementTest {
 	}
 
 	@Test
+	public void testWithRunicCharacters() {
+		String xmlToConvert = surroundWithTopLevelXmlGroup(
+				"<name><firstname>ᚠᚢᚦᚮᚱᚴ</firstname></name>");
+
+		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+		DataGroup nameGroup = convertedDataElement.getFirstGroupWithNameInData("name");
+		assertEquals(nameGroup.getFirstAtomicValueWithNameInData("firstname"), "ᚠᚢᚦᚮᚱᚴ");
+	}
+
+	@Test
 	public void testAttributesRepeatId() {
 		String xmlToConvert = surroundWithTopLevelXmlGroup(
 				"<name type=\"authenticated\" repeatId=\"1\">"
@@ -323,7 +331,7 @@ public class XmlToDataElementTest {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 				+ "<person repeatId=\"someRepeatId\"><firstname>Janne</firstname></person>";
 
-		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+		xmlToDataElement.convert(xmlToConvert);
 	}
 
 	@Test

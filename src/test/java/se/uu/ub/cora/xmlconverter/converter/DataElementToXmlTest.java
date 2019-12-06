@@ -103,14 +103,22 @@ public class DataElementToXmlTest {
 		return dataElementToXml;
 	}
 
-	/***************************************************************************************/
-
 	@Test
 	public void testConvertToOneAtomicChild() {
 		String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 				+ "<person><firstname>Kalle</firstname></person>";
 
 		DataGroup person = createPersonWithFirstname("Kalle");
+		String xml = dataElementToXml.convert(person);
+		assertEquals(xml, expectedXml);
+	}
+
+	@Test
+	public void testConvertToOneAtomicChildWithRunicCharacters() {
+		String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person><firstname>ᚠᚢᚦᚮᚱᚴ</firstname></person>";
+
+		DataGroup person = createPersonWithFirstname("ᚠᚢᚦᚮᚱᚴ");
 		String xml = dataElementToXml.convert(person);
 		assertEquals(xml, expectedXml);
 	}
