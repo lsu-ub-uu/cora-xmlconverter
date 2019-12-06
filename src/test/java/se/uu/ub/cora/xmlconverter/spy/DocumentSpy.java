@@ -344,9 +344,12 @@ public class DocumentSpy implements Document {
 		try {
 			documentBuilder = documentBuilderFactor.newDocumentBuilder();
 			Document domDocument = documentBuilder.newDocument();
-			return domDocument.createElement("elementSpy");
+			Element topElement = domDocument.createElement("topElement");
+			Node childAtomic = domDocument.createElement("atomic");
+			topElement.appendChild(childAtomic);
+			childAtomic.appendChild(domDocument.createTextNode("someValue"));
+			return topElement;
 		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
