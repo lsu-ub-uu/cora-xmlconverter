@@ -14,7 +14,7 @@
 	<parent>
 		<groupId>se.uu.ub.cora</groupId>
 		<artifactId>cora-parent</artifactId>
-		<version>1.0.2</version>
+		<version>1.1.1</version>
 	</parent>
 
 	<artifactId>xmlconverter</artifactId>
@@ -23,9 +23,9 @@
 	<name>xmlconverter</name>
 
 	<properties>
-		<logger.version>2.0.0</logger.version>
-		<coradata.version>3.2.0</coradata.version>
-		<converter.version>1.1.0</converter.version>
+		<logger.version>2.1.0</logger.version>
+		<coradata.version>3.6.0</coradata.version>
+		<converter.version>1.2.0</converter.version>
 	</properties>
 
 	<scm>

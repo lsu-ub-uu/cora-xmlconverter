@@ -19,8 +19,7 @@
 package se.uu.ub.cora.xmlconverter.converter;
 
 import java.io.StringWriter;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Collection;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -35,6 +34,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAttribute;
 import se.uu.ub.cora.data.DataElement;
 import se.uu.ub.cora.data.DataGroup;
 
@@ -138,9 +138,10 @@ public class DataElementToXml {
 
 	private void addAttributesIfExistsToElementForDataGroup(DataGroup childDataGroup,
 			Element domElement) {
-		Map<String, String> attributes = childDataGroup.getAttributes();
-		for (Entry<String, String> attribute : attributes.entrySet()) {
-			domElement.setAttribute(attribute.getKey(), attribute.getValue());
+		Collection<DataAttribute> attributes = childDataGroup.getAttributes();
+
+		for (DataAttribute attribute : attributes) {
+			domElement.setAttribute(attribute.getNameInData(), attribute.getValue());
 		}
 	}
 

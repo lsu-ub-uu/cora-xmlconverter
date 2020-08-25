@@ -271,8 +271,8 @@ public class XmlToDataElementTest {
 				"<name type=\"authenticated\"><firstname>Janne</firstname></name>");
 
 		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
-		assertEquals(convertedDataElement.getFirstGroupWithNameInData("name").getAttribute("type"),
-				"authenticated");
+		assertEquals(convertedDataElement.getFirstGroupWithNameInData("name").getAttribute("type")
+				.getValue(), "authenticated");
 	}
 
 	@Test
@@ -308,11 +308,10 @@ public class XmlToDataElementTest {
 						+ "<firstname repeatId=\"2\">Janne</firstname></name>");
 
 		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
-		assertEquals(convertedDataElement.getFirstGroupWithNameInData("name").getAttribute("type"),
-				"authenticated");
-		assertEquals(
-				convertedDataElement.getFirstGroupWithNameInData("name").getAttribute("multiple"),
-				"yes");
+		assertEquals(convertedDataElement.getFirstGroupWithNameInData("name").getAttribute("type")
+				.getValue(), "authenticated");
+		assertEquals(convertedDataElement.getFirstGroupWithNameInData("name")
+				.getAttribute("multiple").getValue(), "yes");
 	}
 
 	@Test
@@ -321,7 +320,7 @@ public class XmlToDataElementTest {
 				+ "<person gender=\"man\"><firstname>Janne</firstname></person>";
 
 		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
-		assertEquals(convertedDataElement.getAttribute("gender"), "man");
+		assertEquals(convertedDataElement.getAttribute("gender").getValue(), "man");
 
 	}
 
@@ -348,8 +347,8 @@ public class XmlToDataElementTest {
 		assertEquals(convertedDataElement.getNameInData(), "person");
 
 		DataGroup nameGroup = convertedDataElement.getFirstGroupWithNameInData("name");
-		assertEquals(nameGroup.getAttribute("type"), "authenticated");
-		assertEquals(nameGroup.getAttribute("multiple"), "yes");
+		assertEquals(nameGroup.getAttribute("type").getValue(), "authenticated");
+		assertEquals(nameGroup.getAttribute("multiple").getValue(), "yes");
 
 		DataAtomic secondnameAtomic = (DataAtomic) nameGroup
 				.getFirstChildWithNameInData("secondname");
