@@ -24,6 +24,11 @@ module se.uu.ub.cora.xmlconverter {
 	requires transitive java.xml;
 	requires se.uu.ub.cora.data;
 
+	exports se.uu.ub.cora.xmlconverter.converter;
+
 	provides se.uu.ub.cora.converter.ConverterFactory
 			with se.uu.ub.cora.xmlconverter.XmlConverterFactory;
+
+	// opens place;
+	opens xslt;
 }

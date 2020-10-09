@@ -1,0 +1,31 @@
+<place id="1">
+	<pid>alvin-place:680</pid>
+	<dsId>METADATA</dsId>
+	<recordInfo id="2">
+		<externalDs>false</externalDs>
+		<lastAction>CREATED</lastAction>
+		<created id="3">
+			<date id="4">2019-03-11 09:27:22.306 UTC</date>
+			<user class="authenticatedUser" id="5">
+				<userId>user1234</userId>
+				<domain>notUsed</domain>
+				<firstName>notUsed</firstName>
+				<lastName>notUsed</lastName>
+				<email/>
+			</user>
+			<note>Place created by Cora</note>
+			<type>CREATED</type>
+		</created>
+		<updated id="6">
+			<userAction reference="3"/>
+		</updated>
+	</recordInfo>
+	<regions id="7"/>
+	<defaultPlaceName id="8">
+		<deleted>false</deleted>
+		<name>CORA_Uppsala_CORA</name>
+	</defaultPlaceName>
+	<placeNameForms id="9"/>
+	<identifiers id="10"/>
+	<localIdentifiers id="11"/>
+</place>

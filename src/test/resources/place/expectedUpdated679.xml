@@ -1,0 +1,158 @@
+<place id="1">
+	<pid>alvin-place:679</pid>
+	<dsId>METADATA</dsId>
+	<recordInfo id="2">
+		<externalDs>false</externalDs>
+		<lastAction>UPDATED</lastAction>
+		<created id="3">
+			<date id="4">2015-02-12 07:08:10.19 UTC</date>
+			<dateInStorage id="5">2015-02-12 07:08:17.678 UTC</dateInStorage>
+			<user class="epc.commons.core.authentication.SystemUser" id="6">
+				<userId>SYSTEM</userId>
+				<domain>SYSTEM</domain>
+				<firstName>System</firstName>
+				<lastName>System</lastName>
+				<email>noreply@alvin-portal.org</email>
+				<name>The System User</name>
+			</user>
+			<note>Imported from Waller</note>
+			<type>IMPORTED</type>
+		</created>
+		<updated id="7">
+			<userAction reference="3"/>
+			<userAction id="8">
+				<date id="9">2016-10-12 17:19:56.542 UTC</date>
+				<user class="seamUser" id="10">
+					<lastUpdated class="sql-timestamp" id="11">2014-04-17 08:12:52.853</lastUpdated>
+					<id>51</id>
+					<userId>test</userId>
+					<domain>uu</domain>
+					<firstName>Test</firstName>
+					<lastName>Testsson</lastName>
+					<email>test.testsson@ub.uu.se</email>
+				</user>
+				<note>Place updated through web gui</note>
+				<type>UPDATED</type>
+			</userAction>
+		</updated>
+	</recordInfo>
+	<country class="country" id="12">
+		<lastUpdated class="sql-timestamp" id="13">2014-04-17 08:12:48.8</lastUpdated>
+		<defaultName>Sverige</defaultName>
+		<localisedNames id="14">
+			<entry>
+				<string>en</string>
+				<string>Sweden</string>
+			</entry>
+		</localisedNames>
+		<alpha2Code>SE</alpha2Code>
+		<alpha3Code>SWE</alpha3Code>
+		<numericalCode>752</numericalCode>
+		<marcCode>sw</marcCode>
+	</country>
+	<regions id="15"/>
+	<defaultPlaceName id="16">
+		<deleted>false</deleted>
+		<name>CORA_Uppsala_CORA</name>
+	</defaultPlaceName>
+	<placeNameForms id="17">
+		<entry>
+			<string>alvin-place:679:0</string>
+			<placeNameForm id="18">
+				<id>alvin-place:679:0</id>
+				<deleted>false</deleted>
+				<name>Upsaliæ</name>
+				<language id="19">
+					<lastUpdated class="sql-timestamp" id="20">2014-04-17 08:12:51.134</lastUpdated>
+					<defaultName>Latin</defaultName>
+					<localisedNames id="21">
+						<entry>
+							<string>en</string>
+							<string>Latin</string>
+						</entry>
+					</localisedNames>
+					<alpha3Code>lat</alpha3Code>
+					<alpha2Code>la</alpha2Code>
+				</language>
+			</placeNameForm>
+		</entry>
+		<entry>
+			<string>alvin-place:679:1</string>
+			<placeNameForm id="22">
+				<id>alvin-place:679:1</id>
+				<deleted>false</deleted>
+				<name>Ubsaliæ</name>
+				<language id="23">
+					<lastUpdated class="sql-timestamp" id="24">2014-04-17 08:12:51.134</lastUpdated>
+					<defaultName>Latin</defaultName>
+					<localisedNames id="25">
+						<entry>
+							<string>en</string>
+							<string>Latin</string>
+						</entry>
+					</localisedNames>
+					<alpha3Code>lat</alpha3Code>
+					<alpha2Code>la</alpha2Code>
+				</language>
+			</placeNameForm>
+		</entry>
+		<entry>
+			<string>alvin-place:679:3</string>
+			<placeNameForm id="26">
+				<id>alvin-place:679:3</id>
+				<deleted>false</deleted>
+				<name>Upsala</name>
+				<language id="27">
+					<lastUpdated class="sql-timestamp" id="28">2014-04-17 08:12:52.006</lastUpdated>
+					<defaultName>Svenska</defaultName>
+					<localisedNames id="29">
+						<entry>
+							<string>en</string>
+							<string>Swedish</string>
+						</entry>
+					</localisedNames>
+					<alpha3Code>swe</alpha3Code>
+					<alpha2Code>sv</alpha2Code>
+				</language>
+			</placeNameForm>
+		</entry>
+		<entry>
+			<string>alvin-place:679:2</string>
+			<placeNameForm id="30">
+				<id>alvin-place:679:2</id>
+				<deleted>false</deleted>
+				<name>Upsal</name>
+				<language id="31">
+					<lastUpdated class="sql-timestamp" id="32">2014-04-17 08:12:50.581</lastUpdated>
+					<defaultName>Franska</defaultName>
+					<localisedNames id="33">
+						<entry>
+							<string>en</string>
+							<string>French</string>
+						</entry>
+					</localisedNames>
+					<alpha3Code>fre</alpha3Code>
+					<alpha2Code>fr</alpha2Code>
+				</language>
+			</placeNameForm>
+		</entry>
+	</placeNameForms>
+	<identifiers id="34"/>
+	<localIdentifiers id="35">
+		<localIdentifier id="36">
+			<type class="localIdentifierType" id="37">
+				<lastUpdated class="sql-timestamp" id="38">2014-04-17 08:49:50.65</lastUpdated>
+				<defaultName>Waller-id</defaultName>
+				<localisedNames id="39"/>
+				<code>waller</code>
+				<id>114</id>
+				<internal>false</internal>
+				<organisationUnitId>2</organisationUnitId>
+				<unique>false</unique>
+			</type>
+			<text>547</text>
+		</localIdentifier>
+	</localIdentifiers>
+	<longitude>17.631198404124007</longitude>
+	<latitude>59.85488966429547</latitude>
+</place>

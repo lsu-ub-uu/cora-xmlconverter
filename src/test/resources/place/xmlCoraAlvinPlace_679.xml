@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><authority type="place">
+    <recordInfo>
+        <id>alvin-place:679</id>
+        <type>
+            <linkedRecordType>recordType</linkedRecordType>
+            <linkedRecordId>place</linkedRecordId>
+        </type>
+        <createdBy>
+            <linkedRecordType>user</linkedRecordType>
+            <linkedRecordId>12345</linkedRecordId>
+        </createdBy>
+        <tsCreated>2015-02-12T07:08:10.190000Z</tsCreated>
+        <dataDivider>
+            <linkedRecordType>system</linkedRecordType>
+            <linkedRecordId>alvin</linkedRecordId>
+        </dataDivider>
+        <updated repeatId="0">
+            <updatedBy>
+                <linkedRecordType>user</linkedRecordType>
+                <linkedRecordId>12345</linkedRecordId>
+            </updatedBy>
+            <tsUpdated>2016-10-12T17:19:56.000000Z</tsUpdated>
+        </updated>
+    </recordInfo>
+    <name type="authorized">
+        <namePart type="defaultName">
+            <value>Uppsala</value>
+        </namePart>
+    </name>
+    <name type="alternative" repeatId="0">
+        <language>lat</language>
+        <namePart type="defaultName">
+            <value>Upsaliæ</value>
+        </namePart>
+    </name>
+    <name type="alternative" repeatId="1">
+        <language>lat</language>
+        <namePart type="defaultName">
+            <value>Ubsaliæ</value>
+        </namePart>
+    </name>
+    <name type="alternative" repeatId="2">
+        <language>swe</language>
+        <namePart type="defaultName">
+            <value>Upsala</value>
+        </namePart>
+    </name>
+    <name type="alternative" repeatId="3">
+        <language>fre</language>
+        <namePart type="defaultName">
+            <value>Upsal</value>
+        </namePart>
+    </name>
+    <coordinates>
+        <latitude>59.85488966429547</latitude>
+        <longitude>17.631198404124007</longitude>
+    </coordinates>
+    <country>SE</country>
+    <identifier repeatId="0">
+        <identifierType>waller</identifierType>
+        <identifierValue>547</identifierValue>
+    </identifier>
+</authority>
