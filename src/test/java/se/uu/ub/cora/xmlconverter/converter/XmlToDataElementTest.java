@@ -112,13 +112,29 @@ public class XmlToDataElementTest {
 		}
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
-			+ "Unable to convert from xml to dataElement: null")
+	@Test
 	public void testExceptionOnNullXML() {
 		String xmlToConvert = null;
 		setUpXmlToDataElementWithDocumentFactorySpy();
 		((DocumentBuilderFactorySpy) documentBuilderFactory).throwIOException = true;
-		xmlToDataElement.convert(xmlToConvert);
+		Exception expectedException = null;
+		try {
+			xmlToDataElement.convert(xmlToConvert);
+		} catch (Exception e) {
+			expectedException = e;
+		}
+		assertTrue(expectedException instanceof XmlConverterException);
+
+		assertMessageIsCorrectForJava14or15(expectedException);
+	}
+
+	private void assertMessageIsCorrectForJava14or15(Exception expectedException) {
+		String exceptionMessage = expectedException.getMessage();
+		String expectedCommonErrorMessage = "Unable to convert from xml to dataElement: ";
+		String java14Part = "null";
+		String java15Part = "Cannot invoke \"String.length()\" because \"s\" is null";
+		assertTrue(exceptionMessage.equals(expectedCommonErrorMessage + java14Part)
+				|| exceptionMessage.equals(expectedCommonErrorMessage + java15Part));
 	}
 
 	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
