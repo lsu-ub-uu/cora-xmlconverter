@@ -33,6 +33,7 @@ import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataElement;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.data.DataRecordLinkProvider;
 import se.uu.ub.cora.xmlconverter.spy.DataAtomicFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DataGroupFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DocumentBuilderFactorySpy;
@@ -41,6 +42,7 @@ public class XmlToDataElementTest {
 
 	DataGroupFactorySpy dataGroupFactorySpy = null;
 	DataAtomicFactorySpy dataAtomicFactorySpy = null;
+	DataRecordLinkFactorySpy dataRecordLinkFactory = null;
 
 	private DocumentBuilderFactory documentBuilderFactory;
 	private XmlToDataElement xmlToDataElement;
@@ -51,6 +53,8 @@ public class XmlToDataElementTest {
 		DataGroupProvider.setDataGroupFactory(dataGroupFactorySpy);
 		dataAtomicFactorySpy = new DataAtomicFactorySpy();
 		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactorySpy);
+		dataRecordLinkFactory = new DataRecordLinkFactorySpy();
+		DataRecordLinkProvider.setDataRecordLinkFactory(dataRecordLinkFactory);
 
 		documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		xmlToDataElement = new XmlToDataElement(documentBuilderFactory);
@@ -390,26 +394,8 @@ public class XmlToDataElementTest {
 	}
 
 	@Test
-	public void testXmlWithSpacesBetweenTags() throws Exception {
-		String xmlFromXsltAlvinFedoraToCoraPlaces = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<authority type=\"place\">" + " <recordinfo>" + " <id>alvin-place:22</id>"
-				+ " <type>" + " <linkedRecordType>recordType</linkedRecordType>"
-				+ " <linkRecordId>place</linkRecordId>" + " </type>" + " <createdBy>"
-				+ " <linkedRecordType>user</linkedRecordType>"
-				+ " <linkRecordId>test</linkRecordId>" + " </createdBy>"
-				+ " <tsCreated>2014-12-18 20:20:38.346 UTC</tsCreated>" + " <dataDivider>"
-				+ " <linkedRecordType>system</linkedRecordType>"
-				+ " <linkRecordId>alvin</linkRecordId>" + " </dataDivider>"
-				+ " <updated repeatId=\"0\">" + " <updatedBy>"
-				+ " <linkedRecordType>user</linkedRecordType>"
-				+ " <linkRecordId>test</linkRecordId>" + " </updatedBy>"
-				+ " <tsUpdated>2014-12-18 20:21:20.880 UTC</tsUpdated>" + " </updated>"
-				+ " </recordinfo>" + " <name type=\"authorized\">"
-				+ " <namePart>Linköping</namePart>" + " </name>" + " <coordinates>"
-				+ " <latitude>58.42</latitude>" + " <longitude>15.62</longitude>"
-				+ " </coordinates>" + " <country>SE</country>" + " <identifier repeatId=\"0\">"
-				+ " <identifierType>waller</identifierType>"
-				+ " <identifierValue>114</identifierValue>" + " </identifier>" + "</authority>";
+	public void testXmlWithMoreDataInXml() throws Exception {
+		String xmlFromXsltAlvinFedoraToCoraPlaces = getPlaceXml();
 		DataGroup topDataGroup = (DataGroup) xmlToDataElement
 				.convert(xmlFromXsltAlvinFedoraToCoraPlaces);
 		DataGroup identifier = (DataGroup) topDataGroup.getFirstChildWithNameInData("identifier");
@@ -418,5 +404,79 @@ public class XmlToDataElementTest {
 		DataAtomic identifierType = (DataAtomic) identifier
 				.getFirstChildWithNameInData("identifierType");
 		assertEquals(identifierType.getValue(), "waller");
+	}
+
+	private String getPlaceXml() {
+		String xmlFromXsltAlvinFedoraToCoraPlaces = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<authority type=\"place\">" + " <recordInfo>" + " <id>alvin-place:22</id>"
+				+ " <type>" + " <linkedRecordType>recordType</linkedRecordType>"
+				+ " <linkedRecordId>place</linkedRecordId>" + " </type>" + " <createdBy>"
+				+ " <linkedRecordType>user</linkedRecordType>"
+				+ " <linkedRecordId>test</linkedRecordId>" + " </createdBy>"
+				+ " <tsCreated>2014-12-18 20:20:38.346 UTC</tsCreated>" + " <dataDivider>"
+				+ " <linkedRecordType>system</linkedRecordType>"
+				+ " <linkedRecordId>alvin</linkedRecordId>" + " </dataDivider>"
+				+ " <updated repeatId=\"0\">" + " <updatedBy>"
+				+ " <linkedRecordType>user</linkedRecordType>"
+				+ " <linkedRecordId>test</linkedRecordId>" + " </updatedBy>"
+				+ " <tsUpdated>2014-12-18 20:21:20.880 UTC</tsUpdated>" + " </updated>"
+				+ " </recordInfo>" + " <name type=\"authorized\">"
+				+ " <namePart>Linköping</namePart>" + " </name>" + " <coordinates>"
+				+ " <latitude>58.42</latitude>" + " <longitude>15.62</longitude>"
+				+ " </coordinates>" + " <country>SE</country>" + " <identifier repeatId=\"0\">"
+				+ " <identifierType>waller</identifierType>"
+				+ " <identifierValue>114</identifierValue>" + " </identifier>" + "</authority>";
+		return xmlFromXsltAlvinFedoraToCoraPlaces;
+	}
+
+	@Test
+	public void testLinksAreFactoredCorrectly() {
+		String xmlFromXsltAlvinFedoraToCoraPlaces = getPlaceXml();
+		xmlToDataElement.convert(xmlFromXsltAlvinFedoraToCoraPlaces);
+
+		assertEquals(dataRecordLinkFactory.usedNameInDatas.size(), 4);
+		assertCorrectLink(0, "type", "recordType", "place");
+		assertCorrectLink(1, "createdBy", "user", "test");
+		assertCorrectLink(2, "dataDivider", "system", "alvin");
+		assertCorrectLink(3, "updatedBy", "user", "test");
+
+		assertEquals(dataGroupFactorySpy.usedNameInDatas.size(), 6);
+
+	}
+
+	private void assertCorrectLink(int index, String nameInData, String type, String id) {
+		assertEquals(dataRecordLinkFactory.usedNameInDatas.get(index), nameInData);
+		assertEquals(dataRecordLinkFactory.usedTypes.get(index), type);
+		assertEquals(dataRecordLinkFactory.usedIds.get(index), id);
+	}
+
+	@Test
+	public void noLinkedRecordType() {
+		String xmlFromXsltAlvinFedoraToCoraPlaces = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<authority type=\"place\">" + " <recordInfo>" + " <id>alvin-place:22</id>"
+				+ " <type>" + " <NOTlinkedRecordType>recordType</NOTlinkedRecordType>"
+				+ " <linkedRecordId>place</linkedRecordId>" + " </type>" + " <dataDivider>"
+				+ " <linkedRecordType>system</linkedRecordType>"
+				+ " <linkedRecordId>alvin</linkedRecordId>" + " </dataDivider>" + " </recordInfo>"
+				+ " <name type=\"authorized\">" + " <namePart>Linköping</namePart>" + " </name>"
+				+ " <identifier repeatId=\"0\">" + " <identifierValue>114</identifierValue>"
+				+ " </identifier>" + "</authority>";
+		xmlToDataElement.convert(xmlFromXsltAlvinFedoraToCoraPlaces);
+		assertEquals(dataRecordLinkFactory.usedNameInDatas.size(), 1);
+	}
+
+	@Test
+	public void noLinkedRecordId() {
+		String xmlFromXsltAlvinFedoraToCoraPlaces = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<authority type=\"place\">" + " <recordInfo>" + " <id>alvin-place:22</id>"
+				+ " <type>" + " <linkedRecordType>recordType</linkedRecordType>"
+				+ " <NOTlinkedRecordId>place</NOTlinkedRecordId>" + " </type>" + " <dataDivider>"
+				+ " <linkedRecordType>system</linkedRecordType>"
+				+ " <linkedRecordId>alvin</linkedRecordId>" + " </dataDivider>" + " </recordInfo>"
+				+ " <name type=\"authorized\">" + " <namePart>Linköping</namePart>" + " </name>"
+				+ " <identifier repeatId=\"0\">" + " <identifierValue>114</identifierValue>"
+				+ " </identifier>" + "</authority>";
+		xmlToDataElement.convert(xmlFromXsltAlvinFedoraToCoraPlaces);
+		assertEquals(dataRecordLinkFactory.usedNameInDatas.size(), 1);
 	}
 }

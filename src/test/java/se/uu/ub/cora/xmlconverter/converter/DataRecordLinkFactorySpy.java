@@ -16,29 +16,32 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.xmlconverter.spy;
+package se.uu.ub.cora.xmlconverter.converter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.data.DataGroupFactory;
+import se.uu.ub.cora.data.DataRecordLink;
+import se.uu.ub.cora.data.DataRecordLinkFactory;
 
-public class DataGroupFactorySpy implements DataGroupFactory {
-
+public class DataRecordLinkFactorySpy implements DataRecordLinkFactory {
 	public List<String> usedNameInDatas = new ArrayList<>();
+	public List<String> usedTypes = new ArrayList<>();
+	public List<String> usedIds = new ArrayList<>();
 
 	@Override
-	public DataGroup factorUsingNameInData(String nameInData) {
-		usedNameInDatas.add(nameInData);
-		return new DataGroupSpy(nameInData);
+	public DataRecordLink factorUsingNameInData(String nameInData) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public DataGroup factorAsLinkWithNameInDataTypeAndId(String nameInData, String recordType,
+	public DataRecordLink factorAsLinkWithNameInDataTypeAndId(String nameInData, String recordType,
 			String recordId) {
-		// TODO Auto-generated method stub
-		return null;
+		usedNameInDatas.add(nameInData);
+		usedTypes.add(recordType);
+		usedIds.add(recordId);
+		return new DataRecordLinkSpy(nameInData);
 	}
 
 }

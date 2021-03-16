@@ -41,9 +41,11 @@ import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataElement;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.data.DataRecordLinkProvider;
 
 public class XmlToDataElement {
 
+	private static final int NUM_OF_LINK_CHILDREN = 2;
 	private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 	private static final String REPEAT_ID = "repeatId";
 	private DocumentBuilderFactory documentBuilderFactory;
@@ -186,12 +188,59 @@ public class XmlToDataElement {
 	private void convertDataGroup(DataGroup parentDataGroup, Node currentNode,
 			XmlAttributes xmlAttributes, List<Node> elementNodeChildren) {
 		String nodeName = currentNode.getNodeName();
-		DataGroup dataGroup = DataGroupProvider.getDataGroupUsingNameInData(nodeName);
-
+		DataGroup dataGroup = createDataGroup(elementNodeChildren, nodeName);
 		addAttributes(dataGroup, xmlAttributes);
 		possiblyAddRepeatId(dataGroup, xmlAttributes);
 		convertChildren(dataGroup, elementNodeChildren);
 		parentDataGroup.addChild(dataGroup);
+	}
+
+	private DataGroup createDataGroup(List<Node> elementNodeChildren, String nodeName) {
+		if (isLink(elementNodeChildren)) {
+			return createLink(elementNodeChildren, nodeName);
+		}
+		return DataGroupProvider.getDataGroupUsingNameInData(nodeName);
+	}
+
+	private DataGroup createLink(List<Node> elementNodeChildren, String nodeName) {
+		String linkedRecordType = getTextContentForNodeName(elementNodeChildren,
+				"linkedRecordType");
+		String linkedRecordId = getTextContentForNodeName(elementNodeChildren, "linkedRecordId");
+
+		return DataRecordLinkProvider.getDataRecordLinkAsLinkUsingNameInDataTypeAndId(nodeName,
+				linkedRecordType, linkedRecordId);
+	}
+
+	private String getTextContentForNodeName(List<Node> elementNodeChildren, String nodeName) {
+		String valueToReturn = "";
+		for (Node childNode : elementNodeChildren) {
+			if (childNode.getNodeName().equals(nodeName)) {
+				valueToReturn = childNode.getTextContent().trim();
+			}
+		}
+		return valueToReturn;
+	}
+
+	private boolean isLink(List<Node> elementNodeChildren) {
+		if (elementNodeChildren.size() == NUM_OF_LINK_CHILDREN) {
+			List<String> nodeNames = extractNodeNames(elementNodeChildren);
+			if (nodeNamesContainsLinkChildren(nodeNames)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private List<String> extractNodeNames(List<Node> elementNodeChildren) {
+		List<String> nodeNames = new ArrayList<>();
+		for (Node childNode : elementNodeChildren) {
+			nodeNames.add(childNode.getNodeName());
+		}
+		return nodeNames;
+	}
+
+	private boolean nodeNamesContainsLinkChildren(List<String> nodeNames) {
+		return nodeNames.contains("linkedRecordType") && nodeNames.contains("linkedRecordId");
 	}
 
 	private void possiblyAddRepeatId(DataElement dataElement, XmlAttributes xmlAttributes) {
