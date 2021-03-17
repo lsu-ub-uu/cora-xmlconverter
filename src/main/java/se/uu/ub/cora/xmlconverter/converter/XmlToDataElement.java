@@ -206,7 +206,7 @@ public class XmlToDataElement {
 	}
 
 	private List<String> extractNodeNames(List<Node> elementNodeChildren) {
-		List<String> nodeNames = new ArrayList<>();
+		List<String> nodeNames = new ArrayList<>(elementNodeChildren.size());
 		for (Node childNode : elementNodeChildren) {
 			nodeNames.add(childNode.getNodeName());
 		}
