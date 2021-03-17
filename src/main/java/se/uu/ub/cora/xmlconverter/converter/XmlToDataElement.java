@@ -179,46 +179,20 @@ public class XmlToDataElement {
 		XmlAttributes xmlAttributes = extractAttributesAndRepeatId(currentNode);
 		List<Node> elementNodeChildren = getChildren(currentNode);
 		if (!elementNodeChildren.isEmpty()) {
-			convertDataGroup(parentDataGroup, currentNode, xmlAttributes, elementNodeChildren);
+			convertNodeWithChildren(parentDataGroup, currentNode, xmlAttributes,
+					elementNodeChildren);
 		} else {
 			convertDataAtomic(parentDataGroup, currentNode, xmlAttributes);
 		}
 	}
 
-	private void convertDataGroup(DataGroup parentDataGroup, Node currentNode,
+	private void convertNodeWithChildren(DataGroup parentDataGroup, Node currentNode,
 			XmlAttributes xmlAttributes, List<Node> elementNodeChildren) {
-		String nodeName = currentNode.getNodeName();
-		DataGroup dataGroup = createDataGroup(elementNodeChildren, nodeName);
-		addAttributes(dataGroup, xmlAttributes);
-		possiblyAddRepeatId(dataGroup, xmlAttributes);
-		convertChildren(dataGroup, elementNodeChildren);
-		parentDataGroup.addChild(dataGroup);
-	}
-
-	private DataGroup createDataGroup(List<Node> elementNodeChildren, String nodeName) {
 		if (isLink(elementNodeChildren)) {
-			return createLink(elementNodeChildren, nodeName);
+			convertLink(parentDataGroup, currentNode, xmlAttributes, elementNodeChildren);
+		} else {
+			convertDataGroup(parentDataGroup, currentNode, xmlAttributes, elementNodeChildren);
 		}
-		return DataGroupProvider.getDataGroupUsingNameInData(nodeName);
-	}
-
-	private DataGroup createLink(List<Node> elementNodeChildren, String nodeName) {
-		String linkedRecordType = getTextContentForNodeName(elementNodeChildren,
-				"linkedRecordType");
-		String linkedRecordId = getTextContentForNodeName(elementNodeChildren, "linkedRecordId");
-
-		return DataRecordLinkProvider.getDataRecordLinkAsLinkUsingNameInDataTypeAndId(nodeName,
-				linkedRecordType, linkedRecordId);
-	}
-
-	private String getTextContentForNodeName(List<Node> elementNodeChildren, String nodeName) {
-		String valueToReturn = "";
-		for (Node childNode : elementNodeChildren) {
-			if (childNode.getNodeName().equals(nodeName)) {
-				valueToReturn = childNode.getTextContent().trim();
-			}
-		}
-		return valueToReturn;
 	}
 
 	private boolean isLink(List<Node> elementNodeChildren) {
@@ -241,6 +215,48 @@ public class XmlToDataElement {
 
 	private boolean nodeNamesContainsLinkChildren(List<String> nodeNames) {
 		return nodeNames.contains("linkedRecordType") && nodeNames.contains("linkedRecordId");
+	}
+
+	private void convertLink(DataGroup parentDataGroup, Node currentNode,
+			XmlAttributes xmlAttributes, List<Node> elementNodeChildren) {
+		String nodeName = currentNode.getNodeName();
+		DataGroup dataRecordLink = createLink(elementNodeChildren, nodeName);
+		possiblyAddAttributesAndRepeatId(dataRecordLink, xmlAttributes);
+		parentDataGroup.addChild(dataRecordLink);
+	}
+
+	private void possiblyAddAttributesAndRepeatId(DataGroup dataRecordLink,
+			XmlAttributes xmlAttributes) {
+		addAttributes(dataRecordLink, xmlAttributes);
+		possiblyAddRepeatId(dataRecordLink, xmlAttributes);
+	}
+
+	private DataGroup createLink(List<Node> elementNodeChildren, String nodeName) {
+		String linkedRecordType = getTextContentForNodeName(elementNodeChildren,
+				"linkedRecordType");
+		String linkedRecordId = getTextContentForNodeName(elementNodeChildren, "linkedRecordId");
+
+		return DataRecordLinkProvider.getDataRecordLinkAsLinkUsingNameInDataTypeAndId(nodeName,
+				linkedRecordType, linkedRecordId);
+	}
+
+	private String getTextContentForNodeName(List<Node> elementNodeChildren, String nodeName) {
+		String valueToReturn = "";
+		for (Node childNode : elementNodeChildren) {
+			if (childNode.getNodeName().equals(nodeName)) {
+				valueToReturn = childNode.getTextContent().trim();
+			}
+		}
+		return valueToReturn;
+	}
+
+	private void convertDataGroup(DataGroup parentDataGroup, Node currentNode,
+			XmlAttributes xmlAttributes, List<Node> elementNodeChildren) {
+		String nodeName = currentNode.getNodeName();
+		DataGroup dataGroup = DataGroupProvider.getDataGroupUsingNameInData(nodeName);
+		possiblyAddAttributesAndRepeatId(dataGroup, xmlAttributes);
+		convertChildren(dataGroup, elementNodeChildren);
+		parentDataGroup.addChild(dataGroup);
 	}
 
 	private void possiblyAddRepeatId(DataElement dataElement, XmlAttributes xmlAttributes) {

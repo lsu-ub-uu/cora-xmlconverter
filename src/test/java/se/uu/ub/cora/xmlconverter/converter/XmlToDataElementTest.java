@@ -440,6 +440,8 @@ public class XmlToDataElementTest {
 		assertCorrectLink(3, "updatedBy", "user", "test");
 
 		assertEquals(dataGroupFactorySpy.usedNameInDatas.size(), 6);
+		int numOfNotInlcudingAtomicsInLinks = 9;
+		assertEquals(dataAtomicFactorySpy.usedNameInDatas.size(), numOfNotInlcudingAtomicsInLinks);
 
 	}
 
