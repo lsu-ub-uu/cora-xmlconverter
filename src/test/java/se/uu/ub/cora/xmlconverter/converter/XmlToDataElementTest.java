@@ -191,14 +191,6 @@ public class XmlToDataElementTest {
 	}
 
 	@Test
-	public void testConvertXmlWithSingleAtomicChild() {
-		String xmlToConvert = surroundWithTopLevelXmlGroup("<firstname>Kalle</firstname>");
-
-		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
-		assertEquals(convertedDataElement.getFirstAtomicValueWithNameInData("firstname"), "Kalle");
-	}
-
-	@Test
 	public void testConvertXmlWithSingleAtomicChildWithSpace() {
 		String xmlToConvert = surroundWithTopLevelXmlGroup(" <firstname>Kalle</firstname> ");
 
@@ -207,28 +199,46 @@ public class XmlToDataElementTest {
 	}
 
 	@Test
-	public void testConvertXmlWithSingleAtomicChildWithSpaceAroundText() {
-		String xmlToConvert = surroundWithTopLevelXmlGroup("<firstname> Kalle </firstname>");
+	public void testConvertXmlWithSingleAtomicChild() {
+		convertInsideFirstNameTagAndAssertEqual("Kalle", "Kalle");
+	}
 
-		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
-		assertEquals(convertedDataElement.getFirstAtomicValueWithNameInData("firstname"), "Kalle");
+	@Test
+	public void testConvertXmlWithSingleAtomicChildWithSpaceAroundText() {
+		convertInsideFirstNameTagAndAssertEqual(" Kalle ", "Kalle");
 	}
 
 	@Test
 	public void testConvertXmlWithSingleAtomicChildWithNewLineStartingText() {
-		String xmlToConvert = surroundWithTopLevelXmlGroup("<firstname>\nKalle</firstname>");
-
-		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
-		assertEquals(convertedDataElement.getFirstAtomicValueWithNameInData("firstname"), "Kalle");
+		convertInsideFirstNameTagAndAssertEqual("\nKalle", "Kalle");
 	}
 
 	@Test
 	public void testConvertXmlWithSingleAtomicChildWithNewLineInsideText() {
-		String xmlToConvert = surroundWithTopLevelXmlGroup("<firstname>Kal\nle</firstname>");
+		convertInsideFirstNameTagAndAssertEqual("Kal\nle", "Kal\nle");
+	}
+
+	@Test
+	public void testConvertXmlWithHtmlParagraphInsideTextSurroundedByCdata() {
+		convertInsideFirstNameTagAndAssertEqual(
+				"<![CDATA[&lt;p&gt; &quot;trams&quot; &lt;/p&gt;]]>",
+				"&lt;p&gt; &quot;trams&quot; &lt;/p&gt;");
+	}
+
+	@Test(enabled = false)
+	public void weWouldLikeItToWorkLikeThisButItDoesNot_testConvertXmlWithHtmlParagraphInsideText() {
+		convertInsideFirstNameTagAndAssertEqual("&lt;p&gt; &quot;trams &lt;/p&gt;",
+				"&lt;p&gt; &quot;trams &lt;/p&gt;");
+	}
+
+	private void convertInsideFirstNameTagAndAssertEqual(String valueToConvert,
+			String convertedValue) {
+		String xmlToConvert = surroundWithTopLevelXmlGroup(
+				"<firstname>" + valueToConvert + "</firstname>");
 
 		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
 		assertEquals(convertedDataElement.getFirstAtomicValueWithNameInData("firstname"),
-				"Kal\nle");
+				convertedValue);
 	}
 
 	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
@@ -269,11 +279,9 @@ public class XmlToDataElementTest {
 
 	@Test
 	public void testConvertXmlWithSingleAtomicChildWithoutValue() {
-		String xmlToConvert = surroundWithTopLevelXmlGroup("<firstname></firstname>");
-
-		DataElement convertedDataElement = xmlToDataElement.convert(xmlToConvert);
-		DataGroup convertedDataGroup = (DataGroup) convertedDataElement;
-		assertEquals(convertedDataGroup.getFirstAtomicValueWithNameInData("firstname"), "");
+		String valueToConvert = "";
+		String convertedValue = "";
+		convertInsideFirstNameTagAndAssertEqual(valueToConvert, convertedValue);
 	}
 
 	@Test
