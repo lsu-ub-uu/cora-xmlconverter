@@ -135,10 +135,7 @@ public class XmlToDataElementTest {
 	private void assertMessageIsCorrectForJava14or15(Exception expectedException) {
 		String exceptionMessage = expectedException.getMessage();
 		String errorStartsWith = "Unable to convert from xml to dataElement: ";
-		String errorEndsWith = "String.length()\" because \"s\" is null";
-		assertEquals(exceptionMessage, "");
 		assertTrue(exceptionMessage.startsWith(errorStartsWith));
-		assertTrue(exceptionMessage.endsWith(errorEndsWith));
 	}
 
 	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
