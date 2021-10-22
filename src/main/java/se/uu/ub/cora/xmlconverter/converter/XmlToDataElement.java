@@ -59,7 +59,8 @@ public class XmlToDataElement {
 			return tryToConvert(dataString);
 		} catch (SAXException exception) {
 			throw new XmlConverterException(
-					"Unable to convert from xml to dataElement due to malformed XML", exception);
+					"Unable to convert from xml to dataElement due to malformed XML: " + dataString,
+					exception);
 		} catch (Exception exception) {
 			throw new XmlConverterException(
 					"Unable to convert from xml to dataElement: " + exception.getMessage(),

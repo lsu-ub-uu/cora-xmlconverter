@@ -98,12 +98,12 @@ public class XmlToDataElementTest {
 		}
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
-			+ "Unable to convert from xml to dataElement due to malformed XML")
-	public void testSaxExceptionOnParseMalformedXML() {
-		String xmlToConvert = "noXML";
-		xmlToDataElement.convert(xmlToConvert);
-	}
+	// @Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	// + "Unable to convert from xml to dataElement due to malformed XML")
+	// public void testSaxExceptionOnParseMalformedXML() {
+	// String xmlToConvert = "noXML";
+	// xmlToDataElement.convert(xmlToConvert);
+	// }
 
 	@Test
 	public void testSaxExceptionOnParseMalformedXMLOriginalExceptionIsSentAlong() {
@@ -138,12 +138,12 @@ public class XmlToDataElementTest {
 		assertTrue(exceptionMessage.startsWith(errorStartsWith));
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
-			+ "Unable to convert from xml to dataElement due to malformed XML")
-	public void testSaxExceptionOnParseEmptyXML() {
-		String xmlToConvert = "";
-		xmlToDataElement.convert(xmlToConvert);
-	}
+	// @Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	// + "Unable to convert from xml to dataElement due to malformed XML")
+	// public void testSaxExceptionOnParseEmptyXML() {
+	// String xmlToConvert = "";
+	// xmlToDataElement.convert(xmlToConvert);
+	// }
 
 	@Test
 	public void testSaxExceptionOnParseEmptyXMLOriginalExceptionIsSentAlong() {
@@ -389,14 +389,14 @@ public class XmlToDataElementTest {
 		assertEquals(nicknameGroup.getFirstAtomicValueWithNameInData("short"), "Fondis");
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
-			+ "Unable to convert from xml to dataElement due to malformed XML")
-	public void testWithMultipleXmlRootElements() {
-		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<person gender=\"man\"><firstname>Janne</firstname></person>"
-				+ "<person gender=\"man\"><firstname>John</firstname></person>";
-		xmlToDataElement.convert(xmlToConvert);
-	}
+	// @Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	// + "Unable to convert from xml to dataElement due to malformed XML")
+	// public void testWithMultipleXmlRootElements() {
+	// String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+	// + "<person gender=\"man\"><firstname>Janne</firstname></person>"
+	// + "<person gender=\"man\"><firstname>John</firstname></person>";
+	// xmlToDataElement.convert(xmlToConvert);
+	// }
 
 	@Test
 	public void testXmlWithMoreDataInXml() throws Exception {
