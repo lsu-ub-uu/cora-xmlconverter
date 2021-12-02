@@ -39,8 +39,16 @@ public class XmlConverter implements Converter {
 
 	@Override
 	public String convert(DataElement dataElement) {
-		return new DataElementToXml(documentBuilderFactory, transformerFactory)
-				.convert(dataElement);
+		DataElementToXml dataElementToXml = new DataElementToXml(documentBuilderFactory,
+				transformerFactory);
+		dataElementToXml.convert(dataElement);
+		return null;
+	}
+
+	@Override
+	public String convertWithLinks(DataElement dataElement, String baseUrl) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override

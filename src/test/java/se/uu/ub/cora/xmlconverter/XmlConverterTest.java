@@ -59,13 +59,6 @@ public class XmlConverterTest {
 	}
 
 	@Test
-	public void testXmlToDataElementConverterUsesFactory() {
-		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person></person>";
-		xmlConverter.convert(xmlToConvert);
-		assertTrue(documentBuilderFactory.newDocumentBuilderWasCalled);
-	}
-
-	@Test
 	public void testDataToElementConverterUserFactories() {
 		DataGroup dataGroup = new DataGroupSpy("someNameInData");
 		xmlConverter.convert(dataGroup);
@@ -73,4 +66,12 @@ public class XmlConverterTest {
 		assertTrue(tranformerFactory.newTransformerWasCalled);
 
 	}
+
+	@Test
+	public void testXmlToDataElementConverterUsesFactory() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person></person>";
+		xmlConverter.convert(xmlToConvert);
+		assertTrue(documentBuilderFactory.newDocumentBuilderWasCalled);
+	}
+
 }
