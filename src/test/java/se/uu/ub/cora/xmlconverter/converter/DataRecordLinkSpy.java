@@ -18,6 +18,7 @@
  */
 package se.uu.ub.cora.xmlconverter.converter;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -27,10 +28,13 @@ import se.uu.ub.cora.data.DataAttribute;
 import se.uu.ub.cora.data.DataElement;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataRecordLink;
+import se.uu.ub.cora.xmlconverter.spy.DataAttributeSpy;
 
 public class DataRecordLinkSpy implements DataRecordLink {
 
 	public String nameInData;
+	private String repeatId;
+	public List<DataAttribute> attributes = new ArrayList<>();
 
 	public DataRecordLinkSpy(String nameInData) {
 		this.nameInData = nameInData;
@@ -155,20 +159,17 @@ public class DataRecordLinkSpy implements DataRecordLink {
 
 	@Override
 	public void setRepeatId(String repeatId) {
-		// TODO Auto-generated method stub
-
+		this.repeatId = repeatId;
 	}
 
 	@Override
 	public String getRepeatId() {
-		// TODO Auto-generated method stub
-		return null;
+		return repeatId;
 	}
 
 	@Override
 	public String getNameInData() {
-		// TODO Auto-generated method stub
-		return null;
+		return nameInData;
 	}
 
 	@Override
@@ -189,4 +190,19 @@ public class DataRecordLinkSpy implements DataRecordLink {
 		return null;
 	}
 
+	@Override
+	public void addAttributeByIdWithValue(String id, String value) {
+		attributes.add(new DataAttributeSpy(id, value));
+	}
+
+	@Override
+	public DataAttribute getAttribute(String attributeId) {
+		// TODO Auto-generated method stub
+		for (DataAttribute dataAttribute : attributes) {
+			if (dataAttribute.getNameInData().equals(attributeId)) {
+				return dataAttribute;
+			}
+		}
+		return null;
+	}
 }

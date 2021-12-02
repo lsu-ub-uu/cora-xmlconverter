@@ -33,12 +33,13 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import se.uu.ub.cora.converter.DataElementToStringConverter;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAttribute;
 import se.uu.ub.cora.data.DataElement;
 import se.uu.ub.cora.data.DataGroup;
 
-public class DataElementToXml {
+public class DataElementToXml implements DataElementToStringConverter {
 
 	private DocumentBuilderFactory documentBuilderFactory;
 	private TransformerFactory transformerFactory;
@@ -49,9 +50,9 @@ public class DataElementToXml {
 		this.transformerFactory = transformerFactory;
 	}
 
+	@Override
 	public String convert(DataElement dataElement) {
 		return tryToCreateAndTransformDomDocumentToString(dataElement);
-
 	}
 
 	private String tryToCreateAndTransformDomDocumentToString(DataElement dataElement) {
@@ -85,10 +86,9 @@ public class DataElementToXml {
 		return domDocument;
 	}
 
-	private Document generateRootElement(DataGroup dataGroupToConvert, Document domDocument) {
+	private void generateRootElement(DataGroup dataGroupToConvert, Document domDocument) {
 		Element rootXmlDomElement = domDocument.createElement(dataGroupToConvert.getNameInData());
 		domDocument.appendChild(rootXmlDomElement);
-		return domDocument;
 	}
 
 	private void iterateAndGenerateChildElements(DataGroup dataGroup, Document domDocument,
@@ -165,4 +165,19 @@ public class DataElementToXml {
 
 		return xmlWriter.toString();
 	}
+
+	@Override
+	public String convertWithLinks(DataElement dataElement, String baseUrl) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public DocumentBuilderFactory getDocumentBuilderFactoryOnlyForTest() {
+		return documentBuilderFactory;
+	}
+
+	public TransformerFactory getTransformerFactoryOnlyForTest() {
+		return transformerFactory;
+	}
+
 }

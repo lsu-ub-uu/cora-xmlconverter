@@ -27,6 +27,7 @@ public class DocumentBuilderFactorySpy extends DocumentBuilderFactory {
 	public boolean throwParserError = false;
 	public boolean throwIOException = false;
 	public boolean newDocumentBuilderWasCalled = false;
+	public boolean throwRuntimeException = false;
 
 	@Override
 	public Object getAttribute(String arg0) throws IllegalArgumentException {
@@ -57,8 +58,9 @@ public class DocumentBuilderFactorySpy extends DocumentBuilderFactory {
 
 	@Override
 	public void setFeature(String arg0, boolean arg1) throws ParserConfigurationException {
-		// TODO Auto-generated method stub
-
+		if (throwRuntimeException) {
+			throw new RuntimeException();
+		}
 	}
 
 }

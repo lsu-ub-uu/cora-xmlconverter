@@ -50,7 +50,6 @@ public class DataGroupSpy implements DataGroup {
 
 	@Override
 	public String getNameInData() {
-		// TODO Auto-generated method stub
 		return nameIndata;
 	}
 

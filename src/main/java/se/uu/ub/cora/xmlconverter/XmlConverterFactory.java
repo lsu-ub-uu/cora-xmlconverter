@@ -21,56 +21,88 @@ package se.uu.ub.cora.xmlconverter;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
-import se.uu.ub.cora.converter.Converter;
 import se.uu.ub.cora.converter.ConverterFactory;
+import se.uu.ub.cora.converter.DataElementToStringConverter;
+import se.uu.ub.cora.converter.StringToDataElementConverter;
+import se.uu.ub.cora.xmlconverter.converter.DataElementToXml;
 import se.uu.ub.cora.xmlconverter.converter.XmlConverterException;
+import se.uu.ub.cora.xmlconverter.converter.XmlToDataElement;
 
 /**
  * Implementation of {@link ConverterFactory} for XmlConverter.
  */
-
 public class XmlConverterFactory implements ConverterFactory {
 
 	private static final String NAME = "xml";
-	private boolean throwExeceptionForTest = false;
-
-	void throwExceptionForTest() {
-		throwExeceptionForTest = true;
-	}
 
 	@Override
-	public Converter factorConverter() {
-		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+	public DataElementToStringConverter factorDataElementToStringConverter() {
+		DocumentBuilderFactory documentBuilderFactory = createDocumentBuilder();
+
+		TransformerFactory transformerFactory = createTransformerFactory();
+		return new DataElementToXml(documentBuilderFactory, transformerFactory);
+	}
+
+	private DocumentBuilderFactory createDocumentBuilder() {
+		DocumentBuilderFactory documentBuilderFactory = getNewDocumentBuilder();
 
 		try {
-
-			if (throwExeceptionForTest) {
-				throw new RuntimeException();
-			}
-			documentBuilderFactory
-					.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-
-			documentBuilderFactory
-					.setFeature("http://xml.org/sax/features/external-general-entities", false);
-			documentBuilderFactory
-					.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-			documentBuilderFactory.setFeature(
-					"http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+			setApacheFeature(documentBuilderFactory, "disallow-doctype-decl", true);
+			setApacheFeature(documentBuilderFactory, "nonvalidating/load-external-dtd", false);
+			setXmlFeature(documentBuilderFactory, "external-general-entities");
+			setXmlFeature(documentBuilderFactory, "external-parameter-entities");
 			documentBuilderFactory.setExpandEntityReferences(false);
+		} catch (Exception exception) {
+			throw new XmlConverterException(
+					"Unable to set security features for DocumentBuilderFactory", exception);
+		}
+		return documentBuilderFactory;
+	}
+
+	private void setApacheFeature(DocumentBuilderFactory documentBuilderFactory, String feature,
+			boolean featureOnOff) throws ParserConfigurationException {
+		documentBuilderFactory.setFeature("http://apache.org/xml/features/" + feature,
+				featureOnOff);
+	}
+
+	private void setXmlFeature(DocumentBuilderFactory documentBuilderFactory, String feature)
+			throws ParserConfigurationException {
+		documentBuilderFactory.setFeature("http://xml.org/sax/features/" + feature, false);
+	}
+
+	private TransformerFactory createTransformerFactory()
+			throws TransformerFactoryConfigurationError {
+		TransformerFactory transformerFactory = getNewTransformerFactory();
+
+		try {
 			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		} catch (Exception exception) {
 			throw new XmlConverterException(
-					"Unable to set security features for XmlConverterFactory", exception);
+					"Unable to set security features for TransformerFactory", exception);
 		}
-		return new XmlConverter(documentBuilderFactory, transformerFactory);
+		return transformerFactory;
+	}
+
+	TransformerFactory getNewTransformerFactory() throws TransformerFactoryConfigurationError {
+		return TransformerFactory.newInstance();
+	}
+
+	@Override
+	public StringToDataElementConverter factorStringToDataElementConverter() {
+		DocumentBuilderFactory documentBuilderFactory = createDocumentBuilder();
+		return new XmlToDataElement(documentBuilderFactory);
+	}
+
+	DocumentBuilderFactory getNewDocumentBuilder() {
+		return DocumentBuilderFactory.newInstance();
 	}
 
 	@Override
 	public String getName() {
 		return NAME;
 	}
-
 }

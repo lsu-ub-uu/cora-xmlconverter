@@ -30,9 +30,11 @@ import org.xml.sax.SAXException;
 
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAtomicProvider;
+import se.uu.ub.cora.data.DataAttribute;
 import se.uu.ub.cora.data.DataElement;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.data.DataLink;
 import se.uu.ub.cora.data.DataRecordLinkProvider;
 import se.uu.ub.cora.xmlconverter.spy.DataAtomicFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DataGroupFactorySpy;
@@ -98,12 +100,12 @@ public class XmlToDataElementTest {
 		}
 	}
 
-	// @Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
-	// + "Unable to convert from xml to dataElement due to malformed XML")
-	// public void testSaxExceptionOnParseMalformedXML() {
-	// String xmlToConvert = "noXML";
-	// xmlToDataElement.convert(xmlToConvert);
-	// }
+	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement due to malformed XML: noXML")
+	public void testSaxExceptionOnParseMalformedXML() {
+		String xmlToConvert = "noXML";
+		xmlToDataElement.convert(xmlToConvert);
+	}
 
 	@Test
 	public void testSaxExceptionOnParseMalformedXMLOriginalExceptionIsSentAlong() {
@@ -138,12 +140,12 @@ public class XmlToDataElementTest {
 		assertTrue(exceptionMessage.startsWith(errorStartsWith));
 	}
 
-	// @Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
-	// + "Unable to convert from xml to dataElement due to malformed XML")
-	// public void testSaxExceptionOnParseEmptyXML() {
-	// String xmlToConvert = "";
-	// xmlToDataElement.convert(xmlToConvert);
-	// }
+	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement due to malformed XML: ")
+	public void testSaxExceptionOnParseEmptyXML() {
+		String xmlToConvert = "";
+		xmlToDataElement.convert(xmlToConvert);
+	}
 
 	@Test
 	public void testSaxExceptionOnParseEmptyXMLOriginalExceptionIsSentAlong() {
@@ -389,14 +391,24 @@ public class XmlToDataElementTest {
 		assertEquals(nicknameGroup.getFirstAtomicValueWithNameInData("short"), "Fondis");
 	}
 
-	// @Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
-	// + "Unable to convert from xml to dataElement due to malformed XML")
-	// public void testWithMultipleXmlRootElements() {
-	// String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-	// + "<person gender=\"man\"><firstname>Janne</firstname></person>"
-	// + "<person gender=\"man\"><firstname>John</firstname></person>";
-	// xmlToDataElement.convert(xmlToConvert);
-	// }
+	@Test
+	public void testWithMultipleXmlRootElements() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person gender=\"man\"><firstname>Janne</firstname></person>"
+				+ "<person gender=\"man\"><firstname>John</firstname></person>";
+		try {
+			xmlToDataElement.convert(xmlToConvert);
+			makeSureErrorIsThrown();
+		} catch (Exception e) {
+			assertEquals(e.getMessage(),
+					"Unable to convert from xml to dataElement due to malformed XML: "
+							+ xmlToConvert);
+		}
+	}
+
+	private void makeSureErrorIsThrown() {
+		assertTrue(false);
+	}
 
 	@Test
 	public void testXmlWithMoreDataInXml() throws Exception {
@@ -432,6 +444,41 @@ public class XmlToDataElementTest {
 				+ " <identifierType>waller</identifierType>"
 				+ " <identifierValue>114</identifierValue>" + " </identifier>" + "</authority>";
 		return xmlFromXsltAlvinFedoraToCoraPlaces;
+	}
+
+	@Test
+	public void testXmlWithLinks() throws Exception {
+		String dataGroupWithLinks = getLinksXml();
+
+		DataGroup topDataGroup = (DataGroup) xmlToDataElement.convert(dataGroupWithLinks);
+
+		DataLink link1 = (DataLink) topDataGroup.getFirstChildWithNameInData("link1");
+		assertEquals(link1.getNameInData(), "link1");
+		DataLink link2 = (DataLink) topDataGroup.getFirstChildWithNameInData("link2");
+		assertEquals(link2.getRepeatId(), "33");
+		DataLink link3 = (DataLink) topDataGroup.getFirstChildWithNameInData("link3");
+		DataAttribute typeAttribute = link3.getAttribute("type");
+		assertEquals(typeAttribute.getNameInData(), "type");
+		assertEquals(typeAttribute.getValue(), "someAttribute");
+	}
+
+	private String getLinksXml() {
+		String out = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		out += "<trams>";
+		out += " <link1>";
+		out += " <linkedRecordType>recordType</linkedRecordType>";
+		out += " <linkedRecordId>place</linkedRecordId>";
+		out += " </link1>";
+		out += " <link2 repeatId=\"33\">";
+		out += " <linkedRecordType>user</linkedRecordType>";
+		out += " <linkedRecordId>test</linkedRecordId>";
+		out += " </link2>";
+		out += " <link3 type=\"someAttribute\">";
+		out += " <linkedRecordType>user</linkedRecordType>";
+		out += " <linkedRecordId>test</linkedRecordId>";
+		out += " </link3>";
+		out += "</trams>";
+		return out;
 	}
 
 	@Test

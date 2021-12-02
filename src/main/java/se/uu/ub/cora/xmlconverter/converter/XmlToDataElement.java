@@ -36,6 +36,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import se.uu.ub.cora.converter.StringToDataElementConverter;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataElement;
@@ -43,7 +44,7 @@ import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.data.DataRecordLinkProvider;
 
-public class XmlToDataElement {
+public class XmlToDataElement implements StringToDataElementConverter {
 
 	private static final int NUM_OF_LINK_CHILDREN = 2;
 	private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
@@ -54,6 +55,7 @@ public class XmlToDataElement {
 		this.documentBuilderFactory = documentBuilderFactory;
 	}
 
+	@Override
 	public DataElement convert(String dataString) {
 		try {
 			return tryToConvert(dataString);
@@ -139,14 +141,8 @@ public class XmlToDataElement {
 
 	private List<Node> getChildren(Node currentNode) {
 		List<Node> elementNodes = new ArrayList<>();
-		if (doesHaveNodeChilds(currentNode)) {
-			itarateAndCollectElementNodesOnly(currentNode, elementNodes);
-		}
+		itarateAndCollectElementNodesOnly(currentNode, elementNodes);
 		return elementNodes;
-	}
-
-	private boolean doesHaveNodeChilds(Node currentNode) {
-		return currentNode.getFirstChild() != null;
 	}
 
 	private void itarateAndCollectElementNodesOnly(Node currentNode, List<Node> elementNodes) {
@@ -291,6 +287,10 @@ public class XmlToDataElement {
 		if (xmlAttributes.hasAttributes()) {
 			throw new XmlConverterException("DataAtomic can not have attributes");
 		}
+	}
+
+	public DocumentBuilderFactory getDocumentBuilderFactoryOnlyForTest() {
+		return documentBuilderFactory;
 	}
 
 }

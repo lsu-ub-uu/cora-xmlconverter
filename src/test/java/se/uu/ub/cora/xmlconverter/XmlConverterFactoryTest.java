@@ -25,33 +25,52 @@ import static org.testng.Assert.assertTrue;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.converter.Converter;
 import se.uu.ub.cora.converter.ConverterFactory;
+import se.uu.ub.cora.converter.DataElementToStringConverter;
+import se.uu.ub.cora.converter.StringToDataElementConverter;
 import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.xmlconverter.converter.DataElementToXml;
 import se.uu.ub.cora.xmlconverter.converter.XmlConverterException;
 import se.uu.ub.cora.xmlconverter.converter.XmlToDataElement;
 import se.uu.ub.cora.xmlconverter.spy.DataAtomicFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DataGroupFactorySpy;
+import se.uu.ub.cora.xmlconverter.spy.DocumentBuilderFactorySpy;
+import se.uu.ub.cora.xmlconverter.spy.TransformerFactorySpy;
 
 public class XmlConverterFactoryTest {
 
 	@Test
 	public void testXmlConverterFactoryImplementsConverterFactory() {
 		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
-		assertTrue(xmlConverterFactory instanceof ConverterFactory);
 
+		assertTrue(xmlConverterFactory instanceof ConverterFactory);
 	}
 
 	@Test
-	public void testFactorConverter() {
+	public void testFactorDataElementConverter() {
 		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
-		Converter factoredConverter = xmlConverterFactory.factorConverter();
-		assertTrue(factoredConverter instanceof XmlConverter);
+
+		DataElementToStringConverter factoredConverter = xmlConverterFactory
+				.factorDataElementToStringConverter();
+
+		assertTrue(factoredConverter instanceof DataElementToStringConverter);
+	}
+
+	@Test
+	public void testFactorStringConverter() {
+		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
+
+		StringToDataElementConverter factoredConverter = xmlConverterFactory
+				.factorStringToDataElementConverter();
+
+		assertTrue(factoredConverter instanceof StringToDataElementConverter);
 	}
 
 	@Test
@@ -61,18 +80,44 @@ public class XmlConverterFactoryTest {
 	}
 
 	@Test
-	public void testXmlConverterFactorySendsCorrectFactoriesToConverter() {
+	public void testXmlConverterFactorySendsCorrectFactoriesToDataElementConverter() {
 		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
-		XmlConverter factorConverter = (XmlConverter) xmlConverterFactory.factorConverter();
-		assertTrue(factorConverter.getDocumentBuilderFactory() instanceof DocumentBuilderFactory);
-		assertTrue(factorConverter.getTransformerFactory() instanceof TransformerFactory);
+
+		DataElementToXml factorConverter = (DataElementToXml) xmlConverterFactory
+				.factorDataElementToStringConverter();
+
+		assertTrue(factorConverter
+				.getDocumentBuilderFactoryOnlyForTest() instanceof DocumentBuilderFactory);
+		assertTrue(
+				factorConverter.getTransformerFactoryOnlyForTest() instanceof TransformerFactory);
 	}
 
 	@Test
-	public void testXmlConverterFactoryHasIncreasedSecurity() throws Exception {
+	public void testXmlConverterFactorySendsCorrectFactoriesToStringConverter() {
 		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
-		XmlConverter factorConverter = (XmlConverter) xmlConverterFactory.factorConverter();
-		DocumentBuilderFactory documentBuilderFactory = factorConverter.getDocumentBuilderFactory();
+
+		XmlToDataElement factorConverter = (XmlToDataElement) xmlConverterFactory
+				.factorStringToDataElementConverter();
+
+		assertTrue(factorConverter
+				.getDocumentBuilderFactoryOnlyForTest() instanceof DocumentBuilderFactory);
+	}
+
+	@Test
+	public void testXmlDataElementConverterFactoryHasIncreasedSecurity() throws Exception {
+		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
+		DataElementToXml factorConverter = (DataElementToXml) xmlConverterFactory
+				.factorDataElementToStringConverter();
+
+		DocumentBuilderFactory documentBuilderFactory = factorConverter
+				.getDocumentBuilderFactoryOnlyForTest();
+
+		assertCorrectSecurityInDocumentBuilder(documentBuilderFactory);
+		assertDocumentBuilderDefaultsPrevenstSsrfAttacks(documentBuilderFactory);
+	}
+
+	private void assertCorrectSecurityInDocumentBuilder(
+			DocumentBuilderFactory documentBuilderFactory) throws ParserConfigurationException {
 		assertTrue(documentBuilderFactory
 				.getFeature("http://apache.org/xml/features/disallow-doctype-decl"));
 		assertFalse(documentBuilderFactory
@@ -84,22 +129,32 @@ public class XmlConverterFactoryTest {
 		assertFalse(documentBuilderFactory.isExpandEntityReferences());
 	}
 
-	@Test
-	public void testXmlConverterFactoryHasDefaultsThatPreventSsrfAttacks() throws Exception {
-		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
-		XmlConverter factorConverter = (XmlConverter) xmlConverterFactory.factorConverter();
-		DocumentBuilderFactory documentBuilderFactory = factorConverter.getDocumentBuilderFactory();
+	private void assertDocumentBuilderDefaultsPrevenstSsrfAttacks(
+			DocumentBuilderFactory documentBuilderFactory) {
 		assertFalse(documentBuilderFactory.isXIncludeAware());
 		assertFalse(documentBuilderFactory.isNamespaceAware());
 	}
 
 	@Test
-	public void testXmlDocumentBuilderFactoryHasIncreasedSecurity() {
+	public void testXmlStringConverterFactoryHasIncreasedSecurity() throws Exception {
 		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
-		XmlConverter factorConverter = (XmlConverter) xmlConverterFactory.factorConverter();
-		DocumentBuilderFactory documentBuilderFactory = factorConverter.getDocumentBuilderFactory();
+		XmlToDataElement factorConverter = (XmlToDataElement) xmlConverterFactory
+				.factorStringToDataElementConverter();
 
-		TransformerFactory transformerFactory = factorConverter.getTransformerFactory();
+		DocumentBuilderFactory documentBuilderFactory = factorConverter
+				.getDocumentBuilderFactoryOnlyForTest();
+
+		assertCorrectSecurityInDocumentBuilder(documentBuilderFactory);
+		assertDocumentBuilderDefaultsPrevenstSsrfAttacks(documentBuilderFactory);
+	}
+
+	@Test
+	public void testXmlDataElementTransformerFactoryHasIncreasedSecurity() {
+		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
+		DataElementToXml factorConverter = (DataElementToXml) xmlConverterFactory
+				.factorDataElementToStringConverter();
+
+		TransformerFactory transformerFactory = factorConverter.getTransformerFactoryOnlyForTest();
 		boolean feature = transformerFactory.getFeature(XMLConstants.FEATURE_SECURE_PROCESSING);
 		assertEquals(feature, true);
 	}
@@ -141,19 +196,50 @@ public class XmlConverterFactoryTest {
 		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactorySpy);
 
 		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
-		XmlConverter factorConverter = (XmlConverter) xmlConverterFactory.factorConverter();
-		DocumentBuilderFactory documentBuilderFactory = factorConverter.getDocumentBuilderFactory();
-
-		XmlToDataElement xmlToDataElement = new XmlToDataElement(documentBuilderFactory);
-		return xmlToDataElement;
+		return (XmlToDataElement) xmlConverterFactory.factorStringToDataElementConverter();
 	}
 
 	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
-			+ "Unable to set security features for XmlConverterFactory")
-	public void testExceptionWhenSetttingWrongSecurityFeature() {
-		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
-		xmlConverterFactory.throwExceptionForTest();
-		xmlConverterFactory.factorConverter();
+			+ "Unable to set security features for TransformerFactory")
+	public void testExceptionWhenSettingWrongSecurityFeatureDataElement() {
+		XmlConverterFactoryThrowsExceptionExtendedForTest xmlConverterFactory = new XmlConverterFactoryThrowsExceptionExtendedForTest();
+		xmlConverterFactory.throwExceptionInTransformerFactory = true;
+		xmlConverterFactory.factorDataElementToStringConverter();
+	}
+
+	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to set security features for DocumentBuilderFactory")
+	public void testExceptionWhenSettingWrongSecurityFeatureDataElement2() {
+		XmlConverterFactoryThrowsExceptionExtendedForTest xmlConverterFactory = new XmlConverterFactoryThrowsExceptionExtendedForTest();
+		xmlConverterFactory.throwExceptionInDocumentBuilder = true;
+		xmlConverterFactory.factorDataElementToStringConverter();
+	}
+
+	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to set security features for DocumentBuilderFactory")
+	public void testExceptionWhenSettingWrongSecurityFeatureString() {
+		XmlConverterFactoryThrowsExceptionExtendedForTest xmlConverterFactory = new XmlConverterFactoryThrowsExceptionExtendedForTest();
+		xmlConverterFactory.throwExceptionInDocumentBuilder = true;
+		xmlConverterFactory.factorStringToDataElementConverter();
+	}
+
+	class XmlConverterFactoryThrowsExceptionExtendedForTest extends XmlConverterFactory {
+		boolean throwExceptionInDocumentBuilder = false;
+		boolean throwExceptionInTransformerFactory = false;
+
+		@Override
+		DocumentBuilderFactory getNewDocumentBuilder() {
+			DocumentBuilderFactorySpy documentBuilderFactorySpy = new DocumentBuilderFactorySpy();
+			documentBuilderFactorySpy.throwRuntimeException = throwExceptionInDocumentBuilder;
+			return documentBuilderFactorySpy;
+		}
+
+		@Override
+		TransformerFactory getNewTransformerFactory() throws TransformerFactoryConfigurationError {
+			TransformerFactorySpy transformerFactorySpy = new TransformerFactorySpy();
+			transformerFactorySpy.throwRuntimeException = throwExceptionInTransformerFactory;
+			return transformerFactorySpy;
+		}
 	}
 
 }
