@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2019, 2021 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -29,6 +29,7 @@ import javax.xml.transform.TransformerFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.data.Action;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.xmlconverter.spy.DataAtomicSpy;
@@ -120,6 +121,36 @@ public class DataElementToXmlTest {
 
 		DataGroup person = createPersonWithFirstname("ᚠᚢᚦᚮᚱᚴ");
 		String xml = dataElementToXml.convert(person);
+		assertEquals(xml, expectedXml);
+	}
+
+	@Test
+	public void testConvertToOneAtomicChildWithRunicCharactersSpikeeeeeeeeeeee() {
+		String baseUrl = "https://some.domain.now/rest/record/";
+		// TODO: HERE a little spike...
+		String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		expectedXml += "<person>";
+		expectedXml += "<firstname>ᚠᚢᚦᚮᚱᚴ</firstname>";
+		expectedXml += "<someLinkNameInData>";
+		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
+		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
+		expectedXml += "<actionLinks>";
+		expectedXml += "<read>";
+		expectedXml += "<requestMethod>GET</requestMethod>";
+		expectedXml += "<rel>read</rel>";
+		expectedXml += "<url>https://some.domain.now/rest/record/someType/someId</url>";
+		expectedXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedXml += "</read>";
+		expectedXml += "</actionLinks>";
+		expectedXml += "</someLinkNameInData>";
+		expectedXml += "</person>";
+		DataGroup person = createPersonWithFirstname("ᚠᚢᚦᚮᚱᚴ");
+		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData");
+		linkSpy.addAction(Action.READ);
+		person.addChild(linkSpy);
+
+		String xml = dataElementToXml.convertWithLinks(person, baseUrl);
+
 		assertEquals(xml, expectedXml);
 	}
 

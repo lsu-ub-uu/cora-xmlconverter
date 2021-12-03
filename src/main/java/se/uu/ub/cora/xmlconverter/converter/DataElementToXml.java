@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2019, 2021 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -38,11 +38,14 @@ import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAttribute;
 import se.uu.ub.cora.data.DataElement;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataLink;
 
 public class DataElementToXml implements DataElementToStringConverter {
 
 	private DocumentBuilderFactory documentBuilderFactory;
 	private TransformerFactory transformerFactory;
+	private Document domDocument;
+	private String baseUrl;
 
 	public DataElementToXml(DocumentBuilderFactory documentBuildeFactory,
 			TransformerFactory transformerFactory) {
@@ -58,18 +61,18 @@ public class DataElementToXml implements DataElementToStringConverter {
 	private String tryToCreateAndTransformDomDocumentToString(DataElement dataElement) {
 		DataGroup topDataGroup = (DataGroup) dataElement;
 		try {
-			Document domDocument = createDomDocument(topDataGroup);
+			domDocument = initializeDomDocument();
+			// domDocument = createDomDocument(topDataGroup);
+			generateDomDocumentFromDataGroup(topDataGroup, domDocument);
 			return transformDomDocumentToString(domDocument, transformerFactory);
 		} catch (ParserConfigurationException exception) {
 			throw new XmlConverterException("Unable to convert from dataElement to xml", exception);
 		}
 	}
 
-	private Document createDomDocument(DataGroup dataGroupToConvert)
-			throws ParserConfigurationException {
-		Document domDocument = initializeDomDocument();
-		return generateDomDocumentFromDataGroup(dataGroupToConvert, domDocument);
-	}
+	// private Document createDomDocument(DataGroup dataGroupToConvert)
+	// throws ParserConfigurationException {
+	// }
 
 	private Document initializeDomDocument() throws ParserConfigurationException {
 		DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
@@ -111,10 +114,38 @@ public class DataElementToXml implements DataElementToStringConverter {
 		if (childDataElement instanceof DataAtomic) {
 			possiblyAddTextToElementForDataAtomic((DataAtomic) childDataElement, domElement);
 		} else {
+			if (childDataElement instanceof DataLink dataLink && dataLink.hasReadAction()) {
+				// TODO: HERE a little spike...
+				// "actionLinks": {
+				// "read": {
+				// "requestMethod": "GET",
+				// "rel": "read",
+				// "url":
+				// "https://cora.diva-portal.org/diva/rest/record/personDomainPart/authority-person:76729:mau",
+				// "accept": "application/vnd.uub.record+json"
+				// }
+				// },
+
+				Element actionLinks = domDocument.createElement("actionLinks");
+				domElement.appendChild(actionLinks);
+				Element read = domDocument.createElement("read");
+				actionLinks.appendChild(read);
+				read.appendChild(createElementWithTextContent("requestMethod", "GET"));
+				read.appendChild(createElementWithTextContent("rel", "read"));
+				read.appendChild(createElementWithTextContent("url", baseUrl + "xyz"));
+				read.appendChild(
+						createElementWithTextContent("accept", "application/vnd.uub.record+xml"));
+			}
 			DataGroup childDataGroup = (DataGroup) childDataElement;
 			addAttributesIfExistsToElementForDataGroup(childDataGroup, domElement);
 			iterateAndGenerateChildElements(childDataGroup, domDocument, domElement);
 		}
+	}
+
+	private Element createElementWithTextContent(String tagName, String textContent) {
+		Element requestMethod = domDocument.createElement(tagName);
+		requestMethod.setTextContent(textContent);
+		return requestMethod;
 	}
 
 	private Element createElement(Document domDocument, DataElement childDataElement) {
@@ -168,8 +199,8 @@ public class DataElementToXml implements DataElementToStringConverter {
 
 	@Override
 	public String convertWithLinks(DataElement dataElement, String baseUrl) {
-		// TODO Auto-generated method stub
-		return null;
+		this.baseUrl = baseUrl;
+		return tryToCreateAndTransformDomDocumentToString(dataElement);
 	}
 
 	public DocumentBuilderFactory getDocumentBuilderFactoryOnlyForTest() {

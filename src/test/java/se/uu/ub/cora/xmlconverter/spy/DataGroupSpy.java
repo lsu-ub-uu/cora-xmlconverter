@@ -79,7 +79,6 @@ public class DataGroupSpy implements DataGroup {
 
 	@Override
 	public List<DataElement> getChildren() {
-		// TODO Auto-generated method stub
 		return children;
 	}
 
@@ -117,7 +116,6 @@ public class DataGroupSpy implements DataGroup {
 
 	@Override
 	public DataAttribute getAttribute(String attributeId) {
-		// TODO Auto-generated method stub
 		for (DataAttribute dataAttribute : attributes) {
 			if (dataAttribute.getNameInData().equals(attributeId)) {
 				return dataAttribute;
