@@ -38,7 +38,7 @@ import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAttribute;
 import se.uu.ub.cora.data.DataElement;
 import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.data.DataLink;
+import se.uu.ub.cora.data.DataRecordLink;
 
 public class DataElementToXml implements DataElementToStringConverter {
 
@@ -114,7 +114,11 @@ public class DataElementToXml implements DataElementToStringConverter {
 		if (childDataElement instanceof DataAtomic) {
 			possiblyAddTextToElementForDataAtomic((DataAtomic) childDataElement, domElement);
 		} else {
-			if (childDataElement instanceof DataLink dataLink && dataLink.hasReadAction()) {
+			DataGroup childDataGroup = (DataGroup) childDataElement;
+			addAttributesIfExistsToElementForDataGroup(childDataGroup, domElement);
+			iterateAndGenerateChildElements(childDataGroup, domDocument, domElement);
+			if (childDataElement instanceof DataRecordLink dataRecordLink
+					&& dataRecordLink.hasReadAction()) {
 				// TODO: HERE a little spike...
 				// "actionLinks": {
 				// "read": {
@@ -125,20 +129,19 @@ public class DataElementToXml implements DataElementToStringConverter {
 				// "accept": "application/vnd.uub.record+json"
 				// }
 				// },
-
+				String recordURL = baseUrl + String.join("/", dataRecordLink.getLinkedRecordType(),
+						dataRecordLink.getLinkedRecordId());
 				Element actionLinks = domDocument.createElement("actionLinks");
 				domElement.appendChild(actionLinks);
 				Element read = domDocument.createElement("read");
 				actionLinks.appendChild(read);
 				read.appendChild(createElementWithTextContent("requestMethod", "GET"));
 				read.appendChild(createElementWithTextContent("rel", "read"));
-				read.appendChild(createElementWithTextContent("url", baseUrl + "xyz"));
+				read.appendChild(createElementWithTextContent("url", recordURL));
 				read.appendChild(
 						createElementWithTextContent("accept", "application/vnd.uub.record+xml"));
 			}
-			DataGroup childDataGroup = (DataGroup) childDataElement;
-			addAttributesIfExistsToElementForDataGroup(childDataGroup, domElement);
-			iterateAndGenerateChildElements(childDataGroup, domDocument, domElement);
+
 		}
 	}
 

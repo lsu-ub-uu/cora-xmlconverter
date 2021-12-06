@@ -145,7 +145,10 @@ public class DataElementToXmlTest {
 		expectedXml += "</someLinkNameInData>";
 		expectedXml += "</person>";
 		DataGroup person = createPersonWithFirstname("ᚠᚢᚦᚮᚱᚴ");
-		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData");
+		String linkedType = "someType";
+		String linkedId = "someId";
+		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", linkedType,
+				linkedId);
 		linkSpy.addAction(Action.READ);
 		person.addChild(linkSpy);
 
