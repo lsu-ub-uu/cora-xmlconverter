@@ -124,39 +124,6 @@ public class DataElementToXmlTest {
 		assertEquals(xml, expectedXml);
 	}
 
-	@Test
-	public void testConvertToOneAtomicChildWithRunicCharactersSpikeeeeeeeeeeee() {
-		String baseUrl = "https://some.domain.now/rest/record/";
-		// TODO: HERE a little spike...
-		String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-		expectedXml += "<person>";
-		expectedXml += "<firstname>ᚠᚢᚦᚮᚱᚴ</firstname>";
-		expectedXml += "<someLinkNameInData>";
-		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
-		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
-		expectedXml += "<actionLinks>";
-		expectedXml += "<read>";
-		expectedXml += "<requestMethod>GET</requestMethod>";
-		expectedXml += "<rel>read</rel>";
-		expectedXml += "<url>https://some.domain.now/rest/record/someType/someId</url>";
-		expectedXml += "<accept>application/vnd.uub.record+xml</accept>";
-		expectedXml += "</read>";
-		expectedXml += "</actionLinks>";
-		expectedXml += "</someLinkNameInData>";
-		expectedXml += "</person>";
-		DataGroup person = createPersonWithFirstname("ᚠᚢᚦᚮᚱᚴ");
-		String linkedType = "someType";
-		String linkedId = "someId";
-		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", linkedType,
-				linkedId);
-		linkSpy.addAction(Action.READ);
-		person.addChild(linkSpy);
-
-		String xml = dataElementToXml.convertWithLinks(person, baseUrl);
-
-		assertEquals(xml, expectedXml);
-	}
-
 	private DataGroup createPersonWithFirstname(String firstNameString) {
 		DataGroup person = new DataGroupSpy("person");
 		DataAtomic firstName = new DataAtomicSpy("firstname", firstNameString);
@@ -299,5 +266,56 @@ public class DataElementToXmlTest {
 
 		assertTrue(xml.contains(expectedEncoding));
 		assertTrue(xml.contains(expectedVersion));
+	}
+
+	@Test
+	public void testConvertWithLink_noReadAction() {
+		String baseUrl = "https://some.domain.now/rest/record/";
+		String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		expectedXml += "<person>";
+		expectedXml += "<someLinkNameInData repeatId=\"someRepeatId\" someAttributeId=\"someAttributeValue\">";
+		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
+		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
+		expectedXml += "</someLinkNameInData>";
+		expectedXml += "</person>";
+		DataGroup person = new DataGroupSpy("person");
+		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", "someType",
+				"someId");
+		linkSpy.setRepeatId("someRepeatId");
+		linkSpy.addAttributeByIdWithValue("someAttributeId", "someAttributeValue");
+		person.addChild(linkSpy);
+
+		String xml = dataElementToXml.convertWithLinks(person, baseUrl);
+
+		assertEquals(xml, expectedXml);
+	}
+
+	@Test
+	public void testConvertWithLink_readAction() {
+		String baseUrl = "https://some.domain.now/rest/record/";
+		String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		expectedXml += "<person>";
+		expectedXml += "<someLinkNameInData>";
+		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
+		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
+		expectedXml += "<actionLinks>";
+		expectedXml += "<read>";
+		expectedXml += "<requestMethod>GET</requestMethod>";
+		expectedXml += "<rel>read</rel>";
+		expectedXml += "<url>https://some.domain.now/rest/record/someType/someId</url>";
+		expectedXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedXml += "</read>";
+		expectedXml += "</actionLinks>";
+		expectedXml += "</someLinkNameInData>";
+		expectedXml += "</person>";
+		DataGroup person = new DataGroupSpy("person");
+		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", "someType",
+				"someId");
+		linkSpy.addAction(Action.READ);
+		person.addChild(linkSpy);
+
+		String xml = dataElementToXml.convertWithLinks(person, baseUrl);
+
+		assertEquals(xml, expectedXml);
 	}
 }

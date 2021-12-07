@@ -119,6 +119,7 @@ public class DataElementToXml implements DataElementToStringConverter {
 			iterateAndGenerateChildElements(childDataGroup, domDocument, domElement);
 			if (childDataElement instanceof DataRecordLink dataRecordLink
 					&& dataRecordLink.hasReadAction()) {
+				// if (childDataElement instanceof DataRecordLink dataRecordLink) {
 				// TODO: HERE a little spike...
 				// "actionLinks": {
 				// "read": {
