@@ -26,11 +26,11 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import se.uu.ub.cora.converter.ConverterFactory;
-import se.uu.ub.cora.converter.DataElementToStringConverter;
-import se.uu.ub.cora.converter.StringToDataElementConverter;
-import se.uu.ub.cora.xmlconverter.converter.DataElementToXml;
+import se.uu.ub.cora.converter.ExternallyConvertibleToStringConverter;
+import se.uu.ub.cora.converter.StringToExternallyConvertibleConverter;
+import se.uu.ub.cora.xmlconverter.converter.ExternallyConvertibleToXml;
 import se.uu.ub.cora.xmlconverter.converter.XmlConverterException;
-import se.uu.ub.cora.xmlconverter.converter.XmlToDataElement;
+import se.uu.ub.cora.xmlconverter.converter.XmlToExternallyConvertible;
 
 /**
  * Implementation of {@link ConverterFactory} for XmlConverter.
@@ -40,11 +40,11 @@ public class XmlConverterFactory implements ConverterFactory {
 	private static final String NAME = "xml";
 
 	@Override
-	public DataElementToStringConverter factorDataElementToStringConverter() {
+	public ExternallyConvertibleToStringConverter factorExternallyConvertableToStringConverter() {
 		DocumentBuilderFactory documentBuilderFactory = createDocumentBuilder();
 
 		TransformerFactory transformerFactory = createTransformerFactory();
-		return new DataElementToXml(documentBuilderFactory, transformerFactory);
+		return new ExternallyConvertibleToXml(documentBuilderFactory, transformerFactory);
 	}
 
 	private DocumentBuilderFactory createDocumentBuilder() {
@@ -92,9 +92,9 @@ public class XmlConverterFactory implements ConverterFactory {
 	}
 
 	@Override
-	public StringToDataElementConverter factorStringToDataElementConverter() {
+	public StringToExternallyConvertibleConverter factorStringToExternallyConvertableConverter() {
 		DocumentBuilderFactory documentBuilderFactory = createDocumentBuilder();
-		return new XmlToDataElement(documentBuilderFactory);
+		return new XmlToExternallyConvertible(documentBuilderFactory);
 	}
 
 	DocumentBuilderFactory getNewDocumentBuilder() {

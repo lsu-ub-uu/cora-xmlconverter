@@ -36,7 +36,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import se.uu.ub.cora.converter.StringToDataElementConverter;
+import se.uu.ub.cora.converter.StringToExternallyConvertibleConverter;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataElement;
@@ -44,14 +44,14 @@ import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.data.DataRecordLinkProvider;
 
-public class XmlToDataElement implements StringToDataElementConverter {
+public class XmlToExternallyConvertible implements StringToExternallyConvertibleConverter {
 
 	private static final int NUM_OF_LINK_CHILDREN = 2;
 	private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 	private static final String REPEAT_ID = "repeatId";
 	private DocumentBuilderFactory documentBuilderFactory;
 
-	public XmlToDataElement(DocumentBuilderFactory documentBuilderFactory) {
+	public XmlToExternallyConvertible(DocumentBuilderFactory documentBuilderFactory) {
 		this.documentBuilderFactory = documentBuilderFactory;
 	}
 

@@ -32,13 +32,13 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.converter.ConverterFactory;
-import se.uu.ub.cora.converter.DataElementToStringConverter;
-import se.uu.ub.cora.converter.StringToDataElementConverter;
+import se.uu.ub.cora.converter.ExternallyConvertibleToStringConverter;
+import se.uu.ub.cora.converter.StringToExternallyConvertibleConverter;
 import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroupProvider;
-import se.uu.ub.cora.xmlconverter.converter.DataElementToXml;
+import se.uu.ub.cora.xmlconverter.converter.ExternallyConvertibleToXml;
 import se.uu.ub.cora.xmlconverter.converter.XmlConverterException;
-import se.uu.ub.cora.xmlconverter.converter.XmlToDataElement;
+import se.uu.ub.cora.xmlconverter.converter.XmlToExternallyConvertible;
 import se.uu.ub.cora.xmlconverter.spy.DataAtomicFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DataGroupFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DocumentBuilderFactorySpy;
@@ -57,20 +57,20 @@ public class XmlConverterFactoryTest {
 	public void testFactorDataElementConverter() {
 		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
 
-		DataElementToStringConverter factoredConverter = xmlConverterFactory
-				.factorDataElementToStringConverter();
+		ExternallyConvertibleToStringConverter factoredConverter = xmlConverterFactory
+				.factorExternallyConvertableToStringConverter();
 
-		assertTrue(factoredConverter instanceof DataElementToStringConverter);
+		assertTrue(factoredConverter instanceof ExternallyConvertibleToStringConverter);
 	}
 
 	@Test
 	public void testFactorStringConverter() {
 		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
 
-		StringToDataElementConverter factoredConverter = xmlConverterFactory
-				.factorStringToDataElementConverter();
+		StringToExternallyConvertibleConverter factoredConverter = xmlConverterFactory
+				.factorStringToExternallyConvertableConverter();
 
-		assertTrue(factoredConverter instanceof StringToDataElementConverter);
+		assertTrue(factoredConverter instanceof StringToExternallyConvertibleConverter);
 	}
 
 	@Test
@@ -83,8 +83,8 @@ public class XmlConverterFactoryTest {
 	public void testXmlConverterFactorySendsCorrectFactoriesToDataElementConverter() {
 		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
 
-		DataElementToXml factorConverter = (DataElementToXml) xmlConverterFactory
-				.factorDataElementToStringConverter();
+		ExternallyConvertibleToXml factorConverter = (ExternallyConvertibleToXml) xmlConverterFactory
+				.factorExternallyConvertableToStringConverter();
 
 		assertTrue(factorConverter
 				.getDocumentBuilderFactoryOnlyForTest() instanceof DocumentBuilderFactory);
@@ -96,8 +96,8 @@ public class XmlConverterFactoryTest {
 	public void testXmlConverterFactorySendsCorrectFactoriesToStringConverter() {
 		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
 
-		XmlToDataElement factorConverter = (XmlToDataElement) xmlConverterFactory
-				.factorStringToDataElementConverter();
+		XmlToExternallyConvertible factorConverter = (XmlToExternallyConvertible) xmlConverterFactory
+				.factorStringToExternallyConvertableConverter();
 
 		assertTrue(factorConverter
 				.getDocumentBuilderFactoryOnlyForTest() instanceof DocumentBuilderFactory);
@@ -106,8 +106,8 @@ public class XmlConverterFactoryTest {
 	@Test
 	public void testXmlDataElementConverterFactoryHasIncreasedSecurity() throws Exception {
 		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
-		DataElementToXml factorConverter = (DataElementToXml) xmlConverterFactory
-				.factorDataElementToStringConverter();
+		ExternallyConvertibleToXml factorConverter = (ExternallyConvertibleToXml) xmlConverterFactory
+				.factorExternallyConvertableToStringConverter();
 
 		DocumentBuilderFactory documentBuilderFactory = factorConverter
 				.getDocumentBuilderFactoryOnlyForTest();
@@ -138,8 +138,8 @@ public class XmlConverterFactoryTest {
 	@Test
 	public void testXmlStringConverterFactoryHasIncreasedSecurity() throws Exception {
 		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
-		XmlToDataElement factorConverter = (XmlToDataElement) xmlConverterFactory
-				.factorStringToDataElementConverter();
+		XmlToExternallyConvertible factorConverter = (XmlToExternallyConvertible) xmlConverterFactory
+				.factorStringToExternallyConvertableConverter();
 
 		DocumentBuilderFactory documentBuilderFactory = factorConverter
 				.getDocumentBuilderFactoryOnlyForTest();
@@ -151,8 +151,8 @@ public class XmlConverterFactoryTest {
 	@Test
 	public void testXmlDataElementTransformerFactoryHasIncreasedSecurity() {
 		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
-		DataElementToXml factorConverter = (DataElementToXml) xmlConverterFactory
-				.factorDataElementToStringConverter();
+		ExternallyConvertibleToXml factorConverter = (ExternallyConvertibleToXml) xmlConverterFactory
+				.factorExternallyConvertableToStringConverter();
 
 		TransformerFactory transformerFactory = factorConverter.getTransformerFactoryOnlyForTest();
 		boolean feature = transformerFactory.getFeature(XMLConstants.FEATURE_SECURE_PROCESSING);
@@ -162,7 +162,7 @@ public class XmlConverterFactoryTest {
 	// README : https://portswigger.net/web-security/xxe
 	@Test(expectedExceptions = XmlConverterException.class)
 	public void testMaliciousXmlExploitingXxeToRetrieveFiles() {
-		XmlToDataElement xmlToDataElement = createXmlToDataElementToTestSecurity();
+		XmlToExternallyConvertible xmlToDataElement = createXmlToDataElementToTestSecurity();
 
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<!DOCTYPE doc[\n"
 				+ " <!ENTITY pwd SYSTEM \"file:///etc/passwd23424\">\n" + "]>"
@@ -172,7 +172,7 @@ public class XmlConverterFactoryTest {
 
 	@Test(expectedExceptions = XmlConverterException.class)
 	public void testMaliciousXmlExploitingXInclude() {
-		XmlToDataElement xmlToDataElement = createXmlToDataElementToTestSecurity();
+		XmlToExternallyConvertible xmlToDataElement = createXmlToDataElementToTestSecurity();
 
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 				+ "<person xmlns:xi=\"http://www.w3.org/2001/XInclude\"><firstname><xi:include parse=\"text\" href=\"file:///etc/passwd\"/></firstname></person>";
@@ -181,7 +181,7 @@ public class XmlConverterFactoryTest {
 
 	@Test(expectedExceptions = XmlConverterException.class)
 	public void testMaliciousXmlExploitingXxeToPerformSsrfAttacks() {
-		XmlToDataElement xmlToDataElement = createXmlToDataElementToTestSecurity();
+		XmlToExternallyConvertible xmlToDataElement = createXmlToDataElementToTestSecurity();
 
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 				+ "<!DOCTYPE test [ <!ENTITY xxe SYSTEM \"https://somewhere/whatever/\"> ]>"
@@ -189,14 +189,14 @@ public class XmlConverterFactoryTest {
 		xmlToDataElement.convert(xmlToConvert);
 	}
 
-	private XmlToDataElement createXmlToDataElementToTestSecurity() {
+	private XmlToExternallyConvertible createXmlToDataElementToTestSecurity() {
 		DataGroupFactorySpy dataGroupFactorySpy = new DataGroupFactorySpy();
 		DataGroupProvider.setDataGroupFactory(dataGroupFactorySpy);
 		DataAtomicFactorySpy dataAtomicFactorySpy = new DataAtomicFactorySpy();
 		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactorySpy);
 
 		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
-		return (XmlToDataElement) xmlConverterFactory.factorStringToDataElementConverter();
+		return (XmlToExternallyConvertible) xmlConverterFactory.factorStringToExternallyConvertableConverter();
 	}
 
 	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
@@ -204,7 +204,7 @@ public class XmlConverterFactoryTest {
 	public void testExceptionWhenSettingWrongSecurityFeatureDataElement() {
 		XmlConverterFactoryThrowsExceptionExtendedForTest xmlConverterFactory = new XmlConverterFactoryThrowsExceptionExtendedForTest();
 		xmlConverterFactory.throwExceptionInTransformerFactory = true;
-		xmlConverterFactory.factorDataElementToStringConverter();
+		xmlConverterFactory.factorExternallyConvertableToStringConverter();
 	}
 
 	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
@@ -212,7 +212,7 @@ public class XmlConverterFactoryTest {
 	public void testExceptionWhenSettingWrongSecurityFeatureDataElement2() {
 		XmlConverterFactoryThrowsExceptionExtendedForTest xmlConverterFactory = new XmlConverterFactoryThrowsExceptionExtendedForTest();
 		xmlConverterFactory.throwExceptionInDocumentBuilder = true;
-		xmlConverterFactory.factorDataElementToStringConverter();
+		xmlConverterFactory.factorExternallyConvertableToStringConverter();
 	}
 
 	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
@@ -220,7 +220,7 @@ public class XmlConverterFactoryTest {
 	public void testExceptionWhenSettingWrongSecurityFeatureString() {
 		XmlConverterFactoryThrowsExceptionExtendedForTest xmlConverterFactory = new XmlConverterFactoryThrowsExceptionExtendedForTest();
 		xmlConverterFactory.throwExceptionInDocumentBuilder = true;
-		xmlConverterFactory.factorStringToDataElementConverter();
+		xmlConverterFactory.factorStringToExternallyConvertableConverter();
 	}
 
 	class XmlConverterFactoryThrowsExceptionExtendedForTest extends XmlConverterFactory {

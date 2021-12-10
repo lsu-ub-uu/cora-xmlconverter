@@ -40,14 +40,14 @@ import se.uu.ub.cora.xmlconverter.spy.DataAtomicFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DataGroupFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DocumentBuilderFactorySpy;
 
-public class XmlToDataElementTest {
+public class XmlToExternallyConvertibleTest {
 
 	DataGroupFactorySpy dataGroupFactorySpy = null;
 	DataAtomicFactorySpy dataAtomicFactorySpy = null;
 	DataRecordLinkFactorySpy dataRecordLinkFactory = null;
 
 	private DocumentBuilderFactory documentBuilderFactory;
-	private XmlToDataElement xmlToDataElement;
+	private XmlToExternallyConvertible xmlToDataElement;
 
 	@BeforeMethod
 	public void setUp() {
@@ -59,7 +59,7 @@ public class XmlToDataElementTest {
 		DataRecordLinkProvider.setDataRecordLinkFactory(dataRecordLinkFactory);
 
 		documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		xmlToDataElement = new XmlToDataElement(documentBuilderFactory);
+		xmlToDataElement = new XmlToExternallyConvertible(documentBuilderFactory);
 	}
 
 	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
@@ -84,7 +84,7 @@ public class XmlToDataElementTest {
 
 	private void setUpXmlToDataElementWithDocumentFactorySpy() {
 		documentBuilderFactory = new DocumentBuilderFactorySpy();
-		xmlToDataElement = new XmlToDataElement(documentBuilderFactory);
+		xmlToDataElement = new XmlToExternallyConvertible(documentBuilderFactory);
 	}
 
 	@Test

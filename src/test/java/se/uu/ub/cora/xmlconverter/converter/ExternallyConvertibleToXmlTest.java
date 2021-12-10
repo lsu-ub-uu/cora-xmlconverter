@@ -21,6 +21,8 @@ package se.uu.ub.cora.xmlconverter.converter;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+import java.util.List;
+
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -32,22 +34,25 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.data.Action;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataRecord;
 import se.uu.ub.cora.xmlconverter.spy.DataAtomicSpy;
 import se.uu.ub.cora.xmlconverter.spy.DataGroupSpy;
+import se.uu.ub.cora.xmlconverter.spy.DataRecordSpy;
 import se.uu.ub.cora.xmlconverter.spy.DocumentBuilderFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.TransformerFactorySpy;
 
-public class DataElementToXmlTest {
+public class ExternallyConvertibleToXmlTest {
 
 	private DocumentBuilderFactory documentBuilderFactory;
 	private TransformerFactory transformerFactory;
-	private DataElementToXml dataElementToXml;
+	private ExternallyConvertibleToXml dataElementToXml;
 
 	@BeforeMethod
 	public void setUp() {
 		documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		transformerFactory = TransformerFactory.newInstance();
-		dataElementToXml = new DataElementToXml(documentBuilderFactory, transformerFactory);
+		dataElementToXml = new ExternallyConvertibleToXml(documentBuilderFactory,
+				transformerFactory);
 	}
 
 	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
@@ -61,7 +66,7 @@ public class DataElementToXmlTest {
 
 	private void setUpDataElementToXmlWithDocumentBuilderFactorySpy() {
 		documentBuilderFactory = new DocumentBuilderFactorySpy();
-		dataElementToXml = new DataElementToXml(documentBuilderFactory, null);
+		dataElementToXml = new ExternallyConvertibleToXml(documentBuilderFactory, null);
 	}
 
 	@Test
@@ -97,10 +102,10 @@ public class DataElementToXmlTest {
 		}
 	}
 
-	private DataElementToXml setUpDataElementToXmlWithTransformerSpy() {
+	private ExternallyConvertibleToXml setUpDataElementToXmlWithTransformerSpy() {
 		transformerFactory = new TransformerFactorySpy();
-		DataElementToXml dataElementToXml = new DataElementToXml(documentBuilderFactory,
-				transformerFactory);
+		ExternallyConvertibleToXml dataElementToXml = new ExternallyConvertibleToXml(
+				documentBuilderFactory, transformerFactory);
 		return dataElementToXml;
 	}
 
@@ -318,4 +323,201 @@ public class DataElementToXmlTest {
 
 		assertEquals(xml, expectedXml);
 	}
+
+	@Test
+	public void testConvertRecord() throws Exception {
+		String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		expectedXml += "<record>";
+		expectedXml += "<data>";
+		expectedXml += "<person>";
+		expectedXml += "<someLinkNameInData>";
+		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
+		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
+		expectedXml += "</someLinkNameInData>";
+		expectedXml += "</person>";
+		expectedXml += "</data>";
+		expectedXml += "</record>";
+
+		DataRecord dataRecord = new DataRecordSpy();
+		DataGroupSpy person = new DataGroupSpy("person");
+		dataRecord.setDataGroup(person);
+
+		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", "someType",
+				"someId");
+		linkSpy.addAction(Action.READ);
+		person.addChild(linkSpy);
+
+		String xml = dataElementToXml.convert(dataRecord);
+
+		assertEquals(xml, expectedXml);
+	}
+
+	@Test
+	public void testConvertRecordWithLink_readAction() throws Exception {
+		String baseUrl = "https://some.domain.now/rest/record/";
+
+		String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		expectedXml += "<record>";
+		expectedXml += "<data>";
+		expectedXml += "<person>";
+		expectedXml += "<someLinkNameInData>";
+		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
+		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
+		expectedXml += "<actionLinks>";
+		expectedXml += "<read>";
+		expectedXml += "<requestMethod>GET</requestMethod>";
+		expectedXml += "<rel>read</rel>";
+		expectedXml += "<url>https://some.domain.now/rest/record/someType/someId</url>";
+		expectedXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedXml += "</read>";
+		expectedXml += "</actionLinks>";
+		expectedXml += "</someLinkNameInData>";
+		expectedXml += "</person>";
+		expectedXml += "</data>";
+		expectedXml += "<actionLinks>";
+		expectedXml += "<read>";
+		expectedXml += "<requestMethod>GET</requestMethod>";
+		expectedXml += "<rel>read</rel>";
+		expectedXml += "<url>https://some.domain.now/rest/record/fakeType/fakeId</url>";
+		expectedXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedXml += "</read>";
+		expectedXml += "</actionLinks>";
+		expectedXml += "</record>";
+
+		DataRecordSpy dataRecord = new DataRecordSpy();
+		DataGroupSpy person = new DataGroupSpy("person");
+		dataRecord.setDataGroup(person);
+
+		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", "someType",
+				"someId");
+		linkSpy.addAction(Action.READ);
+		person.addChild(linkSpy);
+
+		dataRecord.actions = List.of(Action.READ);
+
+		String xml = dataElementToXml.convertWithLinks(dataRecord, baseUrl);
+
+		assertEquals(xml, expectedXml);
+
+	}
+
+	@Test
+	public void testConvertRecordWithLink_deleteAction() throws Exception {
+		String baseUrl = "https://some.domain.now/rest/record/";
+
+		String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		expectedXml += "<record>";
+		expectedXml += "<data>";
+		expectedXml += "<person>";
+		expectedXml += "<someLinkNameInData>";
+		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
+		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
+		expectedXml += "</someLinkNameInData>";
+		expectedXml += "</person>";
+		expectedXml += "</data>";
+		expectedXml += "<actionLinks>";
+		expectedXml += "<delete>";
+		expectedXml += "<requestMethod>DELETE</requestMethod>";
+		expectedXml += "<rel>delete</rel>";
+		expectedXml += "<url>https://some.domain.now/rest/record/fakeType/fakeId</url>";
+		expectedXml += "</delete>";
+		expectedXml += "</actionLinks>";
+		expectedXml += "</record>";
+
+		DataRecordSpy dataRecord = new DataRecordSpy();
+		DataGroupSpy person = new DataGroupSpy("person");
+		dataRecord.setDataGroup(person);
+
+		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", "someType",
+				"someId");
+		// linkSpy.addAction(Action.DELETE);
+		person.addChild(linkSpy);
+
+		dataRecord.actions = List.of(Action.DELETE);
+
+		String xml = dataElementToXml.convertWithLinks(dataRecord, baseUrl);
+
+		assertEquals(xml, expectedXml);
+
+	}
+
+	@Test
+	public void testConvertRecordWithLink_updateAction() throws Exception {
+		String baseUrl = "https://some.domain.now/rest/record/";
+
+		String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		expectedXml += "<record>";
+		expectedXml += "<data>";
+		expectedXml += "<person>";
+		expectedXml += "<someLinkNameInData>";
+		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
+		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
+		expectedXml += "</someLinkNameInData>";
+		expectedXml += "</person>";
+		expectedXml += "</data>";
+		expectedXml += "<actionLinks>";
+		expectedXml += "<update>";
+		expectedXml += "<requestMethod>POST</requestMethod>";
+		expectedXml += "<rel>update</rel>";
+		expectedXml += "<url>https://some.domain.now/rest/record/fakeType/fakeId</url>";
+		expectedXml += "<contentType>application/vnd.uub.record+xml</contentType>";
+		expectedXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedXml += "</update>";
+		expectedXml += "</actionLinks>";
+		expectedXml += "</record>";
+
+		DataRecordSpy dataRecord = new DataRecordSpy();
+		DataGroupSpy person = new DataGroupSpy("person");
+		dataRecord.setDataGroup(person);
+
+		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", "someType",
+				"someId");
+		person.addChild(linkSpy);
+
+		dataRecord.actions = List.of(Action.UPDATE);
+
+		String xml = dataElementToXml.convertWithLinks(dataRecord, baseUrl);
+
+		assertEquals(xml, expectedXml);
+	}
+
+	@Test
+	public void testConvertRecordWithLink_incommingLinksAction() throws Exception {
+		String baseUrl = "https://some.domain.now/rest/record/";
+
+		String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		expectedXml += "<record>";
+		expectedXml += "<data>";
+		expectedXml += "<person>";
+		expectedXml += "<someLinkNameInData>";
+		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
+		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
+		expectedXml += "</someLinkNameInData>";
+		expectedXml += "</person>";
+		expectedXml += "</data>";
+		expectedXml += "<actionLinks>";
+		expectedXml += "<read_incoming_links>";
+		expectedXml += "<requestMethod>GET</requestMethod>";
+		expectedXml += "<rel>read_incoming_links</rel>";
+		expectedXml += "<url>https://some.domain.now/rest/record/fakeType/fakeId/incomingLinks</url>";
+		expectedXml += "<accept>application/vnd.uub.recordList+xml</accept>";
+		expectedXml += "</read_incoming_links>";
+		expectedXml += "</actionLinks>";
+		expectedXml += "</record>";
+
+		DataRecordSpy dataRecord = new DataRecordSpy();
+		DataGroupSpy person = new DataGroupSpy("person");
+		dataRecord.setDataGroup(person);
+
+		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", "someType",
+				"someId");
+		person.addChild(linkSpy);
+
+		dataRecord.actions = List.of(Action.READ_INCOMING_LINKS);
+
+		String xml = dataElementToXml.convertWithLinks(dataRecord, baseUrl);
+
+		assertEquals(xml, expectedXml);
+	}
+
 }
