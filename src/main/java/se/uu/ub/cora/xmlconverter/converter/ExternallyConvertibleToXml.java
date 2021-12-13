@@ -105,8 +105,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		Element groupDomElement = generateDomDocumentFromDataGroup(topDataGroup);
 		dataDomElement.appendChild(groupDomElement);
 
-		if (addActionLinks) {
-			// dataRecord.hasActions()
+		if (addActionLinks && dataRecord.hasActions()) {
 			List<Action> actions = dataRecord.getActions();
 
 			Element actionLinks = domDocument.createElement("actionLinks");
