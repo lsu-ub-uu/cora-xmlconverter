@@ -324,7 +324,7 @@ public class ExternallyConvertibleToXmlTest {
 	@Test
 	public void testConvertRecord_forAllActions_hasNoActionLinksInResult() throws Exception {
 		for (Action action : Action.values()) {
-			DataRecordSpy dataRecord = createRecordWithLinkWithReadActionAddRecordActions(action);
+			DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(action);
 
 			String xml = extConvToXml.convert(dataRecord);
 
@@ -335,7 +335,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_noAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkWithReadActionAddRecordActions();
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions();
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
@@ -345,7 +345,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_readAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkWithReadActionAddRecordActions(Action.READ);
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.READ);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
@@ -362,8 +362,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_deleteAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkWithReadActionAddRecordActions(
-				Action.DELETE);
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.DELETE);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
@@ -379,8 +378,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_updateAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkWithReadActionAddRecordActions(
-				Action.UPDATE);
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.UPDATE);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
@@ -398,8 +396,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_incommingLinksAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkWithReadActionAddRecordActions(
-				Action.READ_INCOMING_LINKS);
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.READ_INCOMING_LINKS);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
@@ -414,7 +411,92 @@ public class ExternallyConvertibleToXmlTest {
 		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
 	}
 
-	private DataRecordSpy createRecordWithLinkWithReadActionAddRecordActions(Action... actions) {
+	@Test
+	public void testConvertRecordWithLinks_indexAction() throws Exception {
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.INDEX);
+
+		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+
+		String expectedActionLinksXml = "<actionLinks>";
+		expectedActionLinksXml += "<index>";
+		expectedActionLinksXml += "<requestMethod>POST</requestMethod>";
+		expectedActionLinksXml += "<rel>index</rel>";
+		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/workOrder</url>";
+		expectedActionLinksXml += "<contentType>application/vnd.uub.record+xml</contentType>";
+		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedActionLinksXml += "<body>";
+		expectedActionLinksXml += "<workOrder>";
+		expectedActionLinksXml += "<recordType>";
+		expectedActionLinksXml += "<linkedRecordType>recordType</linkedRecordType>";
+		expectedActionLinksXml += "<linkedRecordId>fakeType</linkedRecordId>";
+		expectedActionLinksXml += "<recordId>fakeId</recordId>";
+		expectedActionLinksXml += "<type>index</type>";
+		expectedActionLinksXml += "</recordType>";
+		expectedActionLinksXml += "</workOrder>";
+		expectedActionLinksXml += "</body>";
+		expectedActionLinksXml += "</index>";
+		expectedActionLinksXml += "</actionLinks>";
+		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
+	}
+
+	@Test
+	public void testConvertRecordWithLinks_uploadAction() throws Exception {
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.UPLOAD);
+
+		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+
+		String expectedActionLinksXml = "<actionLinks>";
+		expectedActionLinksXml += "<upload>";
+		expectedActionLinksXml += "<requestMethod>POST</requestMethod>";
+		expectedActionLinksXml += "<rel>upload</rel>";
+		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/fakeType/fakeId/master</url>";
+		expectedActionLinksXml += "<contentType>multipart/form-data</contentType>";
+		expectedActionLinksXml += "</upload>";
+		expectedActionLinksXml += "</actionLinks>";
+		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
+	}
+
+	@Test
+	public void testConvertRecordWithLinks_searchAction() throws Exception {
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.SEARCH);
+
+		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+
+		String searchId = (String) dataRecord.MCR.getReturnValue("getSearchId", 0);
+
+		String expectedActionLinksXml = "<actionLinks>";
+		expectedActionLinksXml += "<search>";
+		expectedActionLinksXml += "<requestMethod>GET</requestMethod>";
+		expectedActionLinksXml += "<rel>search</rel>";
+		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/searchResult/"
+				+ searchId + "</url>";
+		expectedActionLinksXml += "<accept>application/vnd.uub.recordList+xml</accept>";
+		expectedActionLinksXml += "</search>";
+		expectedActionLinksXml += "</actionLinks>";
+		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
+
+	}
+
+	@Test
+	public void testConvertRecordWithLinks_createAction() throws Exception {
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.CREATE);
+
+		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+
+		String expectedActionLinksXml = "<actionLinks>";
+		expectedActionLinksXml += "<create>";
+		expectedActionLinksXml += "<requestMethod>POST</requestMethod>";
+		expectedActionLinksXml += "<rel>create</rel>";
+		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/fakeId</url>";
+		expectedActionLinksXml += "<contentType>application/vnd.uub.record+xml</contentType>";
+		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedActionLinksXml += "</create>";
+		expectedActionLinksXml += "</actionLinks>";
+		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
+
+	}
+
+	private DataRecordSpy createRecordWithLinkAddRecordActions(Action... actions) {
 		DataRecordSpy dataRecord = new DataRecordSpy();
 		DataGroupSpy person = new DataGroupSpy("person");
 		dataRecord.setDataGroup(person);
@@ -422,7 +504,6 @@ public class ExternallyConvertibleToXmlTest {
 		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", "someType",
 				"someId");
 		person.addChild(linkSpy);
-		// linkSpy.addAction(Action.READ);
 
 		dataRecord.actions = List.of(actions);
 		return dataRecord;
@@ -436,14 +517,6 @@ public class ExternallyConvertibleToXmlTest {
 		expectedXml += "<someLinkNameInData>";
 		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
 		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
-		// expectedXml += "<actionLinks>";
-		// expectedXml += "<read>";
-		// expectedXml += "<requestMethod>GET</requestMethod>";
-		// expectedXml += "<rel>read</rel>";
-		// expectedXml += "<url>https://some.domain.now/rest/record/someType/someId</url>";
-		// expectedXml += "<accept>application/vnd.uub.record+xml</accept>";
-		// expectedXml += "</read>";
-		// expectedXml += "</actionLinks>";
 		expectedXml += "</someLinkNameInData>";
 		expectedXml += "</person>";
 		expectedXml += "</data>";

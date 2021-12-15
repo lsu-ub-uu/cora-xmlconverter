@@ -30,13 +30,15 @@ import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
 
 public class DataRecordSpy implements DataRecord {
 
-	MethodCallRecorder MCR = new MethodCallRecorder();
+	public MethodCallRecorder MCR = new MethodCallRecorder();
 
 	private DataGroupSpy dataGroup;
 
 	public List<Action> actions = Collections.emptyList();
 
 	public String type = "fakeType";
+
+	public String searchId = "fakeSearchId";
 
 	public DataRecordSpy(DataGroupSpy dataGroup) {
 		this.dataGroup = dataGroup;
@@ -142,6 +144,13 @@ public class DataRecordSpy implements DataRecord {
 		boolean returnValue = false;
 		MCR.addReturned(returnValue);
 		return false;
+	}
+
+	@Override
+	public String getSearchId() {
+		MCR.addCall();
+		MCR.addReturned(searchId);
+		return searchId;
 	}
 
 }

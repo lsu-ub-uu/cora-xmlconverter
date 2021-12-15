@@ -130,8 +130,64 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 				Element readIncomingLink = createReadIncomingLink(linkedRecordType, linkedRecordId);
 				actionLinks.appendChild(readIncomingLink);
 			}
+			if (actions.contains(Action.INDEX)) {
+				Element indexLink = createIndexLink(linkedRecordType, linkedRecordId);
+				actionLinks.appendChild(indexLink);
+			}
+			if (actions.contains(Action.UPLOAD)) {
+				Element readIncomingLink = createUploadLink(linkedRecordType, linkedRecordId);
+				actionLinks.appendChild(readIncomingLink);
+			}
+			if (actions.contains(Action.SEARCH)) {
+				Element readIncomingLink = createSearchLink(dataRecord.getSearchId());
+				actionLinks.appendChild(readIncomingLink);
+			}
+			if (actions.contains(Action.CREATE)) {
+				Element readIncomingLink = createCreateLink(linkedRecordId);
+				actionLinks.appendChild(readIncomingLink);
+			}
 		}
+	}
 
+	private Element createCreateLink(String linkedRecordId) {
+		Element searchLink = createStandardLink("POST", "create", linkedRecordId);
+		searchLink.appendChild(createContentTypeRecordXML());
+		searchLink.appendChild(createAcceptRecordXML());
+		return searchLink;
+	}
+
+	private Element createSearchLink(String searchId) {
+		Element searchLink = createStandardLink("GET", "search", "searchResult", searchId);
+		searchLink.appendChild(createAcceptRecordListXML());
+		return searchLink;
+	}
+
+	private Element createUploadLink(String linkedRecordType, String linkedRecordId) {
+		Element uploadLink = createStandardLink("POST", "upload", linkedRecordType, linkedRecordId,
+				"master");
+		uploadLink.appendChild(createElementWithTextContent("contentType", "multipart/form-data"));
+		return uploadLink;
+	}
+
+	private Element createIndexLink(String linkedRecordType, String linkedRecordId) {
+		Element indexLink = createStandardLink("POST", "index", "workOrder");
+		indexLink.appendChild(createContentTypeRecordXML());
+		indexLink.appendChild(createAcceptRecordXML());
+		indexLink.appendChild(createWorkOrderXML(linkedRecordType, linkedRecordId));
+		return indexLink;
+	}
+
+	private Element createWorkOrderXML(String linkedRecordType, String linkedRecordId) {
+		Element body = domDocument.createElement("body");
+		Element workOrder = domDocument.createElement("workOrder");
+		body.appendChild(workOrder);
+		Element recordType = domDocument.createElement("recordType");
+		workOrder.appendChild(recordType);
+		recordType.appendChild(createElementWithTextContent("linkedRecordType", "recordType"));
+		recordType.appendChild(createElementWithTextContent("linkedRecordId", linkedRecordType));
+		recordType.appendChild(createElementWithTextContent("recordId", linkedRecordId));
+		recordType.appendChild(createElementWithTextContent("type", "index"));
+		return body;
 	}
 
 	private Element createReadIncomingLink(String linkedRecordType, String linkedRecordId) {
