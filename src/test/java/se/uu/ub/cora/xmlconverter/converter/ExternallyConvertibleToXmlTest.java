@@ -474,7 +474,6 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "</search>";
 		expectedActionLinksXml += "</actionLinks>";
 		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
-
 	}
 
 	@Test
@@ -493,9 +492,40 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "</create>";
 		expectedActionLinksXml += "</actionLinks>";
 		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
-
 	}
 
+	@Test
+	public void testConvertRecordWithLinks_listAction() throws Exception {
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.LIST);
+
+		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+
+		String expectedActionLinksXml = "<actionLinks>";
+		expectedActionLinksXml += "<list>";
+		expectedActionLinksXml += "<requestMethod>GET</requestMethod>";
+		expectedActionLinksXml += "<rel>list</rel>";
+		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/fakeId</url>";
+		expectedActionLinksXml += "<accept>application/vnd.uub.recordList+xml</accept>";
+		expectedActionLinksXml += "</list>";
+		expectedActionLinksXml += "</actionLinks>";
+		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
+	}
+
+	// "batch_index": {
+	// "requestMethod": "POST",
+	// "rel": "batch_index",
+	// "url": "https://cora.epc.ub.uu.se/diva/rest/record/index/sound/",
+	// "accept": "application/vnd.uub.record+json"
+	// },
+
+	// "validate": {
+	// "requestMethod": "POST",
+	// "rel": "validate",
+	// "contentType": "application/vnd.uub.workorder+json",
+	// "url": "https://cora.epc.ub.uu.se/diva/rest/record/workOrder/",
+	// "accept": "application/vnd.uub.record+json"
+	// }
+	// }
 	private DataRecordSpy createRecordWithLinkAddRecordActions(Action... actions) {
 		DataRecordSpy dataRecord = new DataRecordSpy();
 		DataGroupSpy person = new DataGroupSpy("person");

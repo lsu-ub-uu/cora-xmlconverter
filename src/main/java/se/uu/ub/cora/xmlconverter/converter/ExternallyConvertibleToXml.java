@@ -146,7 +146,17 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 				Element readIncomingLink = createCreateLink(linkedRecordId);
 				actionLinks.appendChild(readIncomingLink);
 			}
+			if (actions.contains(Action.LIST)) {
+				Element readIncomingLink = createListLink(linkedRecordId);
+				actionLinks.appendChild(readIncomingLink);
+			}
 		}
+	}
+
+	private Element createListLink(String linkedRecordId) {
+		Element searchLink = createStandardLink("GET", "list", linkedRecordId);
+		searchLink.appendChild(createAcceptRecordListXML());
+		return searchLink;
 	}
 
 	private Element createCreateLink(String linkedRecordId) {
