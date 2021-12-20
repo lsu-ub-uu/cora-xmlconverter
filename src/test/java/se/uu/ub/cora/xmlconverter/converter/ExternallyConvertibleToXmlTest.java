@@ -21,6 +21,7 @@ package se.uu.ub.cora.xmlconverter.converter;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -329,7 +330,7 @@ public class ExternallyConvertibleToXmlTest {
 			String xml = extConvToXml.convert(dataRecord);
 
 			String expectedActionLinksXml = "";
-			assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
+			assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
 		}
 	}
 
@@ -340,7 +341,7 @@ public class ExternallyConvertibleToXmlTest {
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
 		String expectedActionLinksXml = "";
-		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
 	}
 
 	@Test
@@ -357,7 +358,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
 		expectedActionLinksXml += "</read>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
 	}
 
 	@Test
@@ -373,7 +374,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/fakeType/fakeId</url>";
 		expectedActionLinksXml += "</delete>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
 	}
 
 	@Test
@@ -391,7 +392,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
 		expectedActionLinksXml += "</update>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
 	}
 
 	@Test
@@ -408,7 +409,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<accept>application/vnd.uub.recordList+xml</accept>";
 		expectedActionLinksXml += "</read_incoming_links>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
 	}
 
 	@Test
@@ -436,7 +437,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "</body>";
 		expectedActionLinksXml += "</index>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
 	}
 
 	@Test
@@ -453,7 +454,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<contentType>multipart/form-data</contentType>";
 		expectedActionLinksXml += "</upload>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
 	}
 
 	@Test
@@ -473,7 +474,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<accept>application/vnd.uub.recordList+xml</accept>";
 		expectedActionLinksXml += "</search>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
 	}
 
 	@Test
@@ -491,7 +492,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
 		expectedActionLinksXml += "</create>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
 	}
 
 	@Test
@@ -508,24 +509,44 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<accept>application/vnd.uub.recordList+xml</accept>";
 		expectedActionLinksXml += "</list>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithActionLinksPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
 	}
 
-	// "batch_index": {
-	// "requestMethod": "POST",
-	// "rel": "batch_index",
-	// "url": "https://cora.epc.ub.uu.se/diva/rest/record/index/sound/",
-	// "accept": "application/vnd.uub.record+json"
-	// },
+	@Test
+	public void testConvertRecordWithLinks_batchIndexAction() throws Exception {
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.BATCH_INDEX);
 
-	// "validate": {
-	// "requestMethod": "POST",
-	// "rel": "validate",
-	// "contentType": "application/vnd.uub.workorder+json",
-	// "url": "https://cora.epc.ub.uu.se/diva/rest/record/workOrder/",
-	// "accept": "application/vnd.uub.record+json"
-	// }
-	// }
+		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+
+		String expectedActionLinksXml = "<actionLinks>";
+		expectedActionLinksXml += "<batch_index>";
+		expectedActionLinksXml += "<requestMethod>POST</requestMethod>";
+		expectedActionLinksXml += "<rel>batch_index</rel>";
+		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/index/fakeId</url>";
+		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedActionLinksXml += "</batch_index>";
+		expectedActionLinksXml += "</actionLinks>";
+		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
+	}
+
+	@Test
+	public void testConvertRecordWithLinks_validateAction() throws Exception {
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.VALIDATE);
+
+		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+
+		String expectedActionLinksXml = "<actionLinks>";
+		expectedActionLinksXml += "<validate>";
+		expectedActionLinksXml += "<requestMethod>POST</requestMethod>";
+		expectedActionLinksXml += "<rel>validate</rel>";
+		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/workOrder</url>";
+		expectedActionLinksXml += "<contentType>application/vnd.uub.workorder+xml</contentType>";
+		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedActionLinksXml += "</validate>";
+		expectedActionLinksXml += "</actionLinks>";
+		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
+	}
+
 	private DataRecordSpy createRecordWithLinkAddRecordActions(Action... actions) {
 		DataRecordSpy dataRecord = new DataRecordSpy();
 		DataGroupSpy person = new DataGroupSpy("person");
@@ -539,7 +560,8 @@ public class ExternallyConvertibleToXmlTest {
 		return dataRecord;
 	}
 
-	private void assertRecordCorrectWithActionLinksPart(String expectedActionLinksXml, String xml) {
+	private void assertRecordCorrectWithSuppliedExpectedPart(String expectedActionLinksXml,
+			String xml) {
 		String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 		expectedXml += "<record>";
 		expectedXml += "<data>";
@@ -554,5 +576,115 @@ public class ExternallyConvertibleToXmlTest {
 		expectedXml += "</record>";
 		assertEquals(xml, expectedXml);
 	}
+
+	@Test
+	public void testToJsonWith_noPermissions() {
+		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(List.of(), List.of());
+
+		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+
+		String expectedPermissionsXml = "";
+		assertRecordCorrectWithSuppliedExpectedPart(expectedPermissionsXml, xml);
+	}
+
+	@Test
+	public void testToJsonWith_ListOfReadPermissions() {
+		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
+				List.of("readPermissionOne", "readPermissionTwo"), List.of());
+
+		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+
+		String expectedPermissionsXml = "<permissions>";
+		expectedPermissionsXml += "<read>";
+		expectedPermissionsXml += "<permission>readPermissionOne</permission>";
+		expectedPermissionsXml += "<permission>readPermissionTwo</permission>";
+		expectedPermissionsXml += "</read>";
+		expectedPermissionsXml += "</permissions>";
+		assertRecordCorrectWithSuppliedExpectedPart(expectedPermissionsXml, xml);
+	}
+
+	@Test
+	public void testToJsonWith_ListOfWritePermissions() {
+		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(List.of(),
+				List.of("writePermissionOne", "writePermissionTwo"));
+
+		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+
+		String expectedPermissionsXml = "<permissions>";
+		expectedPermissionsXml += "<write>";
+		expectedPermissionsXml += "<permission>writePermissionOne</permission>";
+		expectedPermissionsXml += "<permission>writePermissionTwo</permission>";
+		expectedPermissionsXml += "</write>";
+		expectedPermissionsXml += "</permissions>";
+		assertRecordCorrectWithSuppliedExpectedPart(expectedPermissionsXml, xml);
+	}
+
+	@Test
+	public void testToJsonWith_ListOfReadAndWritePermissions() {
+		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
+				List.of("readPermissionOne", "readPermissionTwo"),
+				List.of("writePermissionOne", "writePermissionTwo"));
+
+		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+
+		String expectedPermissionsXml = "<permissions>";
+		expectedPermissionsXml += "<read>";
+		expectedPermissionsXml += "<permission>readPermissionOne</permission>";
+		expectedPermissionsXml += "<permission>readPermissionTwo</permission>";
+		expectedPermissionsXml += "</read>";
+		expectedPermissionsXml += "<write>";
+		expectedPermissionsXml += "<permission>writePermissionOne</permission>";
+		expectedPermissionsXml += "<permission>writePermissionTwo</permission>";
+		expectedPermissionsXml += "</write>";
+		expectedPermissionsXml += "</permissions>";
+
+		assertRecordCorrectWithSuppliedExpectedPart(expectedPermissionsXml, xml);
+	}
+	// "permissions": {
+	// "read": [
+	// "externalURL",
+	// "otherAffiliation",
+	// "biographySwedish",
+	// "personDomainPart",
+	// "public",
+	// "biographyEnglish",
+	// "Libris_ID",
+	// "domain",
+	// "ORCID_ID",
+	// "alternativeName",
+	// "VIAF_ID",
+	// "academicTitle"
+	// ]
+	// },
+
+	private DataRecordSpy createRecordWithReadAndWritePermissions(List<String> readPermissions,
+			List<String> writePermissions) {
+		DataRecordSpy dataRecord = new DataRecordSpy();
+		DataGroupSpy person = new DataGroupSpy("person");
+		dataRecord.setDataGroup(person);
+
+		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", "someType",
+				"someId");
+		person.addChild(linkSpy);
+		LinkedHashSet<String> readSet = new LinkedHashSet<>();
+		readSet.addAll(readPermissions);
+		dataRecord.readPermissions = readSet;
+		LinkedHashSet<String> writeSet = new LinkedHashSet<>();
+		writeSet.addAll(writePermissions);
+		dataRecord.writePermissions = writeSet;
+		return dataRecord;
+	}
+
+	// private CoraDataList createDataList() {
+	// CoraDataList dataList = CoraDataList.withContainDataOfType("place");
+	// DataRecord dataRecord = new DataRecordSpy();
+	// dataList.addData(dataRecord);
+	// DataRecord dataRecord2 = new DataRecordSpy();
+	// dataList.addData(dataRecord2);
+	// dataList.setTotalNo("111");
+	// dataList.setFromNo("1");
+	// dataList.setToNo("100");
+	// return dataList;
+	// }
 
 }

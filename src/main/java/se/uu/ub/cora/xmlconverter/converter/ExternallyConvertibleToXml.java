@@ -150,41 +150,87 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 				Element readIncomingLink = createListLink(linkedRecordId);
 				actionLinks.appendChild(readIncomingLink);
 			}
+			if (actions.contains(Action.BATCH_INDEX)) {
+				Element readIncomingLink = createBatchIndexLink(linkedRecordId);
+				actionLinks.appendChild(readIncomingLink);
+			}
+			if (actions.contains(Action.VALIDATE)) {
+				Element readIncomingLink = createValidateLink();
+				actionLinks.appendChild(readIncomingLink);
+			}
+		}
+		if (dataRecord.hasReadPermissions() || dataRecord.hasWritePermissions()) {
+			Element permissions = domDocument.createElement("permissions");
+			recordDomElement.appendChild(permissions);
+
+			if (dataRecord.hasReadPermissions()) {
+				Element readPermissions = domDocument.createElement("read");
+				permissions.appendChild(readPermissions);
+
+				for (String readPermission : dataRecord.getReadPermissions()) {
+					readPermissions.appendChild(
+							createElementWithTextContent("permission", readPermission));
+				}
+			}
+			if (dataRecord.hasWritePermissions()) {
+				Element writePermissions = domDocument.createElement("write");
+				permissions.appendChild(writePermissions);
+
+				for (String writePermission : dataRecord.getWritePermissions()) {
+					writePermissions.appendChild(
+							createElementWithTextContent("permission", writePermission));
+				}
+			}
+
 		}
 	}
 
+	private Element createValidateLink() {
+		Element actionLink = createStandardLink("POST", "validate", "workOrder");
+		actionLink.appendChild(
+				createElementWithTextContent("contentType", "application/vnd.uub.workorder+xml"));
+		actionLink.appendChild(createAcceptRecordXML());
+		return actionLink;
+	}
+
+	private Element createBatchIndexLink(String linkedRecordId) {
+		Element actionLink = createStandardLink("POST", "batch_index", "index", linkedRecordId);
+		actionLink.appendChild(createAcceptRecordXML());
+		return actionLink;
+	}
+
 	private Element createListLink(String linkedRecordId) {
-		Element searchLink = createStandardLink("GET", "list", linkedRecordId);
-		searchLink.appendChild(createAcceptRecordListXML());
-		return searchLink;
+		Element actionLink = createStandardLink("GET", "list", linkedRecordId);
+		actionLink.appendChild(createAcceptRecordListXML());
+		return actionLink;
 	}
 
 	private Element createCreateLink(String linkedRecordId) {
-		Element searchLink = createStandardLink("POST", "create", linkedRecordId);
-		searchLink.appendChild(createContentTypeRecordXML());
-		searchLink.appendChild(createAcceptRecordXML());
-		return searchLink;
+		Element actionLink = createStandardLink("POST", "create", linkedRecordId);
+		actionLink.appendChild(createContentTypeRecordXML());
+		actionLink.appendChild(createAcceptRecordXML());
+		return actionLink;
 	}
 
 	private Element createSearchLink(String searchId) {
-		Element searchLink = createStandardLink("GET", "search", "searchResult", searchId);
-		searchLink.appendChild(createAcceptRecordListXML());
-		return searchLink;
+		Element actionLink = createStandardLink("GET", "search", "searchResult", searchId);
+		actionLink.appendChild(createAcceptRecordListXML());
+		return actionLink;
 	}
 
 	private Element createUploadLink(String linkedRecordType, String linkedRecordId) {
-		Element uploadLink = createStandardLink("POST", "upload", linkedRecordType, linkedRecordId,
+		Element actionLink = createStandardLink("POST", "upload", linkedRecordType, linkedRecordId,
 				"master");
-		uploadLink.appendChild(createElementWithTextContent("contentType", "multipart/form-data"));
-		return uploadLink;
+		actionLink.appendChild(createElementWithTextContent("contentType", "multipart/form-data"));
+		return actionLink;
 	}
 
 	private Element createIndexLink(String linkedRecordType, String linkedRecordId) {
-		Element indexLink = createStandardLink("POST", "index", "workOrder");
-		indexLink.appendChild(createContentTypeRecordXML());
-		indexLink.appendChild(createAcceptRecordXML());
-		indexLink.appendChild(createWorkOrderXML(linkedRecordType, linkedRecordId));
-		return indexLink;
+		Element actionLink = createStandardLink("POST", "index", "workOrder");
+		actionLink.appendChild(createContentTypeRecordXML());
+		actionLink.appendChild(createAcceptRecordXML());
+		actionLink.appendChild(createWorkOrderXML(linkedRecordType, linkedRecordId));
+		return actionLink;
 	}
 
 	private Element createWorkOrderXML(String linkedRecordType, String linkedRecordId) {
@@ -201,17 +247,17 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	}
 
 	private Element createReadIncomingLink(String linkedRecordType, String linkedRecordId) {
-		Element readIncomingLink = createStandardLink("GET", "read_incoming_links",
-				linkedRecordType, linkedRecordId, "incomingLinks");
-		readIncomingLink.appendChild(createAcceptRecordListXML());
-		return readIncomingLink;
+		Element actionLink = createStandardLink("GET", "read_incoming_links", linkedRecordType,
+				linkedRecordId, "incomingLinks");
+		actionLink.appendChild(createAcceptRecordListXML());
+		return actionLink;
 	}
 
 	private Element createUpdateLink(String linkedRecordType, String linkedRecordId) {
-		Element readLink = createStandardLink("POST", "update", linkedRecordType, linkedRecordId);
-		readLink.appendChild(createContentTypeRecordXML());
-		readLink.appendChild(createAcceptRecordXML());
-		return readLink;
+		Element actionLink = createStandardLink("POST", "update", linkedRecordType, linkedRecordId);
+		actionLink.appendChild(createContentTypeRecordXML());
+		actionLink.appendChild(createAcceptRecordXML());
+		return actionLink;
 	}
 
 	private Element createAcceptRecordXML() {
@@ -276,18 +322,18 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	}
 
 	private Element createReadLink(String linkedRecordType, String linkedRecordId) {
-		Element readLink = createStandardLink("GET", "read", linkedRecordType, linkedRecordId);
-		readLink.appendChild(createAcceptRecordXML());
-		return readLink;
+		Element actionLink = createStandardLink("GET", "read", linkedRecordType, linkedRecordId);
+		actionLink.appendChild(createAcceptRecordXML());
+		return actionLink;
 	}
 
 	private Element createStandardLink(String requestMethod, String action, String... urlParts) {
 		String recordURL = baseUrl + String.join("/", urlParts);
-		Element readLink = domDocument.createElement(action);
-		readLink.appendChild(createElementWithTextContent("requestMethod", requestMethod));
-		readLink.appendChild(createElementWithTextContent("rel", action));
-		readLink.appendChild(createElementWithTextContent("url", recordURL));
-		return readLink;
+		Element actionLink = domDocument.createElement(action);
+		actionLink.appendChild(createElementWithTextContent("requestMethod", requestMethod));
+		actionLink.appendChild(createElementWithTextContent("rel", action));
+		actionLink.appendChild(createElementWithTextContent("url", recordURL));
+		return actionLink;
 	}
 
 	private Element createDeleteLink(String linkedRecordType, String linkedRecordId) {

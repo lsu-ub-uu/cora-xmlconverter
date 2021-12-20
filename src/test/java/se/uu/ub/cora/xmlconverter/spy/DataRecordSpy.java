@@ -35,6 +35,8 @@ public class DataRecordSpy implements DataRecord {
 	private DataGroupSpy dataGroup;
 
 	public List<Action> actions = Collections.emptyList();
+	public Set<String> readPermissions = Collections.emptySet();
+	public Set<String> writePermissions = Collections.emptySet();
 
 	public String type = "fakeType";
 
@@ -109,8 +111,8 @@ public class DataRecordSpy implements DataRecord {
 	@Override
 	public Set<String> getReadPermissions() {
 		MCR.addCall();
-		MCR.addReturned(null);
-		return null;
+		MCR.addReturned(readPermissions);
+		return readPermissions;
 	}
 
 	@Override
@@ -126,14 +128,14 @@ public class DataRecordSpy implements DataRecord {
 	@Override
 	public Set<String> getWritePermissions() {
 		MCR.addCall();
-		MCR.addReturned(null);
-		return null;
+		MCR.addReturned(writePermissions);
+		return writePermissions;
 	}
 
 	@Override
 	public boolean hasReadPermissions() {
 		MCR.addCall();
-		boolean returnValue = false;
+		boolean returnValue = readPermissions.size() > 0;
 		MCR.addReturned(returnValue);
 		return returnValue;
 	}
@@ -141,9 +143,9 @@ public class DataRecordSpy implements DataRecord {
 	@Override
 	public boolean hasWritePermissions() {
 		MCR.addCall();
-		boolean returnValue = false;
+		boolean returnValue = writePermissions.size() > 0;
 		MCR.addReturned(returnValue);
-		return false;
+		return returnValue;
 	}
 
 	@Override
