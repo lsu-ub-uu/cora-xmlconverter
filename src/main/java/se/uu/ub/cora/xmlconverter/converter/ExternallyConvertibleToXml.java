@@ -36,10 +36,12 @@ import org.w3c.dom.Element;
 
 import se.uu.ub.cora.converter.ExternallyConvertibleToStringConverter;
 import se.uu.ub.cora.data.Action;
+import se.uu.ub.cora.data.Data;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAttribute;
 import se.uu.ub.cora.data.DataElement;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataList;
 import se.uu.ub.cora.data.DataRecord;
 import se.uu.ub.cora.data.DataRecordLink;
 import se.uu.ub.cora.data.ExternallyConvertible;
@@ -78,7 +80,9 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	private String createAndTransformDomDocumentToString(
 			ExternallyConvertible externallyConvertible) throws ParserConfigurationException {
 		domDocument = initializeDomDocument();
-		if (externallyConvertible instanceof DataRecord dataRecord) {
+		if (externallyConvertible instanceof DataList dataList) {
+			convertDataListToString(dataList);
+		} else if (externallyConvertible instanceof DataRecord dataRecord) {
 			convertDataRecordToString(dataRecord);
 		} else {
 			convertDataGroupToString(externallyConvertible);
@@ -93,9 +97,33 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		return newDomDocument;
 	}
 
+	private void convertDataListToString(DataList dataList) {
+		Element listDomElement = domDocument.createElement("dataList");
+		domDocument.appendChild(listDomElement);
+		listDomElement.appendChild(createElementWithTextContent("fromNo", dataList.getFromNo()));
+		listDomElement.appendChild(createElementWithTextContent("toNo", dataList.getToNo()));
+		listDomElement.appendChild(
+				createElementWithTextContent("totalNo", dataList.getTotalNumberOfTypeInStorage()));
+		listDomElement.appendChild(
+				createElementWithTextContent("containDataOfType", dataList.getContainDataOfType()));
+		// listDomElement.appendChild(createElementWithTextContent("data", ""));
+		Element dataDomElement = domDocument.createElement("data");
+		listDomElement.appendChild(dataDomElement);
+		List<Data> listOfData = dataList.getDataList();
+		for (Data data : listOfData) {
+			if (data instanceof DataRecord dataRecord) {
+				dataDomElement.appendChild(generateDomDocumentFromDataRecord(dataRecord));
+			}
+		}
+	}
+
 	private void convertDataRecordToString(DataRecord dataRecord) {
-		Element recordDomElement = domDocument.createElement("record");
+		Element recordDomElement = generateDomDocumentFromDataRecord(dataRecord);
 		domDocument.appendChild(recordDomElement);
+	}
+
+	private Element generateDomDocumentFromDataRecord(DataRecord dataRecord) {
+		Element recordDomElement = domDocument.createElement("record");
 
 		Element dataDomElement = domDocument.createElement("data");
 		recordDomElement.appendChild(dataDomElement);
@@ -105,61 +133,74 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		Element groupDomElement = generateDomDocumentFromDataGroup(topDataGroup);
 		dataDomElement.appendChild(groupDomElement);
 
+		possiblyAddActionLinks(dataRecord, recordDomElement);
+		possiblyAddPermissions(dataRecord, recordDomElement);
+		return recordDomElement;
+	}
+
+	private void possiblyAddActionLinks(DataRecord dataRecord, Element recordDomElement) {
 		if (addActionLinks && dataRecord.hasActions()) {
-			List<Action> actions = dataRecord.getActions();
-
-			Element actionLinks = domDocument.createElement("actionLinks");
-			recordDomElement.appendChild(actionLinks);
-
-			String linkedRecordType = dataRecord.getType();
-			String linkedRecordId = dataRecord.getId();
-
-			if (actions.contains(Action.READ)) {
-				Element readLink = createReadLink(linkedRecordType, linkedRecordId);
-				actionLinks.appendChild(readLink);
-			}
-			if (actions.contains(Action.UPDATE)) {
-				Element updateLink = createUpdateLink(linkedRecordType, linkedRecordId);
-				actionLinks.appendChild(updateLink);
-			}
-			if (actions.contains(Action.DELETE)) {
-				Element deleteLink = createDeleteLink(linkedRecordType, linkedRecordId);
-				actionLinks.appendChild(deleteLink);
-			}
-			if (actions.contains(Action.READ_INCOMING_LINKS)) {
-				Element readIncomingLink = createReadIncomingLink(linkedRecordType, linkedRecordId);
-				actionLinks.appendChild(readIncomingLink);
-			}
-			if (actions.contains(Action.INDEX)) {
-				Element indexLink = createIndexLink(linkedRecordType, linkedRecordId);
-				actionLinks.appendChild(indexLink);
-			}
-			if (actions.contains(Action.UPLOAD)) {
-				Element readIncomingLink = createUploadLink(linkedRecordType, linkedRecordId);
-				actionLinks.appendChild(readIncomingLink);
-			}
-			if (actions.contains(Action.SEARCH)) {
-				Element readIncomingLink = createSearchLink(dataRecord.getSearchId());
-				actionLinks.appendChild(readIncomingLink);
-			}
-			if (actions.contains(Action.CREATE)) {
-				Element readIncomingLink = createCreateLink(linkedRecordId);
-				actionLinks.appendChild(readIncomingLink);
-			}
-			if (actions.contains(Action.LIST)) {
-				Element readIncomingLink = createListLink(linkedRecordId);
-				actionLinks.appendChild(readIncomingLink);
-			}
-			if (actions.contains(Action.BATCH_INDEX)) {
-				Element readIncomingLink = createBatchIndexLink(linkedRecordId);
-				actionLinks.appendChild(readIncomingLink);
-			}
-			if (actions.contains(Action.VALIDATE)) {
-				Element readIncomingLink = createValidateLink();
-				actionLinks.appendChild(readIncomingLink);
-			}
+			addExistingActionLinks(dataRecord, recordDomElement);
 		}
-		if (dataRecord.hasReadPermissions() || dataRecord.hasWritePermissions()) {
+	}
+
+	private void addExistingActionLinks(DataRecord dataRecord, Element recordDomElement) {
+		List<Action> actions = dataRecord.getActions();
+
+		Element actionLinks = domDocument.createElement("actionLinks");
+		recordDomElement.appendChild(actionLinks);
+
+		String linkedRecordType = dataRecord.getType();
+		String linkedRecordId = dataRecord.getId();
+		if (actions.contains(Action.READ)) {
+			Element readLink = createReadLink(linkedRecordType, linkedRecordId);
+			actionLinks.appendChild(readLink);
+		}
+		if (actions.contains(Action.UPDATE)) {
+			Element updateLink = createUpdateLink(linkedRecordType, linkedRecordId);
+			actionLinks.appendChild(updateLink);
+		}
+		if (actions.contains(Action.DELETE)) {
+			Element deleteLink = createDeleteLink(linkedRecordType, linkedRecordId);
+			actionLinks.appendChild(deleteLink);
+		}
+		if (actions.contains(Action.READ_INCOMING_LINKS)) {
+			Element readIncomingLink = createReadIncomingLink(linkedRecordType, linkedRecordId);
+			actionLinks.appendChild(readIncomingLink);
+		}
+		if (actions.contains(Action.INDEX)) {
+			Element indexLink = createIndexLink(linkedRecordType, linkedRecordId);
+			actionLinks.appendChild(indexLink);
+		}
+		if (actions.contains(Action.UPLOAD)) {
+			Element readIncomingLink = createUploadLink(linkedRecordType, linkedRecordId);
+			actionLinks.appendChild(readIncomingLink);
+		}
+		if (actions.contains(Action.SEARCH)) {
+			Element readIncomingLink = createSearchLink(dataRecord.getSearchId());
+			actionLinks.appendChild(readIncomingLink);
+		}
+		if (actions.contains(Action.CREATE)) {
+			Element readIncomingLink = createCreateLink(linkedRecordId);
+			actionLinks.appendChild(readIncomingLink);
+		}
+		if (actions.contains(Action.LIST)) {
+			Element readIncomingLink = createListLink(linkedRecordId);
+			actionLinks.appendChild(readIncomingLink);
+		}
+		if (actions.contains(Action.BATCH_INDEX)) {
+			Element readIncomingLink = createBatchIndexLink(linkedRecordId);
+			actionLinks.appendChild(readIncomingLink);
+		}
+		if (actions.contains(Action.VALIDATE)) {
+			Element readIncomingLink = createValidateLink();
+			actionLinks.appendChild(readIncomingLink);
+		}
+	}
+
+	private void possiblyAddPermissions(DataRecord dataRecord, Element recordDomElement) {
+		if (addActionLinks
+				&& (dataRecord.hasReadPermissions() || dataRecord.hasWritePermissions())) {
 			Element permissions = domDocument.createElement("permissions");
 			recordDomElement.appendChild(permissions);
 
@@ -309,7 +350,6 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 			iterateAndGenerateChildElements(childDataGroup, domDocument, domElement);
 			if (childDataElement instanceof DataRecordLink dataRecordLink
 					&& dataRecordLink.hasReadAction() && addActionLinks) {
-				// TODO: resourceLink
 				String linkedRecordType = dataRecordLink.getLinkedRecordType();
 				String linkedRecordId = dataRecordLink.getLinkedRecordId();
 				Element actionLinks = domDocument.createElement("actionLinks");
@@ -317,6 +357,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 				Element readLink = createReadLink(linkedRecordType, linkedRecordId);
 				actionLinks.appendChild(readLink);
 			}
+			// TODO: resourceLink
 
 		}
 	}
