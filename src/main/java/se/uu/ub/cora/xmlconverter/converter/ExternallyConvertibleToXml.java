@@ -41,6 +41,7 @@ import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAttribute;
 import se.uu.ub.cora.data.DataElement;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataLink;
 import se.uu.ub.cora.data.DataList;
 import se.uu.ub.cora.data.DataRecord;
 import se.uu.ub.cora.data.DataRecordLink;
@@ -347,35 +348,34 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 	private void populateChildElements(Document domDocument, DataElement childDataElement,
 			Element domElement) {
-		if (childDataElement instanceof DataAtomic) {
-			possiblyAddTextToElementForDataAtomic((DataAtomic) childDataElement, domElement);
+		if (childDataElement instanceof DataAtomic dataAtomic) {
+			possiblyAddTextToElementForDataAtomic(dataAtomic, domElement);
 		} else {
 			DataGroup childDataGroup = (DataGroup) childDataElement;
 			addAttributesIfExistsToElementForDataGroup(childDataGroup, domElement);
 			iterateAndGenerateChildElements(childDataGroup, domDocument, domElement);
 
-			if (childDataElement instanceof DataRecordLink dataRecordLink
-					&& dataRecordLink.hasReadAction() && addActionLinks) {
+			if (addActionLinks && childDataElement instanceof DataLink dataLink
+					&& dataLink.hasReadAction()) {
 				Element actionLinks = domDocument.createElement("actionLinks");
 				domElement.appendChild(actionLinks);
 
-				String linkedRecordType = dataRecordLink.getLinkedRecordType();
-				String linkedRecordId = dataRecordLink.getLinkedRecordId();
-				Element readLink = createReadLink(linkedRecordType, linkedRecordId);
-				actionLinks.appendChild(readLink);
+				if (childDataElement instanceof DataRecordLink dataRecordLink) {
 
-			} else if (childDataElement instanceof DataResourceLink dataResourceLink
-					&& dataResourceLink.hasReadAction() && addActionLinks) {
-				Element actionLinks = domDocument.createElement("actionLinks");
-				domElement.appendChild(actionLinks);
+					String linkedRecordType = dataRecordLink.getLinkedRecordType();
+					String linkedRecordId = dataRecordLink.getLinkedRecordId();
+					Element readLink = createReadLink(linkedRecordType, linkedRecordId);
+					actionLinks.appendChild(readLink);
 
-				// TODO: resourceLink
-				Element readLink = createStandardLink("GET", "read", recordType, recordId,
-						dataResourceLink.getNameInData());
-				actionLinks.appendChild(readLink);
-				readLink.appendChild(
-						createElementWithTextContent("accept", dataResourceLink.getMimeType()));
+				} else if (childDataElement instanceof DataResourceLink dataResourceLink) {
 
+					Element readLink = createStandardLink("GET", "read", recordType, recordId,
+							dataResourceLink.getNameInData());
+					actionLinks.appendChild(readLink);
+					readLink.appendChild(
+							createElementWithTextContent("accept", dataResourceLink.getMimeType()));
+
+				}
 			}
 
 		}

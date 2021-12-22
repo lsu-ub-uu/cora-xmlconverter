@@ -413,16 +413,6 @@ public class ExternallyConvertibleToXmlTest {
 		expectedXml += "<read>";
 		expectedXml += "<requestMethod>GET</requestMethod>";
 		expectedXml += "<rel>read</rel>";
-		// TODO: where do we get type and id from (master is nameInData)?
-		/**
-		 * Do we need two different interfaces ExternallyConvertible --> for going out through the
-		 * API. Known imp. DataList, DataRecord.<br>
-		 * convertWithLinks(ExternallyConvertible)
-		 * <p>
-		 * and InternallyConvertible for going to external resources such as databases? Known imp.
-		 * DataGroup<br>
-		 * convert(InternallyConvertible)
-		 */
 		expectedXml += "<url>https://some.domain.now/rest/record/"
 				+ dataRecord.MCR.getReturnValue("getType", 0) + "/"
 				+ dataRecord.MCR.getReturnValue("getId", 0) + "/master</url>";
@@ -436,15 +426,6 @@ public class ExternallyConvertibleToXmlTest {
 		expectedXml += "</record>";
 		assertEquals(xml, expectedXml);
 	}
-
-	// TODO:
-	/**
-	 * test for list of records with resourceLink, uses recordType and id from current record<br>
-	 * test for one dataGroup convertWithLinks should throw exception (as we can not calculate
-	 * resource links)<br>
-	 * test for list of dataGroups convertWithLinks should throw exception
-	 */
-
 	// "actionLinks": {
 	// "read": {
 	// "requestMethod": "GET",
@@ -455,6 +436,25 @@ public class ExternallyConvertibleToXmlTest {
 	// }
 	// },
 	// "name": "master"
+
+	// TODO:
+	/**
+	 * test for list of records with resourceLink, uses recordType and id from current record<br>
+	 * test for one dataGroup convertWithLinks should throw exception (as we can not calculate
+	 * resource links)<br>
+	 * test for list of dataGroups convertWithLinks should throw exception
+	 */
+
+	// TODO: where do we get type and id from (master is nameInData)?
+	/**
+	 * Do we need two different interfaces ExternallyConvertible --> for going out through the API.
+	 * Known imp. DataList, DataRecord.<br>
+	 * convertWithLinks(ExternallyConvertible)
+	 * <p>
+	 * and InternallyConvertible for going to external resources such as databases? Known imp.
+	 * DataGroup<br>
+	 * convert(InternallyConvertible)
+	 */
 
 	@Test
 	public void testConvertRecord_forAllActions_hasNoActionLinksInResult() throws Exception {
