@@ -324,16 +324,21 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertResourceLink_noReadAction() {
+		DataRecordSpy dataRecord = new DataRecordSpy();
 		DataGroup person = new DataGroupSpy("person");
+		dataRecord.setDataGroup(person);
+
 		DataResourceLink linkSpy = new DataResourceLinkSpy("master", "someStreamId", "someFileName",
 				"18580", "application/octet-stream");
 		linkSpy.setRepeatId("someRepeatId");
 		linkSpy.addAttributeByIdWithValue("someAttributeId", "someAttributeValue");
 		person.addChild(linkSpy);
 
-		String xml = extConvToXml.convertWithLinks(person, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
 		String expectedXml = XML_DECLARATION;
+		expectedXml += "<record>";
+		expectedXml += "<data>";
 		expectedXml += "<person>";
 		expectedXml += "<master repeatId=\"someRepeatId\" someAttributeId=\"someAttributeValue\">";
 		expectedXml += "<streamId>someStreamId</streamId>";
@@ -342,21 +347,61 @@ public class ExternallyConvertibleToXmlTest {
 		expectedXml += "<mimeType>application/octet-stream</mimeType>";
 		expectedXml += "</master>";
 		expectedXml += "</person>";
+		expectedXml += "</data>";
+		expectedXml += "</record>";
+
+		assertEquals(xml, expectedXml);
+	}
+
+	@Test
+	public void testConvertResourceLink_readActionNoLinksRequested() {
+		DataRecordSpy dataRecord = new DataRecordSpy();
+		DataGroup person = new DataGroupSpy("person");
+		dataRecord.setDataGroup(person);
+
+		DataResourceLink linkSpy = new DataResourceLinkSpy("master", "someStreamId", "someFileName",
+				"18580", "application/octet-stream");
+		person.addChild(linkSpy);
+		linkSpy.addAction(Action.READ);
+		linkSpy.setRepeatId("someRepeatId");
+		linkSpy.addAttributeByIdWithValue("someAttributeId", "someAttributeValue");
+
+		String xml = extConvToXml.convert(dataRecord);
+
+		String expectedXml = XML_DECLARATION;
+		expectedXml += "<record>";
+		expectedXml += "<data>";
+		expectedXml += "<person>";
+		expectedXml += "<master repeatId=\"someRepeatId\" someAttributeId=\"someAttributeValue\">";
+		expectedXml += "<streamId>someStreamId</streamId>";
+		expectedXml += "<fileName>someFileName</fileName>";
+		expectedXml += "<fileSize>18580</fileSize>";
+		expectedXml += "<mimeType>application/octet-stream</mimeType>";
+		expectedXml += "</master>";
+		expectedXml += "</person>";
+		expectedXml += "</data>";
+		expectedXml += "</record>";
 		assertEquals(xml, expectedXml);
 	}
 
 	@Test
 	public void testConvertResourceLink_readAction() {
+		DataRecordSpy dataRecord = new DataRecordSpy();
 		DataGroup person = new DataGroupSpy("person");
+		dataRecord.setDataGroup(person);
+
 		DataResourceLink linkSpy = new DataResourceLinkSpy("master", "someStreamId", "someFileName",
 				"18580", "application/octet-stream");
+		linkSpy.addAction(Action.READ);
 		linkSpy.setRepeatId("someRepeatId");
 		linkSpy.addAttributeByIdWithValue("someAttributeId", "someAttributeValue");
 		person.addChild(linkSpy);
 
-		String xml = extConvToXml.convertWithLinks(person, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
 		String expectedXml = XML_DECLARATION;
+		expectedXml += "<record>";
+		expectedXml += "<data>";
 		expectedXml += "<person>";
 		expectedXml += "<master repeatId=\"someRepeatId\" someAttributeId=\"someAttributeValue\">";
 		expectedXml += "<streamId>someStreamId</streamId>";
@@ -378,15 +423,28 @@ public class ExternallyConvertibleToXmlTest {
 		 * DataGroup<br>
 		 * convert(InternallyConvertible)
 		 */
-		expectedXml += "<url>https://some.domain.now/rest/record/someType/someId/master</url>";
-		expectedXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedXml += "<url>https://some.domain.now/rest/record/"
+				+ dataRecord.MCR.getReturnValue("getType", 0) + "/"
+				+ dataRecord.MCR.getReturnValue("getId", 0) + "/master</url>";
+		expectedXml += "<accept>application/octet-stream</accept>";
 		expectedXml += "</read>";
 		expectedXml += "</actionLinks>";
 
 		expectedXml += "</master>";
 		expectedXml += "</person>";
+		expectedXml += "</data>";
+		expectedXml += "</record>";
 		assertEquals(xml, expectedXml);
 	}
+
+	// TODO:
+	/**
+	 * test for list of records with resourceLink, uses recordType and id from current record<br>
+	 * test for one dataGroup convertWithLinks should throw exception (as we can not calculate
+	 * resource links)<br>
+	 * test for list of dataGroups convertWithLinks should throw exception
+	 */
+
 	// "actionLinks": {
 	// "read": {
 	// "requestMethod": "GET",
