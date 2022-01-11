@@ -390,17 +390,19 @@ public class ExternallyConvertibleToXmlTest {
 		DataGroup person = new DataGroupSpy("person");
 		dataRecord.setDataGroup(person);
 
-		DataResourceLink linkSpy = new DataResourceLinkSpy("master", "someStreamId", "someFileName",
-				"18580", "application/octet-stream");
-		linkSpy.addAction(Action.READ);
-		linkSpy.setRepeatId("someRepeatId");
-		linkSpy.addAttributeByIdWithValue("someAttributeId", "someAttributeValue");
+		DataResourceLink linkSpy = createResourceLink();
 		person.addChild(linkSpy);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
 		String expectedXml = XML_DECLARATION;
-		expectedXml += "<record>";
+		expectedXml += expectedXMLForRecordResourceLink(dataRecord);
+		assertEquals(xml, expectedXml);
+	}
+
+	private String expectedXMLForRecordResourceLink(DataRecordSpy dataRecord) {
+
+		String expectedXml = "<record>";
 		expectedXml += "<data>";
 		expectedXml += "<person>";
 		expectedXml += "<master repeatId=\"someRepeatId\" someAttributeId=\"someAttributeValue\">";
@@ -424,8 +426,131 @@ public class ExternallyConvertibleToXmlTest {
 		expectedXml += "</person>";
 		expectedXml += "</data>";
 		expectedXml += "</record>";
-		assertEquals(xml, expectedXml);
+		return expectedXml;
 	}
+
+	private DataResourceLink createResourceLink() {
+		DataResourceLink linkSpy = new DataResourceLinkSpy("master", "someStreamId", "someFileName",
+				"18580", "application/octet-stream");
+		linkSpy.addAction(Action.READ);
+		linkSpy.setRepeatId("someRepeatId");
+		linkSpy.addAttributeByIdWithValue("someAttributeId", "someAttributeValue");
+		return linkSpy;
+	}
+
+	@Test
+	public void testConvertListWithResourceLink_readAction() throws Exception {
+		// * test for list of records with resourceLink, uses recordType and id from current
+		// record<br>
+		DataListSpy dataList = new DataListSpy();
+		DataRecordSpy dataRecord1 = createDataRecordWithResourceLink();
+		DataRecordSpy dataRecord2 = createDataRecordWithResourceLink();
+		dataList.addData(dataRecord1);
+		dataList.addData(dataRecord2);
+
+		String xml = extConvToXml.convertWithLinks(dataList, SOME_BASE_URL);
+		// String expectedXml = XML_DECLARATION;
+
+		String expectedListXml = XML_DECLARATION;
+		expectedListXml += "<dataList>";
+		expectedListXml += "<fromNo>";
+		expectedListXml += dataList.MCR.getReturnValue("getFromNo", 0);
+		expectedListXml += "</fromNo>";
+		expectedListXml += "<toNo>";
+		expectedListXml += dataList.MCR.getReturnValue("getToNo", 0);
+		expectedListXml += "</toNo>";
+		expectedListXml += "<totalNo>";
+		expectedListXml += dataList.MCR.getReturnValue("getTotalNumberOfTypeInStorage", 0);
+		expectedListXml += "</totalNo>";
+		expectedListXml += "<containDataOfType>";
+		expectedListXml += dataList.MCR.getReturnValue("getContainDataOfType", 0);
+		expectedListXml += "</containDataOfType>";
+		expectedListXml += "<data>";
+		expectedListXml += expectedXMLForRecordResourceLink(dataRecord1);
+		expectedListXml += expectedXMLForRecordResourceLink(dataRecord2);
+		expectedListXml += "</data>";
+		expectedListXml += "</dataList>";
+
+		assertEquals(xml, expectedListXml);
+
+	}
+
+	private DataRecordSpy createDataRecordWithResourceLink() {
+		DataRecordSpy dataRecord = new DataRecordSpy();
+		DataGroup dataGroup = new DataGroupSpy("person");
+		dataRecord.setDataGroup(dataGroup);
+		DataResourceLink linkSpy = createResourceLink();
+		dataGroup.addChild(linkSpy);
+		return dataRecord;
+	}
+
+	@Test
+	public void testConvertIncomingLinks() throws Exception {
+		DataListSpy dataList = new DataListSpy();
+		DataGroup dataGroup1 = new DataGroupSpy("recordToRecordLink");
+		DataGroup dataGroup2 = new DataGroupSpy("recordToRecordLink");
+
+		dataList.addData(dataGroup1);
+		dataList.addData(dataGroup2);
+
+		DataRecordLinkSpy linkSpy1 = createLink();
+		DataRecordLinkSpy linkSpy2 = createLink();
+
+		dataGroup1.addChild(linkSpy1);
+		dataGroup2.addChild(linkSpy2);
+
+		String xml = extConvToXml.convertWithLinks(dataList, SOME_BASE_URL);
+
+		String expectedListXml = XML_DECLARATION;
+		expectedListXml += "<dataList>";
+		expectedListXml += "<fromNo>";
+		expectedListXml += dataList.MCR.getReturnValue("getFromNo", 0);
+		expectedListXml += "</fromNo>";
+		expectedListXml += "<toNo>";
+		expectedListXml += dataList.MCR.getReturnValue("getToNo", 0);
+		expectedListXml += "</toNo>";
+		expectedListXml += "<totalNo>";
+		expectedListXml += dataList.MCR.getReturnValue("getTotalNumberOfTypeInStorage", 0);
+		expectedListXml += "</totalNo>";
+		expectedListXml += "<containDataOfType>";
+		expectedListXml += dataList.MCR.getReturnValue("getContainDataOfType", 0);
+		expectedListXml += "</containDataOfType>";
+		expectedListXml += "<data>";
+		expectedListXml += expectedXMLForDataGroupWithResourceLink(dataGroup1);
+		expectedListXml += expectedXMLForDataGroupWithResourceLink(dataGroup2);
+		expectedListXml += "</data>";
+		expectedListXml += "</dataList>";
+
+		assertEquals(xml, expectedListXml);
+
+	}
+
+	private String expectedXMLForDataGroupWithResourceLink(DataGroup dataGroup) {
+
+		String expectedXml = "<recordToRecordLink>";
+		expectedXml += "<someLinkNameInData>";
+		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
+		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
+		expectedXml += "<actionLinks>";
+		expectedXml += "<read>";
+		expectedXml += "<requestMethod>GET</requestMethod>";
+		expectedXml += "<rel>read</rel>";
+		expectedXml += "<url>https://some.domain.now/rest/record/someType/someId</url>";
+		expectedXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedXml += "</read>";
+		expectedXml += "</actionLinks>";
+		expectedXml += "</someLinkNameInData>";
+		expectedXml += "</recordToRecordLink>";
+		return expectedXml;
+	}
+
+	private DataRecordLinkSpy createLink() {
+		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", "someType",
+				"someId");
+		linkSpy.addAction(Action.READ);
+		return linkSpy;
+	}
+
 	// "actionLinks": {
 	// "read": {
 	// "requestMethod": "GET",
@@ -712,7 +837,7 @@ public class ExternallyConvertibleToXmlTest {
 	}
 
 	@Test
-	public void testToJsonWithLinks_noPermissions() {
+	public void testToXmlWithLinks_noPermissions() {
 		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(List.of(), List.of());
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
@@ -722,7 +847,7 @@ public class ExternallyConvertibleToXmlTest {
 	}
 
 	@Test
-	public void testToJsonWithLinks_ListOfReadPermissions() {
+	public void testToXmlWithLinks_ListOfReadPermissions() {
 		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
 				List.of("readPermissionOne", "readPermissionTwo"), List.of());
 
@@ -738,7 +863,7 @@ public class ExternallyConvertibleToXmlTest {
 	}
 
 	@Test
-	public void testToJsonWithLinks_ListOfWritePermissions() {
+	public void testToXmlWithLinks_ListOfWritePermissions() {
 		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(List.of(),
 				List.of("writePermissionOne", "writePermissionTwo"));
 
@@ -754,7 +879,7 @@ public class ExternallyConvertibleToXmlTest {
 	}
 
 	@Test
-	public void testToJsonWithLinks_ListOfReadAndWritePermissions() {
+	public void testToXmlWithLinks_ListOfReadAndWritePermissions() {
 		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
 				List.of("readPermissionOne", "readPermissionTwo"),
 				List.of("writePermissionOne", "writePermissionTwo"));
@@ -776,7 +901,7 @@ public class ExternallyConvertibleToXmlTest {
 	}
 
 	@Test
-	public void testToJsonWithoutLinks_ListOfReadAndWritePermissions() {
+	public void testToXmlWithoutLinks_ListOfReadAndWritePermissions() {
 		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
 				List.of("readPermissionOne", "readPermissionTwo"),
 				List.of("writePermissionOne", "writePermissionTwo"));
@@ -806,7 +931,7 @@ public class ExternallyConvertibleToXmlTest {
 	}
 
 	@Test
-	public void testToJsonWithoutLinks_ListOfRecordsNoRecord() throws Exception {
+	public void testToXmlWithoutLinks_ListOfRecordsNoRecord() throws Exception {
 		DataListSpy dataList = new DataListSpy();
 
 		String xml = extConvToXml.convert(dataList);
@@ -833,7 +958,7 @@ public class ExternallyConvertibleToXmlTest {
 	}
 
 	@Test
-	public void testToJsonWithoutLinks_ListOfRecordsTwoRecords() throws Exception {
+	public void testToXmlWithoutLinks_ListOfRecordsTwoRecords() throws Exception {
 		DataListSpy dataList = new DataListSpy();
 		DataRecordSpy dataRecord1 = createRecordWithReadAndWritePermissions(
 				List.of("readPermissionOne", "readPermissionTwo"),
@@ -868,7 +993,7 @@ public class ExternallyConvertibleToXmlTest {
 	}
 
 	@Test
-	public void testToJsonWithLinks_ListOfRecordsTwoRecords() throws Exception {
+	public void testToXmlWithLinks_ListOfRecordsTwoRecords() throws Exception {
 		DataListSpy dataList = new DataListSpy();
 		DataRecordSpy dataRecord1 = createRecordWithReadAndWritePermissions(
 				List.of("readPermissionOne", "readPermissionTwo"),
