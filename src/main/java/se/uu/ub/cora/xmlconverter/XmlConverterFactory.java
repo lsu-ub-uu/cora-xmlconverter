@@ -26,10 +26,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import se.uu.ub.cora.converter.ConverterFactory;
+import se.uu.ub.cora.converter.ConverterInitializationException;
 import se.uu.ub.cora.converter.ExternallyConvertibleToStringConverter;
 import se.uu.ub.cora.converter.StringToExternallyConvertibleConverter;
 import se.uu.ub.cora.xmlconverter.converter.ExternallyConvertibleToXml;
-import se.uu.ub.cora.xmlconverter.converter.XmlConverterException;
 import se.uu.ub.cora.xmlconverter.converter.XmlToExternallyConvertible;
 
 /**
@@ -57,7 +57,7 @@ public class XmlConverterFactory implements ConverterFactory {
 			setXmlFeature(documentBuilderFactory, "external-parameter-entities");
 			documentBuilderFactory.setExpandEntityReferences(false);
 		} catch (Exception exception) {
-			throw new XmlConverterException(
+			throw new ConverterInitializationException(
 					"Unable to set security features for DocumentBuilderFactory", exception);
 		}
 		return documentBuilderFactory;
@@ -81,7 +81,7 @@ public class XmlConverterFactory implements ConverterFactory {
 		try {
 			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		} catch (Exception exception) {
-			throw new XmlConverterException(
+			throw new ConverterInitializationException(
 					"Unable to set security features for TransformerFactory", exception);
 		}
 		return transformerFactory;

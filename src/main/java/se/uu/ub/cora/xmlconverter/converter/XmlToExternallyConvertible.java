@@ -36,6 +36,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import se.uu.ub.cora.converter.ConverterException;
 import se.uu.ub.cora.converter.StringToExternallyConvertibleConverter;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAtomicProvider;
@@ -60,11 +61,11 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 		try {
 			return tryToConvert(dataString);
 		} catch (SAXException exception) {
-			throw new XmlConverterException(
+			throw new ConverterException(
 					"Unable to convert from xml to dataElement due to malformed XML: " + dataString,
 					exception);
 		} catch (Exception exception) {
-			throw new XmlConverterException(
+			throw new ConverterException(
 					"Unable to convert from xml to dataElement: " + exception.getMessage(),
 					exception);
 		}
@@ -89,7 +90,7 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 
 	private void validateXmlHeader(String dataString) {
 		if (!dataString.startsWith(XML_HEADER)) {
-			throw new XmlConverterException("Document must be: version 1.0 and UTF-8");
+			throw new ConverterException("Document must be: version 1.0 and UTF-8");
 		}
 	}
 
@@ -129,7 +130,7 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 
 	private void ensureNoRepeatId(String repeatId) {
 		if (!repeatId.isBlank()) {
-			throw new XmlConverterException("Top dataGroup can not have repeatId");
+			throw new ConverterException("Top dataGroup can not have repeatId");
 		}
 	}
 
@@ -165,7 +166,7 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 
 	private void convertChildren(DataGroup parentElement, List<Node> elementNodeChildren) {
 		if (elementNodeChildren.isEmpty()) {
-			throw new XmlConverterException("Root element must be a DataGroup");
+			throw new ConverterException("Root element must be a DataGroup");
 		}
 		for (Node element : elementNodeChildren) {
 			convertChild(parentElement, element);
@@ -285,7 +286,7 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 
 	private void ensureNoAttributes(XmlAttributes xmlAttributes) {
 		if (xmlAttributes.hasAttributes()) {
-			throw new XmlConverterException("DataAtomic can not have attributes");
+			throw new ConverterException("DataAtomic can not have attributes");
 		}
 	}
 

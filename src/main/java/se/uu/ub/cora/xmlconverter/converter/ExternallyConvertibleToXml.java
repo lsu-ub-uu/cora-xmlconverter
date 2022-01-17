@@ -35,6 +35,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import se.uu.ub.cora.converter.ConverterException;
 import se.uu.ub.cora.converter.ExternallyConvertibleToStringConverter;
 import se.uu.ub.cora.data.Action;
 import se.uu.ub.cora.data.Data;
@@ -91,7 +92,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		try {
 			return createAndTransformDomDocumentToString(externallyConvertible);
 		} catch (ParserConfigurationException exception) {
-			throw new XmlConverterException("Unable to convert from dataElement to xml", exception);
+			throw new ConverterException("Unable to convert from dataElement to xml", exception);
 		}
 	}
 
@@ -502,7 +503,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		try {
 			return tryToTransformDomDocumentToXml();
 		} catch (TransformerException exception) {
-			throw new XmlConverterException("Unable to convert from dataElement to xml", exception);
+			throw new ConverterException("Unable to convert from dataElement to xml", exception);
 		}
 	}
 

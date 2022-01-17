@@ -28,6 +28,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.xml.sax.SAXException;
 
+import se.uu.ub.cora.converter.ConverterException;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataAttribute;
@@ -62,7 +63,7 @@ public class XmlToExternallyConvertibleTest {
 		xmlToDataElement = new XmlToExternallyConvertible(documentBuilderFactory);
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: Document must be: version 1.0 and UTF-8")
 	public void testParseExceptionWhenNotCorrectVerisonAndEncoding() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"notUTF-8\"?>"
@@ -71,7 +72,7 @@ public class XmlToExternallyConvertibleTest {
 		xmlToDataElement.convert(xmlToConvert);
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: some message from DocumentBuilderFactorySpy")
 	public void testParseExceptionOnCreateDocument() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person></person>";
@@ -100,7 +101,7 @@ public class XmlToExternallyConvertibleTest {
 		}
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement due to malformed XML: noXML")
 	public void testSaxExceptionOnParseMalformedXML() {
 		String xmlToConvert = "noXML";
@@ -129,7 +130,7 @@ public class XmlToExternallyConvertibleTest {
 		} catch (Exception e) {
 			expectedException = e;
 		}
-		assertTrue(expectedException instanceof XmlConverterException);
+		assertTrue(expectedException instanceof ConverterException);
 
 		assertMessageIsCorrectForJava14or15(expectedException);
 	}
@@ -140,7 +141,7 @@ public class XmlToExternallyConvertibleTest {
 		assertTrue(exceptionMessage.startsWith(errorStartsWith));
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement due to malformed XML: ")
 	public void testSaxExceptionOnParseEmptyXML() {
 		String xmlToConvert = "";
@@ -157,7 +158,7 @@ public class XmlToExternallyConvertibleTest {
 		}
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: Root element must be a DataGroup")
 	public void testIncompleteRootElement() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person></person>";
@@ -165,7 +166,7 @@ public class XmlToExternallyConvertibleTest {
 		xmlToDataElement.convert(xmlToConvert);
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: Root element must be a DataGroup")
 	public void testIncompleteRootElementWithSpace() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person> </person>";
@@ -173,7 +174,7 @@ public class XmlToExternallyConvertibleTest {
 		xmlToDataElement.convert(xmlToConvert);
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: Root element must be a DataGroup")
 	public void testIncompleteRootElementWithTwoSpace() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person>  </person>";
@@ -181,7 +182,7 @@ public class XmlToExternallyConvertibleTest {
 		xmlToDataElement.convert(xmlToConvert);
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: Root element must be a DataGroup")
 	public void testIncompleteRootElementWithText() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -241,7 +242,7 @@ public class XmlToExternallyConvertibleTest {
 				convertedValue);
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: DataAtomic can not have attributes")
 	public void testConvertXmlWithAttribute() {
 		String atomicXml = "<firstname someAttribute=\"attrib\">Kalle</firstname>";
@@ -351,7 +352,7 @@ public class XmlToExternallyConvertibleTest {
 
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: Top dataGroup can not have repeatId")
 	public void testRepeatIdOnParentGroup() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"

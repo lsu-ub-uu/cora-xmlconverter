@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2019, 2022 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -31,13 +31,14 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.converter.ConverterException;
 import se.uu.ub.cora.converter.ConverterFactory;
+import se.uu.ub.cora.converter.ConverterInitializationException;
 import se.uu.ub.cora.converter.ExternallyConvertibleToStringConverter;
 import se.uu.ub.cora.converter.StringToExternallyConvertibleConverter;
 import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.xmlconverter.converter.ExternallyConvertibleToXml;
-import se.uu.ub.cora.xmlconverter.converter.XmlConverterException;
 import se.uu.ub.cora.xmlconverter.converter.XmlToExternallyConvertible;
 import se.uu.ub.cora.xmlconverter.spy.DataAtomicFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DataGroupFactorySpy;
@@ -160,7 +161,7 @@ public class XmlConverterFactoryTest {
 	}
 
 	// README : https://portswigger.net/web-security/xxe
-	@Test(expectedExceptions = XmlConverterException.class)
+	@Test(expectedExceptions = ConverterException.class)
 	public void testMaliciousXmlExploitingXxeToRetrieveFiles() {
 		XmlToExternallyConvertible xmlToDataElement = createXmlToDataElementToTestSecurity();
 
@@ -170,7 +171,7 @@ public class XmlConverterFactoryTest {
 		xmlToDataElement.convert(xmlToConvert);
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class)
+	@Test(expectedExceptions = ConverterException.class)
 	public void testMaliciousXmlExploitingXInclude() {
 		XmlToExternallyConvertible xmlToDataElement = createXmlToDataElementToTestSecurity();
 
@@ -179,7 +180,7 @@ public class XmlConverterFactoryTest {
 		xmlToDataElement.convert(xmlToConvert);
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class)
+	@Test(expectedExceptions = ConverterException.class)
 	public void testMaliciousXmlExploitingXxeToPerformSsrfAttacks() {
 		XmlToExternallyConvertible xmlToDataElement = createXmlToDataElementToTestSecurity();
 
@@ -196,10 +197,11 @@ public class XmlConverterFactoryTest {
 		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactorySpy);
 
 		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
-		return (XmlToExternallyConvertible) xmlConverterFactory.factorStringToExternallyConvertableConverter();
+		return (XmlToExternallyConvertible) xmlConverterFactory
+				.factorStringToExternallyConvertableConverter();
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterInitializationException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to set security features for TransformerFactory")
 	public void testExceptionWhenSettingWrongSecurityFeatureDataElement() {
 		XmlConverterFactoryThrowsExceptionExtendedForTest xmlConverterFactory = new XmlConverterFactoryThrowsExceptionExtendedForTest();
@@ -207,7 +209,7 @@ public class XmlConverterFactoryTest {
 		xmlConverterFactory.factorExternallyConvertableToStringConverter();
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterInitializationException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to set security features for DocumentBuilderFactory")
 	public void testExceptionWhenSettingWrongSecurityFeatureDataElement2() {
 		XmlConverterFactoryThrowsExceptionExtendedForTest xmlConverterFactory = new XmlConverterFactoryThrowsExceptionExtendedForTest();
@@ -215,7 +217,7 @@ public class XmlConverterFactoryTest {
 		xmlConverterFactory.factorExternallyConvertableToStringConverter();
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterInitializationException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to set security features for DocumentBuilderFactory")
 	public void testExceptionWhenSettingWrongSecurityFeatureString() {
 		XmlConverterFactoryThrowsExceptionExtendedForTest xmlConverterFactory = new XmlConverterFactoryThrowsExceptionExtendedForTest();

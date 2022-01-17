@@ -32,6 +32,7 @@ import javax.xml.transform.TransformerFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.converter.ConverterException;
 import se.uu.ub.cora.data.Action;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataGroup;
@@ -57,7 +58,7 @@ public class ExternallyConvertibleToXmlTest {
 		extConvToXml = new ExternallyConvertibleToXml(documentBuilderFactory, transformerFactory);
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from dataElement to xml")
 	public void testParseExceptionOnCreateDocument() {
 		setUpDataElementToXmlWithDocumentBuilderFactorySpy();
@@ -83,7 +84,7 @@ public class ExternallyConvertibleToXmlTest {
 		}
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from dataElement to xml")
 	public void testTransformerExceptionOnTransformDomDocumentToXml() {
 		extConvToXml = setUpDataElementToXmlWithTransformerSpy();
