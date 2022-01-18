@@ -783,6 +783,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<requestMethod>POST</requestMethod>";
 		expectedActionLinksXml += "<rel>batch_index</rel>";
 		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/index/fakeId</url>";
+		expectedActionLinksXml += "<contentType>application/vnd.uub.record+xml</contentType>";
 		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
 		expectedActionLinksXml += "</batch_index>";
 		expectedActionLinksXml += "</actionLinks>";

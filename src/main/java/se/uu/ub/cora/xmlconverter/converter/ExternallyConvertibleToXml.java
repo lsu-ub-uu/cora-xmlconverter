@@ -287,6 +287,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 	private Element createBatchIndexLink() {
 		Element actionLink = createStandardLink(POST, "batch_index", INDEX, recordId);
+		actionLink.appendChild(createContentTypeRecordXML());
 		actionLink.appendChild(createAcceptRecordXML());
 		return actionLink;
 	}
