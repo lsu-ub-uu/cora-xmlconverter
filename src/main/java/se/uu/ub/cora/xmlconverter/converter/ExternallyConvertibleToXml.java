@@ -116,7 +116,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		} else if (externallyConvertible instanceof DataRecord) {
 			addDataRecordToDomDocument((DataRecord) externallyConvertible);
 		} else {
-			addDataGroupToDomDocument(externallyConvertible);
+			addDataGroupToDomDocument((DataGroup) externallyConvertible);
 		}
 	}
 
@@ -365,8 +365,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		return createElementWithTextContent(CONTENT_TYPE, APPLICATION_VND_UUB_RECORD_XML);
 	}
 
-	private void addDataGroupToDomDocument(ExternallyConvertible externallyConvertible) {
-		DataGroup topDataGroup = (DataGroup) externallyConvertible;
+	private void addDataGroupToDomDocument(DataGroup topDataGroup) {
 		Element groupDomElement = generateElementFromDataGroup(topDataGroup);
 		domDocument.appendChild(groupDomElement);
 	}
@@ -418,23 +417,21 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	private void addLinkElement(DataGroup childDataGroup, Element actionLinks) {
 		Element linkElement;
 		if (childDataGroup instanceof DataRecordLink) {
-			linkElement = createRecordLinkElement(childDataGroup);
+			linkElement = createRecordLinkElement((DataRecordLink) childDataGroup);
 		} else {
-			linkElement = createResourceLinkElement(childDataGroup);
+			linkElement = createResourceLinkElement((DataResourceLink) childDataGroup);
 		}
 		actionLinks.appendChild(linkElement);
 	}
 
-	private Element createResourceLinkElement(DataGroup childDataGroup) {
-		DataResourceLink dataResourceLink = (DataResourceLink) childDataGroup;
+	private Element createResourceLinkElement(DataResourceLink dataResourceLink) {
 		Element readLink = createStandardLink(GET, "read", recordType, recordId,
 				dataResourceLink.getNameInData());
 		readLink.appendChild(createElementWithTextContent(ACCEPT, dataResourceLink.getMimeType()));
 		return readLink;
 	}
 
-	private Element createRecordLinkElement(DataGroup childDataGroup) {
-		DataRecordLink dataRecordLink = (DataRecordLink) childDataGroup;
+	private Element createRecordLinkElement(DataRecordLink dataRecordLink) {
 		String linkedRecordType = dataRecordLink.getLinkedRecordType();
 		String linkedRecordId = dataRecordLink.getLinkedRecordId();
 		return createReadLink(linkedRecordType, linkedRecordId);
