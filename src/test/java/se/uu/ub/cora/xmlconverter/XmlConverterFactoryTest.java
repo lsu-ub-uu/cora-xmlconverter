@@ -119,6 +119,8 @@ public class XmlConverterFactoryTest {
 
 	private void assertCorrectSecurityInDocumentBuilder(
 			DocumentBuilderFactory documentBuilderFactory) throws ParserConfigurationException {
+		assertEquals(documentBuilderFactory.getAttribute(XMLConstants.ACCESS_EXTERNAL_DTD), "");
+		assertEquals(documentBuilderFactory.getAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA), "");
 		assertTrue(documentBuilderFactory
 				.getFeature("http://apache.org/xml/features/disallow-doctype-decl"));
 		assertFalse(documentBuilderFactory

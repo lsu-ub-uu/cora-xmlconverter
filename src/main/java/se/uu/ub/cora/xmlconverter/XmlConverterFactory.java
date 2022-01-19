@@ -51,6 +51,8 @@ public class XmlConverterFactory implements ConverterFactory {
 		DocumentBuilderFactory documentBuilderFactory = getNewDocumentBuilder();
 
 		try {
+			documentBuilderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+			documentBuilderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
 			setApacheFeature(documentBuilderFactory, "disallow-doctype-decl", true);
 			setApacheFeature(documentBuilderFactory, "nonvalidating/load-external-dtd", false);
 			setXmlFeature(documentBuilderFactory, "external-general-entities");
