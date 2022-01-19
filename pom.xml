@@ -24,8 +24,8 @@
 
 	<properties>
 		<logger.version>2.4.0</logger.version>
-		<coradata.version>5.4-SNAPSHOT</coradata.version>
-		<converter.version>2.0-SNAPSHOT</converter.version>
+		<coradata.version>5.4.0</coradata.version>
+		<converter.version>2.0.0</converter.version>
 		<json.version>3.1.0</json.version>
 		<testutils.version>1.2.0</testutils.version>
 	</properties>
