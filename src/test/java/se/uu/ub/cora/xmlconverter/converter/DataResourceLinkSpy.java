@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Uppsala University Library
+ * Copyright  2021 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -21,21 +21,22 @@ package se.uu.ub.cora.xmlconverter.converter;
 import java.util.List;
 
 import se.uu.ub.cora.data.Action;
-import se.uu.ub.cora.data.DataRecordLink;
+import se.uu.ub.cora.data.DataResourceLink;
 import se.uu.ub.cora.xmlconverter.spy.DataAtomicSpy;
 import se.uu.ub.cora.xmlconverter.spy.DataGroupSpy;
 
-public class DataRecordLinkSpy extends DataGroupSpy implements DataRecordLink {
+public class DataResourceLinkSpy extends DataGroupSpy implements DataResourceLink {
 	public boolean readAction = false;
-	public String linkedType;
-	public String linkedId;
+	private String mimeType;
 
-	public DataRecordLinkSpy(String nameInData, String linkedType, String linkedId) {
+	public DataResourceLinkSpy(String nameInData, String streamId, String fileName, String fileSize,
+			String mimeType) {
 		super(nameInData);
-		this.linkedType = linkedType;
-		this.linkedId = linkedId;
-		addChild(new DataAtomicSpy("linkedRecordType", linkedType));
-		addChild(new DataAtomicSpy("linkedRecordId", linkedId));
+		this.mimeType = mimeType;
+		addChild(new DataAtomicSpy("streamId", streamId));
+		addChild(new DataAtomicSpy("fileName", fileName));
+		addChild(new DataAtomicSpy("fileSize", fileSize));
+		addChild(new DataAtomicSpy("mimeType", mimeType));
 	}
 
 	@Override
@@ -55,12 +56,8 @@ public class DataRecordLinkSpy extends DataGroupSpy implements DataRecordLink {
 	}
 
 	@Override
-	public String getLinkedRecordId() {
-		return linkedId;
+	public String getMimeType() {
+		return mimeType;
 	}
 
-	@Override
-	public String getLinkedRecordType() {
-		return linkedType;
-	}
 }

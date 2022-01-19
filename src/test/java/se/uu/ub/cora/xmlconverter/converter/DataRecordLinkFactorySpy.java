@@ -41,7 +41,7 @@ public class DataRecordLinkFactorySpy implements DataRecordLinkFactory {
 		usedNameInDatas.add(nameInData);
 		usedTypes.add(recordType);
 		usedIds.add(recordId);
-		return new DataRecordLinkSpy(nameInData);
+		return new DataRecordLinkSpy(nameInData, recordType, recordId);
 	}
 
 }

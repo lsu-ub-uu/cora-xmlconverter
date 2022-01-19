@@ -28,24 +28,27 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.xml.sax.SAXException;
 
+import se.uu.ub.cora.converter.ConverterException;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAtomicProvider;
+import se.uu.ub.cora.data.DataAttribute;
 import se.uu.ub.cora.data.DataElement;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.data.DataLink;
 import se.uu.ub.cora.data.DataRecordLinkProvider;
 import se.uu.ub.cora.xmlconverter.spy.DataAtomicFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DataGroupFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DocumentBuilderFactorySpy;
 
-public class XmlToDataElementTest {
+public class XmlToExternallyConvertibleTest {
 
 	DataGroupFactorySpy dataGroupFactorySpy = null;
 	DataAtomicFactorySpy dataAtomicFactorySpy = null;
 	DataRecordLinkFactorySpy dataRecordLinkFactory = null;
 
 	private DocumentBuilderFactory documentBuilderFactory;
-	private XmlToDataElement xmlToDataElement;
+	private XmlToExternallyConvertible xmlToDataElement;
 
 	@BeforeMethod
 	public void setUp() {
@@ -57,10 +60,10 @@ public class XmlToDataElementTest {
 		DataRecordLinkProvider.setDataRecordLinkFactory(dataRecordLinkFactory);
 
 		documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		xmlToDataElement = new XmlToDataElement(documentBuilderFactory);
+		xmlToDataElement = new XmlToExternallyConvertible(documentBuilderFactory);
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: Document must be: version 1.0 and UTF-8")
 	public void testParseExceptionWhenNotCorrectVerisonAndEncoding() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"notUTF-8\"?>"
@@ -69,7 +72,7 @@ public class XmlToDataElementTest {
 		xmlToDataElement.convert(xmlToConvert);
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: some message from DocumentBuilderFactorySpy")
 	public void testParseExceptionOnCreateDocument() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person></person>";
@@ -82,7 +85,7 @@ public class XmlToDataElementTest {
 
 	private void setUpXmlToDataElementWithDocumentFactorySpy() {
 		documentBuilderFactory = new DocumentBuilderFactorySpy();
-		xmlToDataElement = new XmlToDataElement(documentBuilderFactory);
+		xmlToDataElement = new XmlToExternallyConvertible(documentBuilderFactory);
 	}
 
 	@Test
@@ -98,12 +101,12 @@ public class XmlToDataElementTest {
 		}
 	}
 
-	// @Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
-	// + "Unable to convert from xml to dataElement due to malformed XML")
-	// public void testSaxExceptionOnParseMalformedXML() {
-	// String xmlToConvert = "noXML";
-	// xmlToDataElement.convert(xmlToConvert);
-	// }
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement due to malformed XML: noXML")
+	public void testSaxExceptionOnParseMalformedXML() {
+		String xmlToConvert = "noXML";
+		xmlToDataElement.convert(xmlToConvert);
+	}
 
 	@Test
 	public void testSaxExceptionOnParseMalformedXMLOriginalExceptionIsSentAlong() {
@@ -127,7 +130,7 @@ public class XmlToDataElementTest {
 		} catch (Exception e) {
 			expectedException = e;
 		}
-		assertTrue(expectedException instanceof XmlConverterException);
+		assertTrue(expectedException instanceof ConverterException);
 
 		assertMessageIsCorrectForJava14or15(expectedException);
 	}
@@ -138,12 +141,12 @@ public class XmlToDataElementTest {
 		assertTrue(exceptionMessage.startsWith(errorStartsWith));
 	}
 
-	// @Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
-	// + "Unable to convert from xml to dataElement due to malformed XML")
-	// public void testSaxExceptionOnParseEmptyXML() {
-	// String xmlToConvert = "";
-	// xmlToDataElement.convert(xmlToConvert);
-	// }
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement due to malformed XML: ")
+	public void testSaxExceptionOnParseEmptyXML() {
+		String xmlToConvert = "";
+		xmlToDataElement.convert(xmlToConvert);
+	}
 
 	@Test
 	public void testSaxExceptionOnParseEmptyXMLOriginalExceptionIsSentAlong() {
@@ -155,7 +158,7 @@ public class XmlToDataElementTest {
 		}
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: Root element must be a DataGroup")
 	public void testIncompleteRootElement() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person></person>";
@@ -163,7 +166,7 @@ public class XmlToDataElementTest {
 		xmlToDataElement.convert(xmlToConvert);
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: Root element must be a DataGroup")
 	public void testIncompleteRootElementWithSpace() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person> </person>";
@@ -171,7 +174,7 @@ public class XmlToDataElementTest {
 		xmlToDataElement.convert(xmlToConvert);
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: Root element must be a DataGroup")
 	public void testIncompleteRootElementWithTwoSpace() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<person>  </person>";
@@ -179,7 +182,7 @@ public class XmlToDataElementTest {
 		xmlToDataElement.convert(xmlToConvert);
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: Root element must be a DataGroup")
 	public void testIncompleteRootElementWithText() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -239,7 +242,7 @@ public class XmlToDataElementTest {
 				convertedValue);
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: DataAtomic can not have attributes")
 	public void testConvertXmlWithAttribute() {
 		String atomicXml = "<firstname someAttribute=\"attrib\">Kalle</firstname>";
@@ -349,7 +352,7 @@ public class XmlToDataElementTest {
 
 	}
 
-	@Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unable to convert from xml to dataElement: Top dataGroup can not have repeatId")
 	public void testRepeatIdOnParentGroup() {
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -389,14 +392,24 @@ public class XmlToDataElementTest {
 		assertEquals(nicknameGroup.getFirstAtomicValueWithNameInData("short"), "Fondis");
 	}
 
-	// @Test(expectedExceptions = XmlConverterException.class, expectedExceptionsMessageRegExp = ""
-	// + "Unable to convert from xml to dataElement due to malformed XML")
-	// public void testWithMultipleXmlRootElements() {
-	// String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-	// + "<person gender=\"man\"><firstname>Janne</firstname></person>"
-	// + "<person gender=\"man\"><firstname>John</firstname></person>";
-	// xmlToDataElement.convert(xmlToConvert);
-	// }
+	@Test
+	public void testWithMultipleXmlRootElements() {
+		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<person gender=\"man\"><firstname>Janne</firstname></person>"
+				+ "<person gender=\"man\"><firstname>John</firstname></person>";
+		try {
+			xmlToDataElement.convert(xmlToConvert);
+			makeSureErrorIsThrown();
+		} catch (Exception e) {
+			assertEquals(e.getMessage(),
+					"Unable to convert from xml to dataElement due to malformed XML: "
+							+ xmlToConvert);
+		}
+	}
+
+	private void makeSureErrorIsThrown() {
+		assertTrue(false);
+	}
 
 	@Test
 	public void testXmlWithMoreDataInXml() throws Exception {
@@ -432,6 +445,41 @@ public class XmlToDataElementTest {
 				+ " <identifierType>waller</identifierType>"
 				+ " <identifierValue>114</identifierValue>" + " </identifier>" + "</authority>";
 		return xmlFromXsltAlvinFedoraToCoraPlaces;
+	}
+
+	@Test
+	public void testXmlWithLinks() throws Exception {
+		String dataGroupWithLinks = getLinksXml();
+
+		DataGroup topDataGroup = (DataGroup) xmlToDataElement.convert(dataGroupWithLinks);
+
+		DataLink link1 = (DataLink) topDataGroup.getFirstChildWithNameInData("link1");
+		assertEquals(link1.getNameInData(), "link1");
+		DataLink link2 = (DataLink) topDataGroup.getFirstChildWithNameInData("link2");
+		assertEquals(link2.getRepeatId(), "33");
+		DataLink link3 = (DataLink) topDataGroup.getFirstChildWithNameInData("link3");
+		DataAttribute typeAttribute = link3.getAttribute("type");
+		assertEquals(typeAttribute.getNameInData(), "type");
+		assertEquals(typeAttribute.getValue(), "someAttribute");
+	}
+
+	private String getLinksXml() {
+		String out = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		out += "<trams>";
+		out += " <link1>";
+		out += " <linkedRecordType>recordType</linkedRecordType>";
+		out += " <linkedRecordId>place</linkedRecordId>";
+		out += " </link1>";
+		out += " <link2 repeatId=\"33\">";
+		out += " <linkedRecordType>user</linkedRecordType>";
+		out += " <linkedRecordId>test</linkedRecordId>";
+		out += " </link2>";
+		out += " <link3 type=\"someAttribute\">";
+		out += " <linkedRecordType>user</linkedRecordType>";
+		out += " <linkedRecordId>test</linkedRecordId>";
+		out += " </link3>";
+		out += "</trams>";
+		return out;
 	}
 
 	@Test

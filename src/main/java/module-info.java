@@ -12,8 +12,8 @@
  * 
  * Each DataGroup can have several children which can be either DataGroup or DataAtomic. The
  * DataAtomic is mapped to a XML with the tag name using nameIndata, and its value using the
- * DataAtomics value. Only one attribut is mapped from DataAtomic to an XML tag, which is the
- * repeatId.
+ * DataAtomics value. As DataAtomics can not have attributes is only one attribut added to a
+ * DataAtomics XML tag, the repeatId.
  * 
  * This module converts both to and from XML.
  * 

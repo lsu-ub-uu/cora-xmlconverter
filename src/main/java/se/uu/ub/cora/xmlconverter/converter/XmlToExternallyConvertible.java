@@ -36,6 +36,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import se.uu.ub.cora.converter.ConverterException;
+import se.uu.ub.cora.converter.StringToExternallyConvertibleConverter;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataElement;
@@ -43,26 +45,27 @@ import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.data.DataRecordLinkProvider;
 
-public class XmlToDataElement {
+public class XmlToExternallyConvertible implements StringToExternallyConvertibleConverter {
 
 	private static final int NUM_OF_LINK_CHILDREN = 2;
 	private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 	private static final String REPEAT_ID = "repeatId";
 	private DocumentBuilderFactory documentBuilderFactory;
 
-	public XmlToDataElement(DocumentBuilderFactory documentBuilderFactory) {
+	public XmlToExternallyConvertible(DocumentBuilderFactory documentBuilderFactory) {
 		this.documentBuilderFactory = documentBuilderFactory;
 	}
 
+	@Override
 	public DataElement convert(String dataString) {
 		try {
 			return tryToConvert(dataString);
 		} catch (SAXException exception) {
-			throw new XmlConverterException(
+			throw new ConverterException(
 					"Unable to convert from xml to dataElement due to malformed XML: " + dataString,
 					exception);
 		} catch (Exception exception) {
-			throw new XmlConverterException(
+			throw new ConverterException(
 					"Unable to convert from xml to dataElement: " + exception.getMessage(),
 					exception);
 		}
@@ -87,7 +90,7 @@ public class XmlToDataElement {
 
 	private void validateXmlHeader(String dataString) {
 		if (!dataString.startsWith(XML_HEADER)) {
-			throw new XmlConverterException("Document must be: version 1.0 and UTF-8");
+			throw new ConverterException("Document must be: version 1.0 and UTF-8");
 		}
 	}
 
@@ -127,7 +130,7 @@ public class XmlToDataElement {
 
 	private void ensureNoRepeatId(String repeatId) {
 		if (!repeatId.isBlank()) {
-			throw new XmlConverterException("Top dataGroup can not have repeatId");
+			throw new ConverterException("Top dataGroup can not have repeatId");
 		}
 	}
 
@@ -139,14 +142,8 @@ public class XmlToDataElement {
 
 	private List<Node> getChildren(Node currentNode) {
 		List<Node> elementNodes = new ArrayList<>();
-		if (doesHaveNodeChilds(currentNode)) {
-			itarateAndCollectElementNodesOnly(currentNode, elementNodes);
-		}
+		itarateAndCollectElementNodesOnly(currentNode, elementNodes);
 		return elementNodes;
-	}
-
-	private boolean doesHaveNodeChilds(Node currentNode) {
-		return currentNode.getFirstChild() != null;
 	}
 
 	private void itarateAndCollectElementNodesOnly(Node currentNode, List<Node> elementNodes) {
@@ -169,7 +166,7 @@ public class XmlToDataElement {
 
 	private void convertChildren(DataGroup parentElement, List<Node> elementNodeChildren) {
 		if (elementNodeChildren.isEmpty()) {
-			throw new XmlConverterException("Root element must be a DataGroup");
+			throw new ConverterException("Root element must be a DataGroup");
 		}
 		for (Node element : elementNodeChildren) {
 			convertChild(parentElement, element);
@@ -289,8 +286,12 @@ public class XmlToDataElement {
 
 	private void ensureNoAttributes(XmlAttributes xmlAttributes) {
 		if (xmlAttributes.hasAttributes()) {
-			throw new XmlConverterException("DataAtomic can not have attributes");
+			throw new ConverterException("DataAtomic can not have attributes");
 		}
+	}
+
+	public DocumentBuilderFactory getDocumentBuilderFactoryOnlyForTest() {
+		return documentBuilderFactory;
 	}
 
 }

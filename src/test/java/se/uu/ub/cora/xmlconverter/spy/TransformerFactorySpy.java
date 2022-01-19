@@ -29,6 +29,7 @@ import javax.xml.transform.URIResolver;
 public class TransformerFactorySpy extends TransformerFactory {
 
 	public boolean throwTransformError = false;
+	public boolean throwRuntimeException = false;
 	public boolean newTransformerWasCalled = false;
 
 	@Override
@@ -98,8 +99,9 @@ public class TransformerFactorySpy extends TransformerFactory {
 
 	@Override
 	public void setFeature(String arg0, boolean arg1) throws TransformerConfigurationException {
-		// TODO Auto-generated method stub
-
+		if (throwRuntimeException) {
+			throw new RuntimeException();
+		}
 	}
 
 	@Override
