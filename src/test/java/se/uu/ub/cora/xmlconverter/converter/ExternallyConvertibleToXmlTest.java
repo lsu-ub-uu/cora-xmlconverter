@@ -191,6 +191,36 @@ public class ExternallyConvertibleToXmlTest {
 	}
 
 	@Test
+	public void testConvertTopGroupWithAttributesOneChildGroupWithAttribute() {
+		String expectedXml = XML_DECLARATION + "<person someAttributeName=\"someAttributeValue\""
+				+ " someAttributeName2=\"someAttributeValue2\">"
+				+ "<name type=\"authorized\" type2=\"authorized2\">"
+				+ "<firstname>Kalle</firstname></name></person>";
+
+		DataGroup person = createPersonWithAttributesAndFirstnameInNameGroupWithTwoAttributes(
+				"Kalle", "authorized");
+
+		String xml = extConvToXml.convert(person);
+		assertEquals(xml, expectedXml);
+	}
+
+	private DataGroup createPersonWithAttributesAndFirstnameInNameGroupWithTwoAttributes(
+			String firstnameString, String typeAttribute) {
+		DataGroup person = new DataGroupSpy("person");
+		person.addAttributeByIdWithValue("someAttributeName", "someAttributeValue");
+		person.addAttributeByIdWithValue("someAttributeName2", "someAttributeValue2");
+		DataGroupSpy name = new DataGroupSpy("name");
+
+		name.addAttributeByIdWithValue("type", typeAttribute);
+		name.addAttributeByIdWithValue("type2", typeAttribute + "2");
+
+		DataAtomic firstName = new DataAtomicSpy("firstname", firstnameString);
+		name.addChild(firstName);
+		person.addChild(name);
+		return person;
+	}
+
+	@Test
 	public void testConvertMultipleChildrenToDataGroups() {
 		String expectedXml = XML_DECLARATION
 				+ "<person><name type=\"authorized\"><firstname>Kalle</firstname>"

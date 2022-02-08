@@ -372,6 +372,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 	private Element generateElementFromDataGroup(DataGroup dataGroupToConvert) {
 		Element groupDomElement = domDocument.createElement(dataGroupToConvert.getNameInData());
+		addAttributesIfExistsToElementForDataGroup(dataGroupToConvert, groupDomElement);
 		iterateAndGenerateChildElements(dataGroupToConvert, domDocument, groupDomElement);
 		return groupDomElement;
 	}
