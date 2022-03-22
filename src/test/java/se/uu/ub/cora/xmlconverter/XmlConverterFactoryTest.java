@@ -36,7 +36,9 @@ import se.uu.ub.cora.converter.ConverterFactory;
 import se.uu.ub.cora.converter.ConverterInitializationException;
 import se.uu.ub.cora.converter.ExternallyConvertibleToStringConverter;
 import se.uu.ub.cora.converter.StringToExternallyConvertibleConverter;
+import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAtomicProvider;
+import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.xmlconverter.converter.ExternallyConvertibleToXml;
 import se.uu.ub.cora.xmlconverter.converter.XmlToExternallyConvertible;
@@ -173,13 +175,24 @@ public class XmlConverterFactoryTest {
 		xmlToDataElement.convert(xmlToConvert);
 	}
 
-	@Test(expectedExceptions = ConverterException.class)
+	@Test
 	public void testMaliciousXmlExploitingXInclude() {
 		XmlToExternallyConvertible xmlToDataElement = createXmlToDataElementToTestSecurity();
 
 		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<person xmlns:xi=\"http://www.w3.org/2001/XInclude\"><firstname><xi:include parse=\"text\" href=\"file:///etc/passwd\"/></firstname></person>";
-		xmlToDataElement.convert(xmlToConvert);
+				+ "<person xmlns:xi=\"http://www.w3.org/2001/XInclude\"><firstname>"
+				+ "<xi:include parse=\"text\" href=\"file:///etc/passwd\"/></firstname></person>";
+		assertXiIncludeAttemptIsParsedAsAttributesInsteadOfBeingIncluded(xmlToDataElement,
+				xmlToConvert);
+	}
+
+	private void assertXiIncludeAttemptIsParsedAsAttributesInsteadOfBeingIncluded(
+			XmlToExternallyConvertible xmlToDataElement, String xmlToConvert) {
+		DataGroup person = (DataGroup) xmlToDataElement.convert(xmlToConvert);
+		DataGroup firstname = (DataGroup) person.getFirstChildWithNameInData("firstname");
+		DataAtomic include = (DataAtomic) firstname.getFirstChildWithNameInData("xi:include");
+		assertEquals(include.getAttribute("parse").getValue(), "text");
+		assertEquals(include.getAttribute("href").getValue(), "file:///etc/passwd");
 	}
 
 	@Test(expectedExceptions = ConverterException.class)

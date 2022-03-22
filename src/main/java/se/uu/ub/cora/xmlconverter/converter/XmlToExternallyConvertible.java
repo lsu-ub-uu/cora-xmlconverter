@@ -134,9 +134,9 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 		}
 	}
 
-	private void addAttributes(DataGroup dataGroup, XmlAttributes xmlAttributes) {
+	private void addAttributes(DataElement dataElement, XmlAttributes xmlAttributes) {
 		for (Entry<String, String> attribute : xmlAttributes.getAttributeSet()) {
-			dataGroup.addAttributeByIdWithValue(attribute.getKey(), attribute.getValue());
+			dataElement.addAttributeByIdWithValue(attribute.getKey(), attribute.getValue());
 		}
 	}
 
@@ -223,10 +223,10 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 		parentDataGroup.addChild(dataRecordLink);
 	}
 
-	private void possiblyAddAttributesAndRepeatId(DataGroup dataRecordLink,
+	private void possiblyAddAttributesAndRepeatId(DataElement dataElement,
 			XmlAttributes xmlAttributes) {
-		addAttributes(dataRecordLink, xmlAttributes);
-		possiblyAddRepeatId(dataRecordLink, xmlAttributes);
+		addAttributes(dataElement, xmlAttributes);
+		possiblyAddRepeatId(dataElement, xmlAttributes);
 	}
 
 	private DataGroup createLink(List<Node> elementNodeChildren, String nodeName) {
@@ -274,20 +274,13 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 
 	private void convertDataAtomic(DataGroup parentDataGroup, Node currentNode,
 			XmlAttributes xmlAttributes) {
-		ensureNoAttributes(xmlAttributes);
 		String nodeName = currentNode.getNodeName();
 		String textContent = currentNode.getTextContent().trim();
 		DataAtomic dataAtomic = DataAtomicProvider.getDataAtomicUsingNameInDataAndValue(nodeName,
 				textContent);
-		possiblyAddRepeatId(dataAtomic, xmlAttributes);
+		possiblyAddAttributesAndRepeatId(dataAtomic, xmlAttributes);
 		parentDataGroup.addChild(dataAtomic);
 
-	}
-
-	private void ensureNoAttributes(XmlAttributes xmlAttributes) {
-		if (xmlAttributes.hasAttributes()) {
-			throw new ConverterException("DataAtomic can not have attributes");
-		}
 	}
 
 	public DocumentBuilderFactory getDocumentBuilderFactoryOnlyForTest() {
