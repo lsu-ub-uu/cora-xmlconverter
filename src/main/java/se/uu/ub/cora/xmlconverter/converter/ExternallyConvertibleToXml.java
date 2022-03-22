@@ -372,7 +372,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 	private Element generateElementFromDataGroup(DataGroup dataGroupToConvert) {
 		Element groupDomElement = domDocument.createElement(dataGroupToConvert.getNameInData());
-		addAttributesIfExistsToElementForDataGroup(dataGroupToConvert, groupDomElement);
+		addAttributesIfExistsToElementForDataElement(dataGroupToConvert, groupDomElement);
 		iterateAndGenerateChildElements(dataGroupToConvert, domDocument, groupDomElement);
 		return groupDomElement;
 	}
@@ -388,6 +388,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 			DataElement childDataElement) {
 		Element domElement = createElement(childDataElement);
 		possiblyAddRepeatIdAsAttribute(childDataElement, domElement);
+		addAttributesIfExistsToElementForDataElement(childDataElement, domElement);
 		populateChildElement(domDocument, childDataElement, domElement);
 		parentXmlDomElement.appendChild(domElement);
 	}
@@ -405,7 +406,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 	private void populateDataGroupElement(Document domDocument, Element domElement,
 			DataGroup childDataGroup) {
-		addAttributesIfExistsToElementForDataGroup(childDataGroup, domElement);
+		// addAttributesIfExistsToElementForDataElement(childDataGroup, domElement);
 		iterateAndGenerateChildElements(childDataGroup, domDocument, domElement);
 
 		if (isLinkThatShouldBeConverted(childDataGroup)) {
@@ -489,9 +490,9 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		domElement.setTextContent(childDataAtomic.getValue());
 	}
 
-	private void addAttributesIfExistsToElementForDataGroup(DataGroup childDataGroup,
+	private void addAttributesIfExistsToElementForDataElement(DataElement childDataElement,
 			Element domElement) {
-		Collection<DataAttribute> attributes = childDataGroup.getAttributes();
+		Collection<DataAttribute> attributes = childDataElement.getAttributes();
 
 		for (DataAttribute attribute : attributes) {
 			domElement.setAttribute(attribute.getNameInData(), attribute.getValue());

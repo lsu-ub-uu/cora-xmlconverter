@@ -1,12 +1,18 @@
 package se.uu.ub.cora.xmlconverter.spy;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAttribute;
 
 public class DataAtomicSpy implements DataAtomic {
 
 	public String nameInData;
 	public String value;
 	private String repeatId;
+	public List<DataAttribute> attributes = new ArrayList<>();
 
 	public DataAtomicSpy(String nameInData, String value) {
 		this.nameInData = nameInData;
@@ -34,6 +40,31 @@ public class DataAtomicSpy implements DataAtomic {
 	public void setRepeatId(String repeatId) {
 		this.repeatId = repeatId;
 
+	}
+
+	@Override
+	public void addAttributeByIdWithValue(String nameInData, String value) {
+		attributes.add(new DataAttributeSpy(nameInData, value));
+	}
+
+	@Override
+	public boolean hasAttributes() {
+		return !attributes.isEmpty();
+	}
+
+	@Override
+	public DataAttribute getAttribute(String nameInData) {
+		for (DataAttribute dataAttribute : attributes) {
+			if (dataAttribute.getNameInData().equals(nameInData)) {
+				return dataAttribute;
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public Collection<DataAttribute> getAttributes() {
+		return attributes;
 	}
 
 }

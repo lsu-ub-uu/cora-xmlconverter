@@ -167,6 +167,39 @@ public class ExternallyConvertibleToXmlTest {
 	}
 
 	@Test
+	public void testConvertOneChildGroupWithOneAtomicChildWithOneAttribute() {
+		String expectedXml = XML_DECLARATION
+				+ "<person><name><firstname type=\"authorized\">Kalle</firstname></name></person>";
+
+		DataGroup person = new DataGroupSpy("person");
+		DataGroupSpy name = new DataGroupSpy("name");
+		person.addChild(name);
+		DataAtomic firstName = new DataAtomicSpy("firstname", "Kalle");
+		name.addChild(firstName);
+		firstName.addAttributeByIdWithValue("type", "authorized");
+
+		String xml = extConvToXml.convert(person);
+		assertEquals(xml, expectedXml);
+	}
+
+	@Test
+	public void testConvertOneChildGroupWithOneAtomicChildWithTwoAttribute() {
+		String expectedXml = XML_DECLARATION
+				+ "<person><name><firstname shoeSize=\"43\" type=\"authorized\">Kalle</firstname></name></person>";
+
+		DataGroup person = new DataGroupSpy("person");
+		DataGroupSpy name = new DataGroupSpy("name");
+		person.addChild(name);
+		DataAtomic firstName = new DataAtomicSpy("firstname", "Kalle");
+		name.addChild(firstName);
+		firstName.addAttributeByIdWithValue("type", "authorized");
+		firstName.addAttributeByIdWithValue("shoeSize", "43");
+
+		String xml = extConvToXml.convert(person);
+		assertEquals(xml, expectedXml);
+	}
+
+	@Test
 	public void testConvertOneChildGroupWithAttribute() {
 		String expectedXml = XML_DECLARATION
 				+ "<person><name type=\"authorized\"><firstname>Kalle</firstname></name></person>";
