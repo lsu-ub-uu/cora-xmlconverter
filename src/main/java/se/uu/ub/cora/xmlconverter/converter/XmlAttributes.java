@@ -17,7 +17,4 @@ class XmlAttributes {
 		return attributes.entrySet();
 	}
 
-	boolean hasAttributes() {
-		return attributes.size() > 0;
-	}
 }

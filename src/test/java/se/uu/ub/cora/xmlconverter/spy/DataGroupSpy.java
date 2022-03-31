@@ -115,9 +115,9 @@ public class DataGroupSpy implements DataGroup {
 	}
 
 	@Override
-	public DataAttribute getAttribute(String attributeId) {
+	public DataAttribute getAttribute(String nameInData) {
 		for (DataAttribute dataAttribute : attributes) {
-			if (dataAttribute.getNameInData().equals(attributeId)) {
+			if (dataAttribute.getNameInData().equals(nameInData)) {
 				return dataAttribute;
 			}
 		}
@@ -192,6 +192,12 @@ public class DataGroupSpy implements DataGroup {
 	public DataAtomic getFirstDataAtomicWithNameInData(String childNameInData) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public boolean hasAttributes() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

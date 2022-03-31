@@ -242,14 +242,16 @@ public class XmlToExternallyConvertibleTest {
 				convertedValue);
 	}
 
-	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
-			+ "Unable to convert from xml to dataElement: DataAtomic can not have attributes")
+	@Test
 	public void testConvertXmlWithAttribute() {
-		String atomicXml = "<firstname someAttribute=\"attrib\">Kalle</firstname>";
+		String atomicXml = "<firstname someAttribute=\"attrib\" someAttribute2=\"attrib2\">Kalle</firstname>";
 		String xmlToConvert = surroundWithTopLevelXmlGroup(atomicXml);
 
 		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
 		assertEquals(convertedDataElement.getFirstAtomicValueWithNameInData("firstname"), "Kalle");
+		DataElement firstName = convertedDataElement.getFirstChildWithNameInData("firstname");
+		assertEquals(firstName.getAttribute("someAttribute").getValue(), "attrib");
+		assertEquals(firstName.getAttribute("someAttribute2").getValue(), "attrib2");
 	}
 
 	private String surroundWithTopLevelXmlGroup(String atomicXml) {
