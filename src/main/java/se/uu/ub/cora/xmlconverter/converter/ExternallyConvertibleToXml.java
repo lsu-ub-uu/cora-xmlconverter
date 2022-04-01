@@ -406,7 +406,6 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 	private void populateDataGroupElement(Document domDocument, Element domElement,
 			DataGroup childDataGroup) {
-		// addAttributesIfExistsToElementForDataElement(childDataGroup, domElement);
 		iterateAndGenerateChildElements(childDataGroup, domDocument, domElement);
 
 		if (isLinkThatShouldBeConverted(childDataGroup)) {
