@@ -18,8 +18,6 @@
  */
 package se.uu.ub.cora.xmlconverter.converter;
 
-import java.util.List;
-
 import se.uu.ub.cora.data.Action;
 import se.uu.ub.cora.data.DataResourceLink;
 import se.uu.ub.cora.xmlconverter.spy.DataAtomicSpy;
@@ -45,12 +43,6 @@ public class DataResourceLinkSpy extends DataGroupSpy implements DataResourceLin
 	}
 
 	@Override
-	public List<Action> getActions() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public boolean hasReadAction() {
 		return readAction;
 	}
@@ -58,6 +50,48 @@ public class DataResourceLinkSpy extends DataGroupSpy implements DataResourceLin
 	@Override
 	public String getMimeType() {
 		return mimeType;
+	}
+
+	@Override
+	public void setStreamId(String streamId) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public String getStreamId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setFileName(String fileName) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public String getFileName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setFileSize(String fileSize) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public String getFileSize() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setMimeType(String mimeType) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

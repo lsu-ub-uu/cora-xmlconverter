@@ -19,7 +19,10 @@
 package se.uu.ub.cora.xmlconverter.converter;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
+
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -31,18 +34,20 @@ import org.xml.sax.SAXException;
 import se.uu.ub.cora.converter.ConverterException;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAtomicProvider;
-import se.uu.ub.cora.data.DataAttribute;
-import se.uu.ub.cora.data.DataElement;
+import se.uu.ub.cora.data.DataChild;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupProvider;
-import se.uu.ub.cora.data.DataLink;
+import se.uu.ub.cora.data.DataProvider;
 import se.uu.ub.cora.data.DataRecordLinkProvider;
+import se.uu.ub.cora.data.ExternallyConvertible;
+import se.uu.ub.cora.testspies.data.DataFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DataAtomicFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DataGroupFactorySpy;
+import se.uu.ub.cora.xmlconverter.spy.DataGroupSpy;
 import se.uu.ub.cora.xmlconverter.spy.DocumentBuilderFactorySpy;
 
 public class XmlToExternallyConvertibleTest {
-
+	DataFactorySpy dataFactorySpy;
 	DataGroupFactorySpy dataGroupFactorySpy = null;
 	DataAtomicFactorySpy dataAtomicFactorySpy = null;
 	DataRecordLinkFactorySpy dataRecordLinkFactory = null;
@@ -52,6 +57,9 @@ public class XmlToExternallyConvertibleTest {
 
 	@BeforeMethod
 	public void setUp() {
+		dataFactorySpy = new DataFactorySpy();
+		DataProvider.onlyForTestSetDataFactory(dataFactorySpy);
+
 		dataGroupFactorySpy = new DataGroupFactorySpy();
 		DataGroupProvider.setDataGroupFactory(dataGroupFactorySpy);
 		dataAtomicFactorySpy = new DataAtomicFactorySpy();
@@ -249,7 +257,7 @@ public class XmlToExternallyConvertibleTest {
 
 		DataGroup convertedDataElement = (DataGroup) xmlToDataElement.convert(xmlToConvert);
 		assertEquals(convertedDataElement.getFirstAtomicValueWithNameInData("firstname"), "Kalle");
-		DataElement firstName = convertedDataElement.getFirstChildWithNameInData("firstname");
+		DataChild firstName = convertedDataElement.getFirstChildWithNameInData("firstname");
 		assertEquals(firstName.getAttribute("someAttribute").getValue(), "attrib");
 		assertEquals(firstName.getAttribute("someAttribute2").getValue(), "attrib2");
 	}
@@ -290,7 +298,7 @@ public class XmlToExternallyConvertibleTest {
 	@Test
 	public void testConvertXmlWithSingleAtomicChildWithoutValue2() {
 		String xmlToConvert = surroundWithTopLevelXmlGroup("<firstname/>");
-		DataElement convertedDataElement = xmlToDataElement.convert(xmlToConvert);
+		ExternallyConvertible convertedDataElement = xmlToDataElement.convert(xmlToConvert);
 		DataGroup convertedDataGroup = (DataGroup) convertedDataElement;
 		assertEquals(convertedDataGroup.getFirstAtomicValueWithNameInData("firstname"), "");
 	}
@@ -451,18 +459,33 @@ public class XmlToExternallyConvertibleTest {
 
 	@Test
 	public void testXmlWithLinks() throws Exception {
+		dataFactorySpy.MRV.setReturnValues("createRecordLinkUsingNameInDataAndTypeAndId",
+				List.of(new se.uu.ub.cora.testspies.data.DataRecordLinkSpy()), "link1",
+				"recordType", "place");
+
 		String dataGroupWithLinks = getLinksXml();
 
-		DataGroup topDataGroup = (DataGroup) xmlToDataElement.convert(dataGroupWithLinks);
+		DataGroupSpy topDataGroup = (DataGroupSpy) xmlToDataElement.convert(dataGroupWithLinks);
 
-		DataLink link1 = (DataLink) topDataGroup.getFirstChildWithNameInData("link1");
-		assertEquals(link1.getNameInData(), "link1");
-		DataLink link2 = (DataLink) topDataGroup.getFirstChildWithNameInData("link2");
-		assertEquals(link2.getRepeatId(), "33");
-		DataLink link3 = (DataLink) topDataGroup.getFirstChildWithNameInData("link3");
-		DataAttribute typeAttribute = link3.getAttribute("type");
-		assertEquals(typeAttribute.getNameInData(), "type");
-		assertEquals(typeAttribute.getValue(), "someAttribute");
+		assertCorrectLink(0, "link1", "recordType", "place");
+		se.uu.ub.cora.testspies.data.DataRecordLinkSpy link1Spy = (se.uu.ub.cora.testspies.data.DataRecordLinkSpy) dataFactorySpy.MCR
+				.getReturnValue("factorRecordLinkUsingNameInDataAndTypeAndId", 0);
+		var addedChild1 = topDataGroup.children.get(0);
+		assertSame(addedChild1, link1Spy);
+
+		assertCorrectLink(1, "link2", "user", "test");
+		se.uu.ub.cora.testspies.data.DataRecordLinkSpy link2Spy = (se.uu.ub.cora.testspies.data.DataRecordLinkSpy) dataFactorySpy.MCR
+				.getReturnValue("factorRecordLinkUsingNameInDataAndTypeAndId", 1);
+		link2Spy.MCR.assertParameters("setRepeatId", 0, "33");
+		var addedChild2 = topDataGroup.children.get(1);
+		assertSame(addedChild2, link2Spy);
+
+		assertCorrectLink(2, "link3", "user", "test");
+		se.uu.ub.cora.testspies.data.DataRecordLinkSpy link3Spy = (se.uu.ub.cora.testspies.data.DataRecordLinkSpy) dataFactorySpy.MCR
+				.getReturnValue("factorRecordLinkUsingNameInDataAndTypeAndId", 2);
+		link3Spy.MCR.assertParameters("addAttributeByIdWithValue", 0, "type", "someAttribute");
+		var addedChild3 = topDataGroup.children.get(2);
+		assertSame(addedChild3, link3Spy);
 	}
 
 	private String getLinksXml() {
@@ -489,7 +512,8 @@ public class XmlToExternallyConvertibleTest {
 		String xmlFromXsltAlvinFedoraToCoraPlaces = getPlaceXml();
 		xmlToDataElement.convert(xmlFromXsltAlvinFedoraToCoraPlaces);
 
-		assertEquals(dataRecordLinkFactory.usedNameInDatas.size(), 4);
+		dataFactorySpy.MCR
+				.assertNumberOfCallsToMethod("factorRecordLinkUsingNameInDataAndTypeAndId", 4);
 		assertCorrectLink(0, "type", "recordType", "place");
 		assertCorrectLink(1, "createdBy", "user", "test");
 		assertCorrectLink(2, "dataDivider", "system", "alvin");
@@ -502,9 +526,8 @@ public class XmlToExternallyConvertibleTest {
 	}
 
 	private void assertCorrectLink(int index, String nameInData, String type, String id) {
-		assertEquals(dataRecordLinkFactory.usedNameInDatas.get(index), nameInData);
-		assertEquals(dataRecordLinkFactory.usedTypes.get(index), type);
-		assertEquals(dataRecordLinkFactory.usedIds.get(index), id);
+		dataFactorySpy.MCR.assertParameters("factorRecordLinkUsingNameInDataAndTypeAndId", index,
+				nameInData, type, id);
 	}
 
 	@Test
@@ -518,8 +541,11 @@ public class XmlToExternallyConvertibleTest {
 				+ " <name type=\"authorized\">" + " <namePart>Linköping</namePart>" + " </name>"
 				+ " <identifier repeatId=\"0\">" + " <identifierValue>114</identifierValue>"
 				+ " </identifier>" + "</authority>";
+
 		xmlToDataElement.convert(xmlFromXsltAlvinFedoraToCoraPlaces);
-		assertEquals(dataRecordLinkFactory.usedNameInDatas.size(), 1);
+
+		dataFactorySpy.MCR
+				.assertNumberOfCallsToMethod("factorRecordLinkUsingNameInDataAndTypeAndId", 1);
 	}
 
 	@Test
@@ -534,6 +560,7 @@ public class XmlToExternallyConvertibleTest {
 				+ " <identifier repeatId=\"0\">" + " <identifierValue>114</identifierValue>"
 				+ " </identifier>" + "</authority>";
 		xmlToDataElement.convert(xmlFromXsltAlvinFedoraToCoraPlaces);
-		assertEquals(dataRecordLinkFactory.usedNameInDatas.size(), 1);
+		dataFactorySpy.MCR
+				.assertNumberOfCallsToMethod("factorRecordLinkUsingNameInDataAndTypeAndId", 1);
 	}
 }

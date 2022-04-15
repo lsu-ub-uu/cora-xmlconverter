@@ -18,8 +18,6 @@
  */
 package se.uu.ub.cora.xmlconverter.converter;
 
-import java.util.List;
-
 import se.uu.ub.cora.data.Action;
 import se.uu.ub.cora.data.DataRecordLink;
 import se.uu.ub.cora.xmlconverter.spy.DataAtomicSpy;
@@ -41,12 +39,6 @@ public class DataRecordLinkSpy extends DataGroupSpy implements DataRecordLink {
 	@Override
 	public void addAction(Action action) {
 		readAction = Action.READ.equals(action);
-	}
-
-	@Override
-	public List<Action> getActions() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
