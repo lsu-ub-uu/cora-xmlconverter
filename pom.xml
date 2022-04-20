@@ -28,7 +28,7 @@
 		<converter.version>3.0.0</converter.version>
 		<json.version>3.3.0</json.version>
 		<testutils.version>1.4.0</testutils.version>
-		<testspies.version>1.0-SNAPSHOT</testspies.version>
+		<testspies.version>1.0.0</testspies.version>
 	</properties>
 
 	<scm>
