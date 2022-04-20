@@ -41,7 +41,7 @@ import se.uu.ub.cora.data.Action;
 import se.uu.ub.cora.data.Data;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAttribute;
-import se.uu.ub.cora.data.DataElement;
+import se.uu.ub.cora.data.DataChild;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataLink;
 import se.uu.ub.cora.data.DataList;
@@ -379,13 +379,13 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 	private void iterateAndGenerateChildElements(DataGroup dataGroup, Document domDocument,
 			Element parentXmlDomElement) {
-		for (DataElement childDataElement : dataGroup.getChildren()) {
+		for (DataChild childDataElement : dataGroup.getChildren()) {
 			generateChildElement(domDocument, parentXmlDomElement, childDataElement);
 		}
 	}
 
 	private void generateChildElement(Document domDocument, Element parentXmlDomElement,
-			DataElement childDataElement) {
+			DataChild childDataElement) {
 		Element domElement = createElement(childDataElement);
 		possiblyAddRepeatIdAsAttribute(childDataElement, domElement);
 		addAttributesIfExistsToElementForDataElement(childDataElement, domElement);
@@ -393,7 +393,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		parentXmlDomElement.appendChild(domElement);
 	}
 
-	private void populateChildElement(Document domDocument, DataElement childDataElement,
+	private void populateChildElement(Document domDocument, DataChild childDataElement,
 			Element domElement) {
 		if (childDataElement instanceof DataAtomic) {
 			possiblyAddTextToElementForDataAtomic((DataAtomic) childDataElement, domElement);
@@ -438,7 +438,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		return createReadLink(linkedRecordType, linkedRecordId);
 	}
 
-	private boolean isLinkThatShouldBeConverted(DataElement childDataElement) {
+	private boolean isLinkThatShouldBeConverted(DataChild childDataElement) {
 		if (childDataElement instanceof DataLink) {
 			return addActionLinks && ((DataLink) childDataElement).hasReadAction();
 		}
@@ -470,17 +470,17 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		return requestMethod;
 	}
 
-	private Element createElement(DataElement childDataElement) {
+	private Element createElement(DataChild childDataElement) {
 		return domDocument.createElement(childDataElement.getNameInData());
 	}
 
-	private void possiblyAddRepeatIdAsAttribute(DataElement childDataElement, Element domElement) {
+	private void possiblyAddRepeatIdAsAttribute(DataChild childDataElement, Element domElement) {
 		if (hasNonEmptyRepeatId(childDataElement)) {
 			domElement.setAttribute("repeatId", childDataElement.getRepeatId());
 		}
 	}
 
-	private boolean hasNonEmptyRepeatId(DataElement childDataElement) {
+	private boolean hasNonEmptyRepeatId(DataChild childDataElement) {
 		return childDataElement.getRepeatId() != null && !childDataElement.getRepeatId().isEmpty();
 	}
 
@@ -489,7 +489,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		domElement.setTextContent(childDataAtomic.getValue());
 	}
 
-	private void addAttributesIfExistsToElementForDataElement(DataElement childDataElement,
+	private void addAttributesIfExistsToElementForDataElement(DataChild childDataElement,
 			Element domElement) {
 		Collection<DataAttribute> attributes = childDataElement.getAttributes();
 

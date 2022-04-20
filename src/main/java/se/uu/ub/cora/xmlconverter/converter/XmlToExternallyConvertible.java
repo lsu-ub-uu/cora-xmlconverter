@@ -40,10 +40,12 @@ import se.uu.ub.cora.converter.ConverterException;
 import se.uu.ub.cora.converter.StringToExternallyConvertibleConverter;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAtomicProvider;
-import se.uu.ub.cora.data.DataElement;
+import se.uu.ub.cora.data.DataChild;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupProvider;
-import se.uu.ub.cora.data.DataRecordLinkProvider;
+import se.uu.ub.cora.data.DataProvider;
+import se.uu.ub.cora.data.DataRecordLink;
+import se.uu.ub.cora.data.ExternallyConvertible;
 
 public class XmlToExternallyConvertible implements StringToExternallyConvertibleConverter {
 
@@ -57,7 +59,7 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 	}
 
 	@Override
-	public DataElement convert(String dataString) {
+	public ExternallyConvertible convert(String dataString) {
 		try {
 			return tryToConvert(dataString);
 		} catch (SAXException exception) {
@@ -71,7 +73,7 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 		}
 	}
 
-	private DataElement tryToConvert(String dataString)
+	private ExternallyConvertible tryToConvert(String dataString)
 			throws ParserConfigurationException, SAXException, IOException {
 		Element domElement = generateDomElement(dataString);
 		validateXmlHeader(dataString);
@@ -134,7 +136,7 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 		}
 	}
 
-	private void addAttributes(DataElement dataElement, XmlAttributes xmlAttributes) {
+	private void addAttributes(DataChild dataElement, XmlAttributes xmlAttributes) {
 		for (Entry<String, String> attribute : xmlAttributes.getAttributeSet()) {
 			dataElement.addAttributeByIdWithValue(attribute.getKey(), attribute.getValue());
 		}
@@ -218,24 +220,23 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 	private void convertLink(DataGroup parentDataGroup, Node currentNode,
 			XmlAttributes xmlAttributes, List<Node> elementNodeChildren) {
 		String nodeName = currentNode.getNodeName();
-		DataGroup dataRecordLink = createLink(elementNodeChildren, nodeName);
+		DataRecordLink dataRecordLink = createLink(elementNodeChildren, nodeName);
 		possiblyAddAttributesAndRepeatId(dataRecordLink, xmlAttributes);
 		parentDataGroup.addChild(dataRecordLink);
 	}
 
-	private void possiblyAddAttributesAndRepeatId(DataElement dataElement,
+	private void possiblyAddAttributesAndRepeatId(DataChild dataElement,
 			XmlAttributes xmlAttributes) {
 		addAttributes(dataElement, xmlAttributes);
 		possiblyAddRepeatId(dataElement, xmlAttributes);
 	}
 
-	private DataGroup createLink(List<Node> elementNodeChildren, String nodeName) {
+	private DataRecordLink createLink(List<Node> elementNodeChildren, String nodeName) {
 		String linkedRecordType = getTextContentForNodeName(elementNodeChildren,
 				"linkedRecordType");
 		String linkedRecordId = getTextContentForNodeName(elementNodeChildren, "linkedRecordId");
-
-		return DataRecordLinkProvider.getDataRecordLinkAsLinkUsingNameInDataTypeAndId(nodeName,
-				linkedRecordType, linkedRecordId);
+		return DataProvider.createRecordLinkUsingNameInDataAndTypeAndId(nodeName, linkedRecordType,
+				linkedRecordId);
 	}
 
 	private String getTextContentForNodeName(List<Node> elementNodeChildren, String nodeName) {
@@ -257,18 +258,10 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 		parentDataGroup.addChild(dataGroup);
 	}
 
-	private void possiblyAddRepeatId(DataElement dataElement, XmlAttributes xmlAttributes) {
+	private void possiblyAddRepeatId(DataChild dataElement, XmlAttributes xmlAttributes) {
 		String repeatIdValue = xmlAttributes.repeatId;
 		if (!repeatIdValue.isEmpty()) {
-			addRepeatId(dataElement, repeatIdValue);
-		}
-	}
-
-	private void addRepeatId(DataElement dataElement, String repeatIdValue) {
-		if (dataElement instanceof DataGroup) {
-			((DataGroup) dataElement).setRepeatId(repeatIdValue);
-		} else {
-			((DataAtomic) dataElement).setRepeatId(repeatIdValue);
+			dataElement.setRepeatId(repeatIdValue);
 		}
 	}
 
