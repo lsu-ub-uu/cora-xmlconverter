@@ -24,8 +24,8 @@
 
 	<properties>
 		<logger.version>2.8.0</logger.version>
-		<coradata.version>7.5.0</coradata.version>
-		<converter.version>3.5.0</converter.version>
+		<coradata.version>7.6.0</coradata.version>
+		<converter.version>3.6.0</converter.version>
 		<json.version>3.7.0</json.version>
 		<testutils.version>1.9.0</testutils.version>
 		<testspies.version>1.2.0</testspies.version>
