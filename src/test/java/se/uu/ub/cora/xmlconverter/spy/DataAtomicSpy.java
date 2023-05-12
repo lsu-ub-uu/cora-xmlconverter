@@ -3,6 +3,7 @@ package se.uu.ub.cora.xmlconverter.spy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAttribute;
@@ -65,6 +66,12 @@ public class DataAtomicSpy implements DataAtomic {
 	@Override
 	public Collection<DataAttribute> getAttributes() {
 		return attributes;
+	}
+
+	@Override
+	public Optional<String> getAttributeValue(String nameInData) {
+		// TODO Auto-generated method stub
+		return Optional.empty();
 	}
 
 }
