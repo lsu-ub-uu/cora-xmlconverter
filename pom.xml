@@ -25,6 +25,7 @@
 	<properties>
 		<logger.version>2.10.0</logger.version>
 		<coradata.version>8.0.0</coradata.version>
+		<coradata-spies.version>1.7-SNAPSHOT</coradata-spies.version>
 		<converter.version>3.8.0</converter.version>
 		<json.version>3.9.0</json.version>
 		<testutils.version>1.11.0</testutils.version>
@@ -61,6 +62,12 @@
 			<groupId>se.uu.ub.cora</groupId>
 			<artifactId>coradata</artifactId>
 			<version>${coradata.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>coradata-spies</artifactId>
+			<version>${coradata-spies.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

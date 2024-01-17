@@ -37,6 +37,7 @@ import se.uu.ub.cora.data.Action;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataResourceLink;
+import se.uu.ub.cora.data.spies.DataResourceLinkSpy;
 import se.uu.ub.cora.xmlconverter.spy.DataAtomicSpy;
 import se.uu.ub.cora.xmlconverter.spy.DataGroupSpy;
 import se.uu.ub.cora.xmlconverter.spy.DataRecordSpy;
@@ -387,15 +388,15 @@ public class ExternallyConvertibleToXmlTest {
 	}
 
 	@Test
-	public void testConvertResourceLink_noReadAction() {
+	public void testConvertResourceLink_noRepeatId_noAttributes_noReadAction() {
 		DataRecordSpy dataRecord = new DataRecordSpy();
-		DataGroup person = new DataGroupSpy("person");
+		DataGroup person = new DataGroupSpy("binary");
 		dataRecord.setDataGroup(person);
 
-		DataResourceLink linkSpy = new DataResourceLinkSpy("master", "someStreamId", "someFileName",
-				"18580", "application/octet-stream");
-		linkSpy.setRepeatId("someRepeatId");
-		linkSpy.addAttributeByIdWithValue("someAttributeId", "someAttributeValue");
+		DataResourceLinkSpy linkSpy = new DataResourceLinkSpy();
+		linkSpy.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> "jp2");
+		linkSpy.MRV.setDefaultReturnValuesSupplier("getMimeType", () -> "image/jp2");
+
 		person.addChild(linkSpy);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
@@ -403,14 +404,42 @@ public class ExternallyConvertibleToXmlTest {
 		String expectedXml = XML_DECLARATION;
 		expectedXml += "<record>";
 		expectedXml += "<data>";
-		expectedXml += "<person>";
-		expectedXml += "<master repeatId=\"someRepeatId\" someAttributeId=\"someAttributeValue\">";
-		expectedXml += "<streamId>someStreamId</streamId>";
-		expectedXml += "<fileName>someFileName</fileName>";
-		expectedXml += "<fileSize>18580</fileSize>";
-		expectedXml += "<mimeType>application/octet-stream</mimeType>";
-		expectedXml += "</master>";
-		expectedXml += "</person>";
+		expectedXml += "<binary>";
+		expectedXml += "<jp2>";
+		expectedXml += "<mimeType>image/jp2</mimeType>";
+		expectedXml += "</jp2>";
+		expectedXml += "</binary>";
+		expectedXml += "</data>";
+		expectedXml += "</record>";
+
+		assertEquals(xml, expectedXml);
+	}
+
+	@Test
+	public void testConvertResourceLink_withRepeatId_noReadAction() {
+		DataRecordSpy dataRecord = new DataRecordSpy();
+		DataGroup person = new DataGroupSpy("binary");
+		dataRecord.setDataGroup(person);
+
+		DataResourceLinkSpy linkSpy = new DataResourceLinkSpy();
+		linkSpy.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> "jp2");
+		linkSpy.MRV.setDefaultReturnValuesSupplier("getMimeType", () -> "image/jp2");
+		linkSpy.MRV.setDefaultReturnValuesSupplier("getRepeatId", () -> "someRepeatId");
+
+		linkSpy.MRV.setAlwaysThrowException("getAttributes", new RuntimeException());
+
+		person.addChild(linkSpy);
+
+		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+
+		String expectedXml = XML_DECLARATION;
+		expectedXml += "<record>";
+		expectedXml += "<data>";
+		expectedXml += "<binary>";
+		expectedXml += "<jp2 repeatId=\"someRepeatId\">";
+		expectedXml += "<mimeType>image/jp2</mimeType>";
+		expectedXml += "</jp2>";
+		expectedXml += "</binary>";
 		expectedXml += "</data>";
 		expectedXml += "</record>";
 
@@ -420,29 +449,21 @@ public class ExternallyConvertibleToXmlTest {
 	@Test
 	public void testConvertResourceLink_readActionNoLinksRequested() {
 		DataRecordSpy dataRecord = new DataRecordSpy();
-		DataGroup person = new DataGroupSpy("person");
-		dataRecord.setDataGroup(person);
-
-		DataResourceLink linkSpy = new DataResourceLinkSpy("master", "someStreamId", "someFileName",
-				"18580", "application/octet-stream");
-		person.addChild(linkSpy);
-		linkSpy.addAction(Action.READ);
-		linkSpy.setRepeatId("someRepeatId");
-		linkSpy.addAttributeByIdWithValue("someAttributeId", "someAttributeValue");
+		DataGroup binary = new DataGroupSpy("binary");
+		dataRecord.setDataGroup(binary);
+		DataResourceLinkSpy linkSpy = createResourceLink();
+		binary.addChild(linkSpy);
 
 		String xml = extConvToXml.convert(dataRecord);
 
 		String expectedXml = XML_DECLARATION;
 		expectedXml += "<record>";
 		expectedXml += "<data>";
-		expectedXml += "<person>";
-		expectedXml += "<master repeatId=\"someRepeatId\" someAttributeId=\"someAttributeValue\">";
-		expectedXml += "<streamId>someStreamId</streamId>";
-		expectedXml += "<fileName>someFileName</fileName>";
-		expectedXml += "<fileSize>18580</fileSize>";
-		expectedXml += "<mimeType>application/octet-stream</mimeType>";
-		expectedXml += "</master>";
-		expectedXml += "</person>";
+		expectedXml += "<binary>";
+		expectedXml += "<jp2 repeatId=\"someRepeatId\">";
+		expectedXml += "<mimeType>image/jp2</mimeType>";
+		expectedXml += "</jp2>";
+		expectedXml += "</binary>";
 		expectedXml += "</data>";
 		expectedXml += "</record>";
 		assertEquals(xml, expectedXml);
@@ -451,29 +472,35 @@ public class ExternallyConvertibleToXmlTest {
 	@Test
 	public void testConvertResourceLink_readAction() {
 		DataRecordSpy dataRecord = new DataRecordSpy();
-		DataGroup person = new DataGroupSpy("person");
-		dataRecord.setDataGroup(person);
-
-		DataResourceLink linkSpy = createResourceLink();
-		person.addChild(linkSpy);
+		DataGroup binary = new DataGroupSpy("binary");
+		dataRecord.setDataGroup(binary);
+		DataResourceLinkSpy resourceLink = createResourceLink();
+		binary.addChild(resourceLink);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
 		String expectedXml = XML_DECLARATION;
 		expectedXml += expectedXMLForRecordResourceLink(dataRecord);
 		assertEquals(xml, expectedXml);
+		System.out.println(xml);
+	}
+
+	private DataResourceLinkSpy createResourceLink() {
+		DataResourceLinkSpy linkSpy = new DataResourceLinkSpy();
+		linkSpy.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> "jp2");
+		linkSpy.MRV.setDefaultReturnValuesSupplier("getMimeType", () -> "image/jp2");
+		linkSpy.MRV.setDefaultReturnValuesSupplier("getRepeatId", () -> "someRepeatId");
+		linkSpy.MRV.setDefaultReturnValuesSupplier("hasReadAction", () -> true);
+		linkSpy.MRV.setAlwaysThrowException("getAttributes", new RuntimeException());
+		return linkSpy;
 	}
 
 	private String expectedXMLForRecordResourceLink(DataRecordSpy dataRecord) {
 
 		String expectedXml = "<record>";
 		expectedXml += "<data>";
-		expectedXml += "<person>";
-		expectedXml += "<master repeatId=\"someRepeatId\" someAttributeId=\"someAttributeValue\">";
-		expectedXml += "<streamId>someStreamId</streamId>";
-		expectedXml += "<fileName>someFileName</fileName>";
-		expectedXml += "<fileSize>18580</fileSize>";
-		expectedXml += "<mimeType>application/octet-stream</mimeType>";
+		expectedXml += "<binary>";
+		expectedXml += "<jp2 repeatId=\"someRepeatId\">";
 
 		expectedXml += "<actionLinks>";
 		expectedXml += "<read>";
@@ -481,25 +508,18 @@ public class ExternallyConvertibleToXmlTest {
 		expectedXml += "<rel>read</rel>";
 		expectedXml += "<url>https://some.domain.now/rest/record/"
 				+ dataRecord.MCR.getReturnValue("getType", 0) + "/"
-				+ dataRecord.MCR.getReturnValue("getId", 0) + "/master</url>";
-		expectedXml += "<accept>application/octet-stream</accept>";
+				+ dataRecord.MCR.getReturnValue("getId", 0) + "/jp2</url>";
+		expectedXml += "<accept>image/jp2</accept>";
 		expectedXml += "</read>";
 		expectedXml += "</actionLinks>";
 
-		expectedXml += "</master>";
-		expectedXml += "</person>";
+		expectedXml += "<mimeType>image/jp2</mimeType>";
+		expectedXml += "</jp2>";
+		expectedXml += "</binary>";
 		expectedXml += "</data>";
 		expectedXml += "</record>";
-		return expectedXml;
-	}
 
-	private DataResourceLink createResourceLink() {
-		DataResourceLink linkSpy = new DataResourceLinkSpy("master", "someStreamId", "someFileName",
-				"18580", "application/octet-stream");
-		linkSpy.addAction(Action.READ);
-		linkSpy.setRepeatId("someRepeatId");
-		linkSpy.addAttributeByIdWithValue("someAttributeId", "someAttributeValue");
-		return linkSpy;
+		return expectedXml;
 	}
 
 	@Test
@@ -541,7 +561,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	private DataRecordSpy createDataRecordWithResourceLink() {
 		DataRecordSpy dataRecord = new DataRecordSpy();
-		DataGroup dataGroup = new DataGroupSpy("person");
+		DataGroup dataGroup = new DataGroupSpy("binary");
 		dataRecord.setDataGroup(dataGroup);
 		DataResourceLink linkSpy = createResourceLink();
 		dataGroup.addChild(linkSpy);
