@@ -388,7 +388,9 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 			DataChild childDataElement) {
 		Element domElement = createElement(childDataElement);
 		possiblyAddRepeatIdAsAttribute(childDataElement, domElement);
-		addAttributesIfExistsToElementForDataElement(childDataElement, domElement);
+		if (!(childDataElement instanceof DataResourceLink)) {
+			addAttributesIfExistsToElementForDataElement(childDataElement, domElement);
+		}
 		populateChildElement(domDocument, childDataElement, domElement);
 		parentXmlDomElement.appendChild(domElement);
 	}
@@ -397,30 +399,52 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 			Element domElement) {
 		if (childDataElement instanceof DataAtomic) {
 			possiblyAddTextToElementForDataAtomic((DataAtomic) childDataElement, domElement);
+		} else if (childDataElement instanceof DataResourceLink) {
+			populateResourceLink(domDocument, childDataElement, domElement);
+
 		} else {
+
 			DataGroup childDataGroup = (DataGroup) childDataElement;
 			populateDataGroupElement(domDocument, domElement, childDataGroup);
 
 		}
 	}
 
+	private void populateResourceLink(Document domDocument, DataChild childDataElement,
+			Element domElement) {
+		DataResourceLink resourceLink = (DataResourceLink) childDataElement;
+		possiblyAddActionLinks(domDocument, domElement, childDataElement);
+		Element mimeType = addMimeType(domDocument, resourceLink);
+		domElement.appendChild(mimeType);
+	}
+
+	private Element addMimeType(Document domDocument, DataResourceLink resourceLink) {
+		Element mimeType = domDocument.createElement("mimeType");
+		mimeType.setTextContent(resourceLink.getMimeType());
+		return mimeType;
+	}
+
 	private void populateDataGroupElement(Document domDocument, Element domElement,
 			DataGroup childDataGroup) {
 		iterateAndGenerateChildElements(childDataGroup, domDocument, domElement);
 
-		if (isLinkThatShouldBeConverted(childDataGroup)) {
+		possiblyAddActionLinks(domDocument, domElement, childDataGroup);
+	}
+
+	private void possiblyAddActionLinks(Document domDocument, Element domElement, DataChild child) {
+		if (isLinkThatShouldBeConverted(child)) {
 			Element actionLinks = domDocument.createElement("actionLinks");
 			domElement.appendChild(actionLinks);
-			addLinkElement(childDataGroup, actionLinks);
+			addLinkElement(child, actionLinks);
 		}
 	}
 
-	private void addLinkElement(DataGroup childDataGroup, Element actionLinks) {
+	private void addLinkElement(DataChild child, Element actionLinks) {
 		Element linkElement;
-		if (childDataGroup instanceof DataRecordLink) {
-			linkElement = createRecordLinkElement((DataRecordLink) childDataGroup);
+		if (child instanceof DataRecordLink) {
+			linkElement = createRecordLinkElement((DataRecordLink) child);
 		} else {
-			linkElement = createResourceLinkElement((DataResourceLink) childDataGroup);
+			linkElement = createResourceLinkElement((DataResourceLink) child);
 		}
 		actionLinks.appendChild(linkElement);
 	}
