@@ -31,7 +31,7 @@ import se.uu.ub.cora.data.DataChild;
 import se.uu.ub.cora.data.DataChildFilter;
 import se.uu.ub.cora.data.DataGroup;
 
-public class DataGroupSpy implements DataGroup {
+public class OldDataGroupSpy implements DataGroup {
 
 	public String nameIndata;
 	public List<DataChild> children = new ArrayList<>();
@@ -41,7 +41,7 @@ public class DataGroupSpy implements DataGroup {
 	private String repeatId;
 	public Map<String, String> atomicValues = new HashMap<>();
 
-	public DataGroupSpy(String nameIndata) {
+	public OldDataGroupSpy(String nameIndata) {
 		this.nameIndata = nameIndata;
 	}
 
@@ -70,8 +70,8 @@ public class DataGroupSpy implements DataGroup {
 		if (dataElement instanceof DataGroup) {
 			dataGroups.put(dataElement.getNameInData(), (DataGroup) dataElement);
 		}
-		if (dataElement instanceof DataAtomicSpy) {
-			DataAtomicSpy atomicSpyChild = (DataAtomicSpy) dataElement;
+		if (dataElement instanceof OldDataAtomicSpy) {
+			OldDataAtomicSpy atomicSpyChild = (OldDataAtomicSpy) dataElement;
 			atomicValues.put(atomicSpyChild.nameInData, atomicSpyChild.value);
 			dataAtomics.put(dataElement.getNameInData(), (DataAtomic) dataElement);
 

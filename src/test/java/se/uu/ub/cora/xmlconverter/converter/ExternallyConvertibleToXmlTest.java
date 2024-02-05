@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, 2021 Uppsala University Library
+ * Copyright 2019, 2021, 2024 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -37,11 +37,14 @@ import se.uu.ub.cora.data.Action;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataResourceLink;
+import se.uu.ub.cora.data.spies.DataGroupSpy;
+import se.uu.ub.cora.data.spies.DataRecordLinkSpy;
+import se.uu.ub.cora.data.spies.DataRecordSpy;
 import se.uu.ub.cora.data.spies.DataResourceLinkSpy;
-import se.uu.ub.cora.xmlconverter.spy.DataAtomicSpy;
-import se.uu.ub.cora.xmlconverter.spy.DataGroupSpy;
-import se.uu.ub.cora.xmlconverter.spy.DataRecordSpy;
 import se.uu.ub.cora.xmlconverter.spy.DocumentBuilderFactorySpy;
+import se.uu.ub.cora.xmlconverter.spy.OldDataAtomicSpy;
+import se.uu.ub.cora.xmlconverter.spy.OldDataGroupSpy;
+import se.uu.ub.cora.xmlconverter.spy.OldDataRecordSpy;
 import se.uu.ub.cora.xmlconverter.spy.TransformerFactorySpy;
 
 public class ExternallyConvertibleToXmlTest {
@@ -65,7 +68,7 @@ public class ExternallyConvertibleToXmlTest {
 		setUpDataElementToXmlWithDocumentBuilderFactorySpy();
 		((DocumentBuilderFactorySpy) documentBuilderFactory).throwParserError = true;
 
-		extConvToXml.convert(new DataGroupSpy("someNameInData"));
+		extConvToXml.convert(new OldDataGroupSpy("someNameInData"));
 	}
 
 	private void setUpDataElementToXmlWithDocumentBuilderFactorySpy() {
@@ -78,7 +81,7 @@ public class ExternallyConvertibleToXmlTest {
 		setUpDataElementToXmlWithDocumentBuilderFactorySpy();
 		((DocumentBuilderFactorySpy) documentBuilderFactory).throwParserError = true;
 		try {
-			extConvToXml.convert(new DataGroupSpy("someNameInData"));
+			extConvToXml.convert(new OldDataGroupSpy("someNameInData"));
 
 		} catch (Exception e) {
 			assertTrue(e.getCause() instanceof ParserConfigurationException);
@@ -91,7 +94,7 @@ public class ExternallyConvertibleToXmlTest {
 		extConvToXml = setUpDataElementToXmlWithTransformerSpy();
 		((TransformerFactorySpy) transformerFactory).throwTransformError = true;
 
-		extConvToXml.convert(new DataGroupSpy("someNameInData"));
+		extConvToXml.convert(new OldDataGroupSpy("someNameInData"));
 	}
 
 	@Test
@@ -100,7 +103,7 @@ public class ExternallyConvertibleToXmlTest {
 		((TransformerFactorySpy) transformerFactory).throwTransformError = true;
 
 		try {
-			extConvToXml.convert(new DataGroupSpy("someNameInData"));
+			extConvToXml.convert(new OldDataGroupSpy("someNameInData"));
 		} catch (Exception e) {
 			assertTrue(e.getCause() instanceof TransformerException);
 		}
@@ -132,8 +135,8 @@ public class ExternallyConvertibleToXmlTest {
 	}
 
 	private DataGroup createPersonWithFirstname(String firstNameString) {
-		DataGroup person = new DataGroupSpy("person");
-		DataAtomic firstName = new DataAtomicSpy("firstname", firstNameString);
+		DataGroup person = new OldDataGroupSpy("person");
+		DataAtomic firstName = new OldDataAtomicSpy("firstname", firstNameString);
 		person.addChild(firstName);
 		return person;
 	}
@@ -144,7 +147,7 @@ public class ExternallyConvertibleToXmlTest {
 				+ "<person><firstname>Kalle</firstname><lastname>Anka</lastname></person>";
 
 		DataGroup person = createPersonWithFirstname("Kalle");
-		DataAtomic lastName = new DataAtomicSpy("lastname", "Anka");
+		DataAtomic lastName = new OldDataAtomicSpy("lastname", "Anka");
 		person.addChild(lastName);
 
 		String xml = extConvToXml.convert(person);
@@ -157,9 +160,9 @@ public class ExternallyConvertibleToXmlTest {
 		String expectedXml = XML_DECLARATION
 				+ "<person><name><firstname>Kalle</firstname></name></person>";
 
-		DataGroup person = new DataGroupSpy("person");
-		DataGroupSpy name = new DataGroupSpy("name");
-		DataAtomic firstName = new DataAtomicSpy("firstname", "Kalle");
+		DataGroup person = new OldDataGroupSpy("person");
+		OldDataGroupSpy name = new OldDataGroupSpy("name");
+		DataAtomic firstName = new OldDataAtomicSpy("firstname", "Kalle");
 		name.addChild(firstName);
 		person.addChild(name);
 
@@ -172,10 +175,10 @@ public class ExternallyConvertibleToXmlTest {
 		String expectedXml = XML_DECLARATION
 				+ "<person><name><firstname type=\"authorized\">Kalle</firstname></name></person>";
 
-		DataGroup person = new DataGroupSpy("person");
-		DataGroupSpy name = new DataGroupSpy("name");
+		DataGroup person = new OldDataGroupSpy("person");
+		OldDataGroupSpy name = new OldDataGroupSpy("name");
 		person.addChild(name);
-		DataAtomic firstName = new DataAtomicSpy("firstname", "Kalle");
+		DataAtomic firstName = new OldDataAtomicSpy("firstname", "Kalle");
 		name.addChild(firstName);
 		firstName.addAttributeByIdWithValue("type", "authorized");
 
@@ -188,10 +191,10 @@ public class ExternallyConvertibleToXmlTest {
 		String expectedXml = XML_DECLARATION
 				+ "<person><name><firstname shoeSize=\"43\" type=\"authorized\">Kalle</firstname></name></person>";
 
-		DataGroup person = new DataGroupSpy("person");
-		DataGroupSpy name = new DataGroupSpy("name");
+		DataGroup person = new OldDataGroupSpy("person");
+		OldDataGroupSpy name = new OldDataGroupSpy("name");
 		person.addChild(name);
-		DataAtomic firstName = new DataAtomicSpy("firstname", "Kalle");
+		DataAtomic firstName = new OldDataAtomicSpy("firstname", "Kalle");
 		name.addChild(firstName);
 		firstName.addAttributeByIdWithValue("type", "authorized");
 		firstName.addAttributeByIdWithValue("shoeSize", "43");
@@ -213,12 +216,12 @@ public class ExternallyConvertibleToXmlTest {
 
 	private DataGroup createPersonWithFirstnameInNameGroupWithAttribute(String firstnameString,
 			String typeAttribute) {
-		DataGroup person = new DataGroupSpy("person");
-		DataGroupSpy name = new DataGroupSpy("name");
+		DataGroup person = new OldDataGroupSpy("person");
+		OldDataGroupSpy name = new OldDataGroupSpy("name");
 
 		name.addAttributeByIdWithValue("type", typeAttribute);
 
-		DataAtomic firstName = new DataAtomicSpy("firstname", firstnameString);
+		DataAtomic firstName = new OldDataAtomicSpy("firstname", firstnameString);
 		name.addChild(firstName);
 		person.addChild(name);
 		return person;
@@ -240,15 +243,15 @@ public class ExternallyConvertibleToXmlTest {
 
 	private DataGroup createPersonWithAttributesAndFirstnameInNameGroupWithTwoAttributes(
 			String firstnameString, String typeAttribute) {
-		DataGroup person = new DataGroupSpy("person");
+		DataGroup person = new OldDataGroupSpy("person");
 		person.addAttributeByIdWithValue("someAttributeName", "someAttributeValue");
 		person.addAttributeByIdWithValue("someAttributeName2", "someAttributeValue2");
-		DataGroupSpy name = new DataGroupSpy("name");
+		OldDataGroupSpy name = new OldDataGroupSpy("name");
 
 		name.addAttributeByIdWithValue("type", typeAttribute);
 		name.addAttributeByIdWithValue("type2", typeAttribute + "2");
 
-		DataAtomic firstName = new DataAtomicSpy("firstname", firstnameString);
+		DataAtomic firstName = new OldDataAtomicSpy("firstname", firstnameString);
 		name.addChild(firstName);
 		person.addChild(name);
 		return person;
@@ -262,10 +265,10 @@ public class ExternallyConvertibleToXmlTest {
 
 		DataGroup person = createPersonWithFirstnameInNameGroupWithAttribute("Kalle", "authorized");
 		DataGroup name = person.getFirstGroupWithNameInData("name");
-		DataAtomic lastName = new DataAtomicSpy("lastname", "Anka");
+		DataAtomic lastName = new OldDataAtomicSpy("lastname", "Anka");
 		name.addChild(lastName);
 
-		DataAtomic shoeSize = new DataAtomicSpy("shoesize", "14");
+		DataAtomic shoeSize = new OldDataAtomicSpy("shoesize", "14");
 		person.addChild(shoeSize);
 
 		String xml = extConvToXml.convert(person);
@@ -278,20 +281,20 @@ public class ExternallyConvertibleToXmlTest {
 				+ "<person><name repeatId=\"2\" type=\"authorized\"><firstname>Kalle</firstname>"
 				+ "<lastname>Anka</lastname></name><shoesize repeatId=\"6\">14</shoesize></person>";
 
-		DataGroup person = new DataGroupSpy("person");
-		DataGroupSpy name = new DataGroupSpy("name");
+		DataGroup person = new OldDataGroupSpy("person");
+		OldDataGroupSpy name = new OldDataGroupSpy("name");
 		name.setRepeatId("2");
 
 		name.addAttributeByIdWithValue("type", "authorized");
 
-		DataAtomic firstName = new DataAtomicSpy("firstname", "Kalle");
+		DataAtomic firstName = new OldDataAtomicSpy("firstname", "Kalle");
 		name.addChild(firstName);
 
-		DataAtomic lastName = new DataAtomicSpy("lastname", "Anka");
+		DataAtomic lastName = new OldDataAtomicSpy("lastname", "Anka");
 		name.addChild(lastName);
 		person.addChild(name);
 
-		DataAtomic shoeSize = new DataAtomicSpy("shoesize", "14");
+		DataAtomic shoeSize = new OldDataAtomicSpy("shoesize", "14");
 		shoeSize.setRepeatId("6");
 		person.addChild(shoeSize);
 
@@ -305,20 +308,20 @@ public class ExternallyConvertibleToXmlTest {
 				+ "<person><name type=\"authorized\"><firstname>Kalle</firstname>"
 				+ "<lastname>Anka</lastname></name><shoesize repeatId=\"6\">14</shoesize></person>";
 
-		DataGroup person = new DataGroupSpy("person");
-		DataGroupSpy name = new DataGroupSpy("name");
+		DataGroup person = new OldDataGroupSpy("person");
+		OldDataGroupSpy name = new OldDataGroupSpy("name");
 		name.setRepeatId("");
 
 		name.addAttributeByIdWithValue("type", "authorized");
 
-		DataAtomic firstName = new DataAtomicSpy("firstname", "Kalle");
+		DataAtomic firstName = new OldDataAtomicSpy("firstname", "Kalle");
 		name.addChild(firstName);
 
-		DataAtomic lastName = new DataAtomicSpy("lastname", "Anka");
+		DataAtomic lastName = new OldDataAtomicSpy("lastname", "Anka");
 		name.addChild(lastName);
 		person.addChild(name);
 
-		DataAtomic shoeSize = new DataAtomicSpy("shoesize", "14");
+		DataAtomic shoeSize = new OldDataAtomicSpy("shoesize", "14");
 		shoeSize.setRepeatId("6");
 		person.addChild(shoeSize);
 
@@ -331,7 +334,7 @@ public class ExternallyConvertibleToXmlTest {
 		String expectedEncoding = "encoding=\"UTF-8\"";
 		String expectedVersion = "version=\"1.0\"";
 
-		DataGroup person = new DataGroupSpy("person");
+		DataGroup person = new OldDataGroupSpy("person");
 		String xml = extConvToXml.convert(person);
 
 		assertTrue(xml.contains(expectedEncoding));
@@ -340,8 +343,8 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertLink_noReadAction() {
-		DataGroup person = new DataGroupSpy("person");
-		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", "someType",
+		DataGroup person = new OldDataGroupSpy("person");
+		OldDataRecordLinkSpy linkSpy = new OldDataRecordLinkSpy("someLinkNameInData", "someType",
 				"someId");
 		linkSpy.setRepeatId("someRepeatId");
 		linkSpy.addAttributeByIdWithValue("someAttributeId", "someAttributeValue");
@@ -361,8 +364,8 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertLink_readAction() {
-		DataGroup person = new DataGroupSpy("person");
-		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", "someType",
+		DataGroup person = new OldDataGroupSpy("person");
+		OldDataRecordLinkSpy linkSpy = new OldDataRecordLinkSpy("someLinkNameInData", "someType",
 				"someId");
 		linkSpy.addAction(Action.READ);
 		person.addChild(linkSpy);
@@ -389,8 +392,8 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertResourceLink_noRepeatId_noAttributes_noReadAction() {
-		DataRecordSpy dataRecord = new DataRecordSpy();
-		DataGroup person = new DataGroupSpy("binary");
+		OldDataRecordSpy dataRecord = new OldDataRecordSpy();
+		DataGroup person = new OldDataGroupSpy("binary");
 		dataRecord.setDataGroup(person);
 
 		DataResourceLinkSpy linkSpy = new DataResourceLinkSpy();
@@ -417,8 +420,8 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertResourceLink_withRepeatId_noReadAction() {
-		DataRecordSpy dataRecord = new DataRecordSpy();
-		DataGroup person = new DataGroupSpy("binary");
+		OldDataRecordSpy dataRecord = new OldDataRecordSpy();
+		DataGroup person = new OldDataGroupSpy("binary");
 		dataRecord.setDataGroup(person);
 
 		DataResourceLinkSpy linkSpy = new DataResourceLinkSpy();
@@ -448,8 +451,8 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertResourceLink_readActionNoLinksRequested() {
-		DataRecordSpy dataRecord = new DataRecordSpy();
-		DataGroup binary = new DataGroupSpy("binary");
+		OldDataRecordSpy dataRecord = new OldDataRecordSpy();
+		DataGroup binary = new OldDataGroupSpy("binary");
 		dataRecord.setDataGroup(binary);
 		DataResourceLinkSpy linkSpy = createResourceLink();
 		binary.addChild(linkSpy);
@@ -471,8 +474,8 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertResourceLink_readAction() {
-		DataRecordSpy dataRecord = new DataRecordSpy();
-		DataGroup binary = new DataGroupSpy("binary");
+		OldDataRecordSpy dataRecord = new OldDataRecordSpy();
+		DataGroup binary = new OldDataGroupSpy("binary");
 		dataRecord.setDataGroup(binary);
 		DataResourceLinkSpy resourceLink = createResourceLink();
 		binary.addChild(resourceLink);
@@ -495,7 +498,7 @@ public class ExternallyConvertibleToXmlTest {
 		return linkSpy;
 	}
 
-	private String expectedXMLForRecordResourceLink(DataRecordSpy dataRecord) {
+	private String expectedXMLForRecordResourceLink(OldDataRecordSpy dataRecord) {
 
 		String expectedXml = "<record>";
 		expectedXml += "<data>";
@@ -527,8 +530,8 @@ public class ExternallyConvertibleToXmlTest {
 		// * test for list of records with resourceLink, uses recordType and id from current
 		// record<br>
 		DataListSpy dataList = new DataListSpy();
-		DataRecordSpy dataRecord1 = createDataRecordWithResourceLink();
-		DataRecordSpy dataRecord2 = createDataRecordWithResourceLink();
+		OldDataRecordSpy dataRecord1 = createDataRecordWithResourceLink();
+		OldDataRecordSpy dataRecord2 = createDataRecordWithResourceLink();
 		dataList.addData(dataRecord1);
 		dataList.addData(dataRecord2);
 
@@ -559,9 +562,9 @@ public class ExternallyConvertibleToXmlTest {
 
 	}
 
-	private DataRecordSpy createDataRecordWithResourceLink() {
-		DataRecordSpy dataRecord = new DataRecordSpy();
-		DataGroup dataGroup = new DataGroupSpy("binary");
+	private OldDataRecordSpy createDataRecordWithResourceLink() {
+		OldDataRecordSpy dataRecord = new OldDataRecordSpy();
+		DataGroup dataGroup = new OldDataGroupSpy("binary");
 		dataRecord.setDataGroup(dataGroup);
 		DataResourceLink linkSpy = createResourceLink();
 		dataGroup.addChild(linkSpy);
@@ -571,14 +574,14 @@ public class ExternallyConvertibleToXmlTest {
 	@Test
 	public void testConvertIncomingLinks() throws Exception {
 		DataListSpy dataList = new DataListSpy();
-		DataGroup dataGroup1 = new DataGroupSpy("recordToRecordLink");
-		DataGroup dataGroup2 = new DataGroupSpy("recordToRecordLink");
+		DataGroup dataGroup1 = new OldDataGroupSpy("recordToRecordLink");
+		DataGroup dataGroup2 = new OldDataGroupSpy("recordToRecordLink");
 
 		dataList.addData(dataGroup1);
 		dataList.addData(dataGroup2);
 
-		DataRecordLinkSpy linkSpy1 = createLink();
-		DataRecordLinkSpy linkSpy2 = createLink();
+		OldDataRecordLinkSpy linkSpy1 = createLink();
+		OldDataRecordLinkSpy linkSpy2 = createLink();
 
 		dataGroup1.addChild(linkSpy1);
 		dataGroup2.addChild(linkSpy2);
@@ -628,8 +631,8 @@ public class ExternallyConvertibleToXmlTest {
 		return expectedXml;
 	}
 
-	private DataRecordLinkSpy createLink() {
-		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", "someType",
+	private OldDataRecordLinkSpy createLink() {
+		OldDataRecordLinkSpy linkSpy = new OldDataRecordLinkSpy("someLinkNameInData", "someType",
 				"someId");
 		linkSpy.addAction(Action.READ);
 		return linkSpy;
@@ -668,28 +671,28 @@ public class ExternallyConvertibleToXmlTest {
 	@Test
 	public void testConvertRecord_forAllActions_hasNoActionLinksInResult() throws Exception {
 		for (Action action : Action.values()) {
-			DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(action);
+			OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(action);
 
 			String xml = extConvToXml.convert(dataRecord);
 
 			String expectedActionLinksXml = "";
-			assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
+			assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
 		}
 	}
 
 	@Test
 	public void testConvertRecordWithLinks_noAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions();
+		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions();
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
 		String expectedActionLinksXml = "";
-		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
 	}
 
 	@Test
 	public void testConvertRecordWithLinks_readAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.READ);
+		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.READ);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
@@ -701,12 +704,12 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
 		expectedActionLinksXml += "</read>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
 	}
 
 	@Test
 	public void testConvertRecordWithLinks_deleteAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.DELETE);
+		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.DELETE);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
@@ -717,12 +720,12 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/fakeType/fakeId</url>";
 		expectedActionLinksXml += "</delete>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
 	}
 
 	@Test
 	public void testConvertRecordWithLinks_updateAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.UPDATE);
+		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.UPDATE);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
@@ -735,12 +738,13 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
 		expectedActionLinksXml += "</update>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
 	}
 
 	@Test
 	public void testConvertRecordWithLinks_incommingLinksAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.READ_INCOMING_LINKS);
+		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(
+				Action.READ_INCOMING_LINKS);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
@@ -752,12 +756,12 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<accept>application/vnd.uub.recordList+xml</accept>";
 		expectedActionLinksXml += "</read_incoming_links>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
 	}
 
 	@Test
 	public void testConvertRecordWithLinks_indexAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.INDEX);
+		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.INDEX);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
@@ -780,12 +784,12 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "</body>";
 		expectedActionLinksXml += "</index>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
 	}
 
 	@Test
 	public void testConvertRecordWithLinks_uploadAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.UPLOAD);
+		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.UPLOAD);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
@@ -797,12 +801,12 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<contentType>multipart/form-data</contentType>";
 		expectedActionLinksXml += "</upload>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
 	}
 
 	@Test
 	public void testConvertRecordWithLinks_searchAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.SEARCH);
+		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.SEARCH);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
@@ -817,12 +821,12 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<accept>application/vnd.uub.recordList+xml</accept>";
 		expectedActionLinksXml += "</search>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
 	}
 
 	@Test
 	public void testConvertRecordWithLinks_createAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.CREATE);
+		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.CREATE);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
@@ -835,12 +839,12 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
 		expectedActionLinksXml += "</create>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
 	}
 
 	@Test
 	public void testConvertRecordWithLinks_listAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.LIST);
+		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.LIST);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
@@ -852,12 +856,12 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<accept>application/vnd.uub.recordList+xml</accept>";
 		expectedActionLinksXml += "</list>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
 	}
 
 	@Test
 	public void testConvertRecordWithLinks_batchIndexAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.BATCH_INDEX);
+		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.BATCH_INDEX);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
@@ -870,12 +874,12 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
 		expectedActionLinksXml += "</batch_index>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
 	}
 
 	@Test
 	public void testConvertRecordWithLinks_validateAction() throws Exception {
-		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.VALIDATE);
+		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.VALIDATE);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
@@ -888,15 +892,15 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
 		expectedActionLinksXml += "</validate>";
 		expectedActionLinksXml += "</actionLinks>";
-		assertRecordCorrectWithSuppliedExpectedPart(expectedActionLinksXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
 	}
 
-	private DataRecordSpy createRecordWithLinkAddRecordActions(Action... actions) {
-		DataRecordSpy dataRecord = new DataRecordSpy();
-		DataGroupSpy person = new DataGroupSpy("person");
+	private OldDataRecordSpy createRecordWithLinkAddRecordActions(Action... actions) {
+		OldDataRecordSpy dataRecord = new OldDataRecordSpy();
+		OldDataGroupSpy person = new OldDataGroupSpy("person");
 		dataRecord.setDataGroup(person);
 
-		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", "someType",
+		OldDataRecordLinkSpy linkSpy = new OldDataRecordLinkSpy("someLinkNameInData", "someType",
 				"someId");
 		person.addChild(linkSpy);
 
@@ -904,8 +908,8 @@ public class ExternallyConvertibleToXmlTest {
 		return dataRecord;
 	}
 
-	private void assertRecordCorrectWithSuppliedExpectedPart(String expectedActionLinksXml,
-			String xml) {
+	private void assertRecordCorrectWithSuppliedExpectedPart(String xmlToAssert,
+			String expectedActionLinksXml) {
 		String expectedXml = XML_DECLARATION;
 		expectedXml += "<record>";
 		expectedXml += "<data>";
@@ -918,22 +922,22 @@ public class ExternallyConvertibleToXmlTest {
 		expectedXml += "</data>";
 		expectedXml += expectedActionLinksXml;
 		expectedXml += "</record>";
-		assertEquals(xml, expectedXml);
+		assertEquals(xmlToAssert, expectedXml);
 	}
 
 	@Test
 	public void testToXmlWithLinks_noPermissions() {
-		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(List.of(), List.of());
+		OldDataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(List.of(), List.of());
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
 
 		String expectedPermissionsXml = "";
-		assertRecordCorrectWithSuppliedExpectedPart(expectedPermissionsXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedPermissionsXml);
 	}
 
 	@Test
 	public void testToXmlWithLinks_ListOfReadPermissions() {
-		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
+		OldDataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
 				List.of("readPermissionOne", "readPermissionTwo"), List.of());
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
@@ -944,12 +948,12 @@ public class ExternallyConvertibleToXmlTest {
 		expectedPermissionsXml += "<permission>readPermissionTwo</permission>";
 		expectedPermissionsXml += "</read>";
 		expectedPermissionsXml += "</permissions>";
-		assertRecordCorrectWithSuppliedExpectedPart(expectedPermissionsXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedPermissionsXml);
 	}
 
 	@Test
 	public void testToXmlWithLinks_ListOfWritePermissions() {
-		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(List.of(),
+		OldDataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(List.of(),
 				List.of("writePermissionOne", "writePermissionTwo"));
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
@@ -960,12 +964,12 @@ public class ExternallyConvertibleToXmlTest {
 		expectedPermissionsXml += "<permission>writePermissionTwo</permission>";
 		expectedPermissionsXml += "</write>";
 		expectedPermissionsXml += "</permissions>";
-		assertRecordCorrectWithSuppliedExpectedPart(expectedPermissionsXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedPermissionsXml);
 	}
 
 	@Test
 	public void testToXmlWithLinks_ListOfReadAndWritePermissions() {
-		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
+		OldDataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
 				List.of("readPermissionOne", "readPermissionTwo"),
 				List.of("writePermissionOne", "writePermissionTwo"));
 
@@ -982,28 +986,28 @@ public class ExternallyConvertibleToXmlTest {
 		expectedPermissionsXml += "</write>";
 		expectedPermissionsXml += "</permissions>";
 
-		assertRecordCorrectWithSuppliedExpectedPart(expectedPermissionsXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedPermissionsXml);
 	}
 
 	@Test
 	public void testToXmlWithoutLinks_ListOfReadAndWritePermissions() {
-		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
+		OldDataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
 				List.of("readPermissionOne", "readPermissionTwo"),
 				List.of("writePermissionOne", "writePermissionTwo"));
 
 		String xml = extConvToXml.convert(dataRecord);
 
 		String expectedPermissionsXml = "";
-		assertRecordCorrectWithSuppliedExpectedPart(expectedPermissionsXml, xml);
+		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedPermissionsXml);
 	}
 
-	private DataRecordSpy createRecordWithReadAndWritePermissions(List<String> readPermissions,
+	private OldDataRecordSpy createRecordWithReadAndWritePermissions(List<String> readPermissions,
 			List<String> writePermissions) {
-		DataRecordSpy dataRecord = new DataRecordSpy();
-		DataGroupSpy person = new DataGroupSpy("person");
+		OldDataRecordSpy dataRecord = new OldDataRecordSpy();
+		OldDataGroupSpy person = new OldDataGroupSpy("person");
 		dataRecord.setDataGroup(person);
 
-		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy("someLinkNameInData", "someType",
+		OldDataRecordLinkSpy linkSpy = new OldDataRecordLinkSpy("someLinkNameInData", "someType",
 				"someId");
 		person.addChild(linkSpy);
 		LinkedHashSet<String> readSet = new LinkedHashSet<>();
@@ -1045,11 +1049,11 @@ public class ExternallyConvertibleToXmlTest {
 	@Test
 	public void testToXmlWithoutLinks_ListOfRecordsTwoRecords() throws Exception {
 		DataListSpy dataList = new DataListSpy();
-		DataRecordSpy dataRecord1 = createRecordWithReadAndWritePermissions(
+		OldDataRecordSpy dataRecord1 = createRecordWithReadAndWritePermissions(
 				List.of("readPermissionOne", "readPermissionTwo"),
 				List.of("writePermissionOne", "writePermissionTwo"));
 		dataList.addData(dataRecord1);
-		DataRecordSpy dataRecord2 = createRecordWithLinkAddRecordActions(Action.VALIDATE);
+		OldDataRecordSpy dataRecord2 = createRecordWithLinkAddRecordActions(Action.VALIDATE);
 		dataList.addData(dataRecord2);
 
 		String xml = extConvToXml.convert(dataList);
@@ -1080,11 +1084,11 @@ public class ExternallyConvertibleToXmlTest {
 	@Test
 	public void testToXmlWithLinks_ListOfRecordsTwoRecords() throws Exception {
 		DataListSpy dataList = new DataListSpy();
-		DataRecordSpy dataRecord1 = createRecordWithReadAndWritePermissions(
+		OldDataRecordSpy dataRecord1 = createRecordWithReadAndWritePermissions(
 				List.of("readPermissionOne", "readPermissionTwo"),
 				List.of("writePermissionOne", "writePermissionTwo"));
 		dataList.addData(dataRecord1);
-		DataRecordSpy dataRecord2 = createRecordWithLinkAddRecordActions(Action.VALIDATE);
+		OldDataRecordSpy dataRecord2 = createRecordWithLinkAddRecordActions(Action.VALIDATE);
 		dataList.addData(dataRecord2);
 
 		String xml = extConvToXml.convertWithLinks(dataList, SOME_BASE_URL);
@@ -1113,18 +1117,60 @@ public class ExternallyConvertibleToXmlTest {
 
 		assertEquals(xml, expectedListXml);
 	}
-	// {
-	// "dataList": {
-	// "fromNo": "1",
-	// "data": [ ],
-	// "totalNo": "43524",
-	// "containDataOfType": "mix",
-	// "toNo": "100"
-	// }
-	// }
 
 	private String removeXmlDeclaration(String xml) {
 		return xml.substring(XML_DECLARATION.length());
 	}
+
+	@Test
+	public void testOtherProtocols() throws Exception {
+
+		DataRecordSpy dataRecord = createDataRecordWithOneLink();
+
+		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+
+		assertRecordCorrectWithSuppliedExpectedPart(xml, "");
+
+	}
+
+	private DataRecordSpy createDataRecordWithOneLink() {
+		DataRecordSpy dataRecord = new DataRecordSpy();
+		DataGroupSpy dataGroup = new DataGroupSpy();
+		DataRecordLinkSpy dataRecordLink = createRecordLink("someLinkNameInData", "someType",
+				"someId");
+
+		dataGroup.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> "person");
+		dataGroup.MRV.setDefaultReturnValuesSupplier("getChildren", () -> List.of(dataRecordLink));
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getDataGroup", () -> dataGroup);
+		return dataRecord;
+	}
+
+	private DataRecordLinkSpy createRecordLink(String linkedName, String linkedType,
+			String linkToId) {
+		DataRecordLinkSpy dataRecordLink = new DataRecordLinkSpy();
+		dataRecordLink.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> linkedName);
+		dataRecordLink.MRV.setDefaultReturnValuesSupplier("getLinkedRecordType", () -> linkedType);
+		dataRecordLink.MRV.setDefaultReturnValuesSupplier("getLinkedRecordId", () -> linkToId);
+		return dataRecordLink;
+	}
+
+	// private OldDataRecordSpy createRecordWithReadAndWritePermissions(List<String>
+	// readPermissions,
+	// List<String> writePermissions) {
+	// OldDataRecordSpy dataRecord = new OldDataRecordSpy();
+	// OldDataGroupSpy person = new OldDataGroupSpy("person");
+	// dataRecord.setDataGroup(person);
+	//
+	// OldDataRecordLinkSpy linkSpy = new OldDataRecordLinkSpy("someLinkNameInData", "someType",
+	// "someId");
+	// person.addChild(linkSpy);
+	// LinkedHashSet<String> readSet = new LinkedHashSet<>();
+	// readSet.addAll(readPermissions);
+	// dataRecord.readPermissions = readSet;
+	// LinkedHashSet<String> writeSet = new LinkedHashSet<>();
+	// writeSet.addAll(writePermissions);
+	// dataRecord.writePermissions = writeSet;
+	// return dataRecord;
+	// }
 
 }

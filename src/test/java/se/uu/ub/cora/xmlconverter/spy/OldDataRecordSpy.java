@@ -28,11 +28,11 @@ import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataRecord;
 import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
 
-public class DataRecordSpy implements DataRecord {
+public class OldDataRecordSpy implements DataRecord {
 
 	public MethodCallRecorder MCR = new MethodCallRecorder();
 
-	private DataGroupSpy dataGroup;
+	private OldDataGroupSpy dataGroup;
 
 	public List<Action> actions = Collections.emptyList();
 	public Set<String> readPermissions = Collections.emptySet();
@@ -42,11 +42,11 @@ public class DataRecordSpy implements DataRecord {
 
 	public String searchId = "fakeSearchId";
 
-	public DataRecordSpy(DataGroupSpy dataGroup) {
+	public OldDataRecordSpy(OldDataGroupSpy dataGroup) {
 		this.dataGroup = dataGroup;
 	}
 
-	public DataRecordSpy() {
+	public OldDataRecordSpy() {
 	}
 
 	@Override
@@ -68,7 +68,7 @@ public class DataRecordSpy implements DataRecord {
 	@Override
 	public void setDataGroup(DataGroup dataGroup) {
 		MCR.addCall("dataGroup", dataGroup);
-		this.dataGroup = (DataGroupSpy) dataGroup;
+		this.dataGroup = (OldDataGroupSpy) dataGroup;
 	}
 
 	@Override

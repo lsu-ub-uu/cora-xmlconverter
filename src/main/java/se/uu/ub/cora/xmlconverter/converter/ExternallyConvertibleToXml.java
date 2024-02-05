@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, 2021 Uppsala University Library
+ * Copyright 2019, 2021, 2024 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -111,13 +111,21 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	}
 
 	private void addConvertibleToDomDocument(ExternallyConvertible externallyConvertible) {
-		if (externallyConvertible instanceof DataList) {
+		if (isDataList(externallyConvertible)) {
 			addDataListToDomDocument((DataList) externallyConvertible);
-		} else if (externallyConvertible instanceof DataRecord) {
+		} else if (isDataRecord(externallyConvertible)) {
 			addDataRecordToDomDocument((DataRecord) externallyConvertible);
 		} else {
 			addDataGroupToDomDocument((DataGroup) externallyConvertible);
 		}
+	}
+
+	private boolean isDataRecord(ExternallyConvertible externallyConvertible) {
+		return externallyConvertible instanceof DataRecord;
+	}
+
+	private boolean isDataList(ExternallyConvertible externallyConvertible) {
+		return externallyConvertible instanceof DataList;
 	}
 
 	private void addDataListToDomDocument(DataList dataList) {
@@ -388,26 +396,57 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 			DataChild childDataElement) {
 		Element domElement = createElement(childDataElement);
 		possiblyAddRepeatIdAsAttribute(childDataElement, domElement);
-		if (!(childDataElement instanceof DataResourceLink)) {
+		if (isNotResourceLink(childDataElement)) {
 			addAttributesIfExistsToElementForDataElement(childDataElement, domElement);
 		}
 		populateChildElement(domDocument, childDataElement, domElement);
 		parentXmlDomElement.appendChild(domElement);
 	}
 
+	private boolean isNotResourceLink(DataChild childDataElement) {
+		return !isResourceLink(childDataElement);
+	}
+
+	private boolean isResourceLink(DataChild childDataElement) {
+		return childDataElement instanceof DataResourceLink;
+	}
+
 	private void populateChildElement(Document domDocument, DataChild childDataElement,
 			Element domElement) {
-		if (childDataElement instanceof DataAtomic) {
+		if (isAtomic(childDataElement)) {
 			possiblyAddTextToElementForDataAtomic((DataAtomic) childDataElement, domElement);
-		} else if (childDataElement instanceof DataResourceLink) {
+		} else if (isRecordLink(childDataElement)) {
+			populateRecordLink(domDocument, (DataRecordLink) childDataElement, domElement);
+
+		} else if (isResourceLink(childDataElement)) {
 			populateResourceLink(domDocument, childDataElement, domElement);
 
 		} else {
-
 			DataGroup childDataGroup = (DataGroup) childDataElement;
 			populateDataGroupElement(domDocument, domElement, childDataGroup);
 
 		}
+	}
+
+	private void populateRecordLink(Document domDocument, DataRecordLink recordLink,
+			Element domElement) {
+		Element xmlLinkedType = domDocument.createElement("linkedRecordType");
+		xmlLinkedType.setTextContent(recordLink.getLinkedRecordType());
+
+		Element xmlLinkedId = domDocument.createElement("linkedRecordId");
+		xmlLinkedId.setTextContent(recordLink.getLinkedRecordId());
+
+		domElement.appendChild(xmlLinkedType);
+		domElement.appendChild(xmlLinkedId);
+		possiblyAddActionLinks(domDocument, domElement, recordLink);
+	}
+
+	private boolean isRecordLink(DataChild childDataElement) {
+		return childDataElement instanceof DataRecordLink;
+	}
+
+	private boolean isAtomic(DataChild childDataElement) {
+		return childDataElement instanceof DataAtomic;
 	}
 
 	private void populateResourceLink(Document domDocument, DataChild childDataElement,
@@ -441,7 +480,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 	private void addLinkElement(DataChild child, Element actionLinks) {
 		Element linkElement;
-		if (child instanceof DataRecordLink) {
+		if (isRecordLink(child)) {
 			linkElement = createRecordLinkElement((DataRecordLink) child);
 		} else {
 			linkElement = createResourceLinkElement((DataResourceLink) child);
@@ -463,10 +502,14 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	}
 
 	private boolean isLinkThatShouldBeConverted(DataChild childDataElement) {
-		if (childDataElement instanceof DataLink) {
+		if (isDataLink(childDataElement)) {
 			return addActionLinks && ((DataLink) childDataElement).hasReadAction();
 		}
 		return false;
+	}
+
+	private boolean isDataLink(DataChild childDataElement) {
+		return childDataElement instanceof DataLink;
 	}
 
 	private Element createReadLink(String linkedRecordType, String linkedRecordId) {

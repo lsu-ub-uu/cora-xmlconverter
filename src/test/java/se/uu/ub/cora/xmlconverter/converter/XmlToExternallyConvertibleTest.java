@@ -43,7 +43,7 @@ import se.uu.ub.cora.data.ExternallyConvertible;
 import se.uu.ub.cora.testspies.data.DataFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DataAtomicFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DataGroupFactorySpy;
-import se.uu.ub.cora.xmlconverter.spy.DataGroupSpy;
+import se.uu.ub.cora.xmlconverter.spy.OldDataGroupSpy;
 import se.uu.ub.cora.xmlconverter.spy.DocumentBuilderFactorySpy;
 
 public class XmlToExternallyConvertibleTest {
@@ -465,7 +465,7 @@ public class XmlToExternallyConvertibleTest {
 
 		String dataGroupWithLinks = getLinksXml();
 
-		DataGroupSpy topDataGroup = (DataGroupSpy) xmlToDataElement.convert(dataGroupWithLinks);
+		OldDataGroupSpy topDataGroup = (OldDataGroupSpy) xmlToDataElement.convert(dataGroupWithLinks);
 
 		assertCorrectLink(0, "link1", "recordType", "place");
 		se.uu.ub.cora.testspies.data.DataRecordLinkSpy link1Spy = (se.uu.ub.cora.testspies.data.DataRecordLinkSpy) dataFactorySpy.MCR

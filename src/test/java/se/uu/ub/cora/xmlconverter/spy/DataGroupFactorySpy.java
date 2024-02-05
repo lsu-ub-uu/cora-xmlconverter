@@ -31,7 +31,7 @@ public class DataGroupFactorySpy implements DataGroupFactory {
 	@Override
 	public DataGroup factorUsingNameInData(String nameInData) {
 		usedNameInDatas.add(nameInData);
-		return new DataGroupSpy(nameInData);
+		return new OldDataGroupSpy(nameInData);
 	}
 
 	@Override

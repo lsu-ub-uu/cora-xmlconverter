@@ -20,20 +20,20 @@ package se.uu.ub.cora.xmlconverter.converter;
 
 import se.uu.ub.cora.data.Action;
 import se.uu.ub.cora.data.DataRecordLink;
-import se.uu.ub.cora.xmlconverter.spy.DataAtomicSpy;
-import se.uu.ub.cora.xmlconverter.spy.DataGroupSpy;
+import se.uu.ub.cora.xmlconverter.spy.OldDataAtomicSpy;
+import se.uu.ub.cora.xmlconverter.spy.OldDataGroupSpy;
 
-public class DataRecordLinkSpy extends DataGroupSpy implements DataRecordLink {
+public class OldDataRecordLinkSpy extends OldDataGroupSpy implements DataRecordLink {
 	public boolean readAction = false;
 	public String linkedType;
 	public String linkedId;
 
-	public DataRecordLinkSpy(String nameInData, String linkedType, String linkedId) {
+	public OldDataRecordLinkSpy(String nameInData, String linkedType, String linkedId) {
 		super(nameInData);
 		this.linkedType = linkedType;
 		this.linkedId = linkedId;
-		addChild(new DataAtomicSpy("linkedRecordType", linkedType));
-		addChild(new DataAtomicSpy("linkedRecordId", linkedId));
+		addChild(new OldDataAtomicSpy("linkedRecordType", linkedType));
+		addChild(new OldDataAtomicSpy("linkedRecordId", linkedId));
 	}
 
 	@Override

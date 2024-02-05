@@ -8,14 +8,14 @@ import java.util.Optional;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAttribute;
 
-public class DataAtomicSpy implements DataAtomic {
+public class OldDataAtomicSpy implements DataAtomic {
 
 	public String nameInData;
 	public String value;
 	private String repeatId;
 	public List<DataAttribute> attributes = new ArrayList<>();
 
-	public DataAtomicSpy(String nameInData, String value) {
+	public OldDataAtomicSpy(String nameInData, String value) {
 		this.nameInData = nameInData;
 		this.value = value;
 	}

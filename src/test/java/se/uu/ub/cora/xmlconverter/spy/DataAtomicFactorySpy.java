@@ -15,7 +15,7 @@ public class DataAtomicFactorySpy implements DataAtomicFactory {
 	public DataAtomic factorUsingNameInDataAndValue(String nameInData, String value) {
 		usedNameInDatas.add(nameInData);
 		usedValues.add(value);
-		return new DataAtomicSpy(nameInData, value);
+		return new OldDataAtomicSpy(nameInData, value);
 	}
 
 	@Override
