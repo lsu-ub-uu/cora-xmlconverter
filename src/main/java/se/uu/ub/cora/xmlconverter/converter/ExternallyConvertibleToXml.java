@@ -36,6 +36,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import se.uu.ub.cora.converter.ConverterException;
+import se.uu.ub.cora.converter.ExternalUrls;
 import se.uu.ub.cora.converter.ExternallyConvertibleToStringConverter;
 import se.uu.ub.cora.data.Action;
 import se.uu.ub.cora.data.Data;
@@ -63,10 +64,12 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	private DocumentBuilderFactory documentBuilderFactory;
 	private TransformerFactory transformerFactory;
 	private Document domDocument;
-	private String baseUrl;
-	private boolean addActionLinks;
+	// private String baseUrl;
+	private boolean linksMustBeAdded;
 	private String recordType;
 	private String recordId;
+	// private String iiifUrl;
+	private ExternalUrls externalUrls;
 
 	public ExternallyConvertibleToXml(DocumentBuilderFactory documentBuildeFactory,
 			TransformerFactory transformerFactory) {
@@ -76,41 +79,36 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 	@Override
 	public String convert(ExternallyConvertible externallyConvertible) {
-		addActionLinks = false;
-		return tryToCreateAndTransformDomDocumentToString(externallyConvertible);
+		linksMustBeAdded = false;
+		return tryToConvertExternallyConvertibleToXml(externallyConvertible);
 	}
 
 	@Override
-	public String convertWithLinks(ExternallyConvertible externallyConvertible, String baseUrl) {
-		addActionLinks = true;
-		this.baseUrl = baseUrl;
-		return tryToCreateAndTransformDomDocumentToString(externallyConvertible);
+	public String convertWithLinks(ExternallyConvertible externallyConvertible,
+			ExternalUrls externalUrls) {
+		linksMustBeAdded = true;
+		this.externalUrls = externalUrls;
+		return tryToConvertExternallyConvertibleToXml(externallyConvertible);
 	}
 
-	private String tryToCreateAndTransformDomDocumentToString(
+	private String tryToConvertExternallyConvertibleToXml(
 			ExternallyConvertible externallyConvertible) {
 		try {
-			return createAndTransformDomDocumentToString(externallyConvertible);
+			return convertExternallyConvertibleToXml(externallyConvertible);
 		} catch (ParserConfigurationException exception) {
 			throw new ConverterException("Unable to convert from dataElement to xml", exception);
 		}
 	}
 
-	private String createAndTransformDomDocumentToString(
+	private String convertExternallyConvertibleToXml(ExternallyConvertible externallyConvertible)
+			throws ParserConfigurationException {
+		createDomDocumentForExternallyConvertible(externallyConvertible);
+		return tryToConvertDomDocumentToXml();
+	}
+
+	private void createDomDocumentForExternallyConvertible(
 			ExternallyConvertible externallyConvertible) throws ParserConfigurationException {
-		domDocument = initializeDomDocument();
-		addConvertibleToDomDocument(externallyConvertible);
-		return transformDomDocumentToXml();
-	}
-
-	private Document initializeDomDocument() throws ParserConfigurationException {
-		DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
-		Document newDomDocument = builder.newDocument();
-		newDomDocument.setXmlStandalone(true);
-		return newDomDocument;
-	}
-
-	private void addConvertibleToDomDocument(ExternallyConvertible externallyConvertible) {
+		domDocument = createAndInitializeDomDocument();
 		if (isDataList(externallyConvertible)) {
 			addDataListToDomDocument((DataList) externallyConvertible);
 		} else if (isDataRecord(externallyConvertible)) {
@@ -120,8 +118,11 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		}
 	}
 
-	private boolean isDataRecord(ExternallyConvertible externallyConvertible) {
-		return externallyConvertible instanceof DataRecord;
+	private Document createAndInitializeDomDocument() throws ParserConfigurationException {
+		DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+		Document newDomDocument = builder.newDocument();
+		newDomDocument.setXmlStandalone(true);
+		return newDomDocument;
 	}
 
 	private boolean isDataList(ExternallyConvertible externallyConvertible) {
@@ -132,7 +133,8 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		Element listDomElement = domDocument.createElement("dataList");
 		domDocument.appendChild(listDomElement);
 		addListInfoToDomDocument(dataList, listDomElement);
-		addListDataToDomDocument(dataList, listDomElement);
+		Element dataDomElement = createDataElement(listDomElement);
+		addAllDatasFromDataListToDomDocument(dataList, dataDomElement);
 	}
 
 	private void addListInfoToDomDocument(DataList dataList, Element listDomElement) {
@@ -144,33 +146,54 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 				createElementWithTextContent("containDataOfType", dataList.getContainDataOfType()));
 	}
 
-	private void addListDataToDomDocument(DataList dataList, Element listDomElement) {
+	private Element createDataElement(Element listDomElement) {
 		Element dataDomElement = domDocument.createElement("data");
 		listDomElement.appendChild(dataDomElement);
-		List<Data> listOfData = dataList.getDataList();
-		for (Data data : listOfData) {
-			addElementFromData(dataDomElement, data);
+		return dataDomElement;
+	}
+
+	private void addAllDatasFromDataListToDomDocument(DataList dataList, Element dataDomElement) {
+		for (Data data : dataList.getDataList()) {
+			Element element = createDomElementForData(data);
+			dataDomElement.appendChild(element);
 		}
 	}
 
-	private void addElementFromData(Element dataDomElement, Data data) {
-		Element element = generateElementFromData(data);
-		dataDomElement.appendChild(element);
-	}
-
-	private Element generateElementFromData(Data data) {
-		if (data instanceof DataRecord) {
-			return generateElementFromDataRecord((DataRecord) data);
+	private String tryToConvertDomDocumentToXml() {
+		try {
+			return convertDomDocumentToXml();
+		} catch (TransformerException exception) {
+			throw new ConverterException("Unable to convert from dataElement to xml", exception);
 		}
-		return generateElementFromDataGroup((DataGroup) data);
 	}
 
-	private void addDataRecordToDomDocument(DataRecord dataRecord) {
-		Element recordDomElement = generateElementFromDataRecord(dataRecord);
-		domDocument.appendChild(recordDomElement);
+	private String convertDomDocumentToXml() throws TransformerException {
+		DOMSource domSource = new DOMSource(domDocument);
+		StringWriter xmlWriter = new StringWriter();
+		StreamResult xmlResult = new StreamResult(xmlWriter);
+
+		Transformer transformer = transformerFactory.newTransformer();
+		transformer.transform(domSource, xmlResult);
+
+		return xmlWriter.toString();
 	}
 
-	private Element generateElementFromDataRecord(DataRecord dataRecord) {
+	private boolean isDataRecord(ExternallyConvertible externallyConvertible) {
+		return externallyConvertible instanceof DataRecord;
+	}
+
+	private Element createDomElementForData(Data data) {
+		if (isDataRecord(data)) {
+			return createDomElementFromDataRecord((DataRecord) data);
+		}
+		return createDomElementFromDataGroup((DataGroup) data);
+	}
+
+	private boolean isDataRecord(Data data) {
+		return data instanceof DataRecord;
+	}
+
+	private Element createDomElementFromDataRecord(DataRecord dataRecord) {
 		Element recordDomElement = domDocument.createElement("record");
 		Element dataDomElement = domDocument.createElement("data");
 		recordDomElement.appendChild(dataDomElement);
@@ -178,7 +201,13 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		addTopDataGroup(dataRecord, dataDomElement);
 		possiblyAddActionLinks(dataRecord, recordDomElement);
 		possiblyAddPermissions(dataRecord, recordDomElement);
+		possiblyAddOtherProtocols(dataRecord, recordDomElement);
 		return recordDomElement;
+	}
+
+	private void addDataRecordToDomDocument(DataRecord dataRecord) {
+		Element recordDomElement = createDomElementFromDataRecord(dataRecord);
+		domDocument.appendChild(recordDomElement);
 	}
 
 	private void addTopDataGroup(DataRecord dataRecord, Element dataDomElement) {
@@ -187,12 +216,12 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		recordType = dataRecord.getType();
 		recordId = dataRecord.getId();
 
-		Element groupDomElement = generateElementFromDataGroup(topDataGroup);
+		Element groupDomElement = createDomElementFromDataGroup(topDataGroup);
 		dataDomElement.appendChild(groupDomElement);
 	}
 
 	private void possiblyAddActionLinks(DataRecord dataRecord, Element recordDomElement) {
-		if (addActionLinks && dataRecord.hasActions()) {
+		if (linksMustBeAdded && dataRecord.hasActions()) {
 			addExistingActionLinks(dataRecord, recordDomElement);
 		}
 	}
@@ -256,7 +285,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	}
 
 	private boolean shouldPermissionBeConverted(DataRecord dataRecord) {
-		return addActionLinks && hasReadOrWritePermissions(dataRecord);
+		return linksMustBeAdded && hasReadOrWritePermissions(dataRecord);
 	}
 
 	private boolean hasReadOrWritePermissions(DataRecord dataRecord) {
@@ -374,11 +403,11 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	}
 
 	private void addDataGroupToDomDocument(DataGroup topDataGroup) {
-		Element groupDomElement = generateElementFromDataGroup(topDataGroup);
+		Element groupDomElement = createDomElementFromDataGroup(topDataGroup);
 		domDocument.appendChild(groupDomElement);
 	}
 
-	private Element generateElementFromDataGroup(DataGroup dataGroupToConvert) {
+	private Element createDomElementFromDataGroup(DataGroup dataGroupToConvert) {
 		Element groupDomElement = domDocument.createElement(dataGroupToConvert.getNameInData());
 		addAttributesIfExistsToElementForDataElement(dataGroupToConvert, groupDomElement);
 		iterateAndGenerateChildElements(dataGroupToConvert, domDocument, groupDomElement);
@@ -388,22 +417,22 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	private void iterateAndGenerateChildElements(DataGroup dataGroup, Document domDocument,
 			Element parentXmlDomElement) {
 		for (DataChild childDataElement : dataGroup.getChildren()) {
-			generateChildElement(domDocument, parentXmlDomElement, childDataElement);
+			createChildElement(domDocument, parentXmlDomElement, childDataElement);
 		}
 	}
 
-	private void generateChildElement(Document domDocument, Element parentXmlDomElement,
+	private void createChildElement(Document domDocument, Element parentXmlDomElement,
 			DataChild childDataElement) {
 		Element domElement = createElement(childDataElement);
 		possiblyAddRepeatIdAsAttribute(childDataElement, domElement);
-		if (isNotResourceLink(childDataElement)) {
+		if (isAnyDataChildThanResourceLink(childDataElement)) {
 			addAttributesIfExistsToElementForDataElement(childDataElement, domElement);
 		}
 		populateChildElement(domDocument, childDataElement, domElement);
 		parentXmlDomElement.appendChild(domElement);
 	}
 
-	private boolean isNotResourceLink(DataChild childDataElement) {
+	private boolean isAnyDataChildThanResourceLink(DataChild childDataElement) {
 		return !isResourceLink(childDataElement);
 	}
 
@@ -417,10 +446,8 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 			possiblyAddTextToElementForDataAtomic((DataAtomic) childDataElement, domElement);
 		} else if (isRecordLink(childDataElement)) {
 			populateRecordLink(domDocument, (DataRecordLink) childDataElement, domElement);
-
 		} else if (isResourceLink(childDataElement)) {
 			populateResourceLink(domDocument, childDataElement, domElement);
-
 		} else {
 			DataGroup childDataGroup = (DataGroup) childDataElement;
 			populateDataGroupElement(domDocument, domElement, childDataGroup);
@@ -503,7 +530,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 	private boolean isLinkThatShouldBeConverted(DataChild childDataElement) {
 		if (isDataLink(childDataElement)) {
-			return addActionLinks && ((DataLink) childDataElement).hasReadAction();
+			return linksMustBeAdded && ((DataLink) childDataElement).hasReadAction();
 		}
 		return false;
 	}
@@ -519,7 +546,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	}
 
 	private Element createStandardLink(String requestMethod, String action, String... urlParts) {
-		String recordURL = baseUrl + String.join("/", urlParts);
+		String recordURL = externalUrls.getBaseUrl() + String.join("/", urlParts);
 		Element actionLink = domDocument.createElement(action);
 		actionLink.appendChild(createElementWithTextContent("requestMethod", requestMethod));
 		actionLink.appendChild(createElementWithTextContent("rel", action));
@@ -565,23 +592,52 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		}
 	}
 
-	private String transformDomDocumentToXml() {
-		try {
-			return tryToTransformDomDocumentToXml();
-		} catch (TransformerException exception) {
-			throw new ConverterException("Unable to convert from dataElement to xml", exception);
+	private void possiblyAddOtherProtocols(DataRecord dataRecord, Element domElement) {
+		if (linksMustBeAddedAndHasOtherProtocols(dataRecord)) {
+			Element iiif = createIiifProtocol(dataRecord);
+			Element otherProtocols = createOtherProtocolsUsingProtocols(iiif);
+			domElement.appendChild(otherProtocols);
 		}
 	}
 
-	private String tryToTransformDomDocumentToXml() throws TransformerException {
-		DOMSource domSource = new DOMSource(domDocument);
-		StringWriter xmlWriter = new StringWriter();
-		StreamResult xmlResult = new StreamResult(xmlWriter);
+	private boolean linksMustBeAddedAndHasOtherProtocols(DataRecord dataRecord) {
+		return linksMustBeAdded && hasOtherProtocols(dataRecord);
+	}
 
-		Transformer transformer = transformerFactory.newTransformer();
-		transformer.transform(domSource, xmlResult);
+	private Element createOtherProtocolsUsingProtocols(Element iiif) {
+		Element otherProtocols = domDocument.createElement("otherProtocols");
+		otherProtocols.appendChild(iiif);
+		return otherProtocols;
+	}
 
-		return xmlWriter.toString();
+	private Element createIiifProtocol(DataRecord dataRecord) {
+		Element server = createIiifServer();
+		Element identifier = createIiifIdentifier(dataRecord);
+		return createElementAndAppendChilds(server, identifier);
+	}
+
+	private Element createElementAndAppendChilds(Element... childs) {
+		Element element = domDocument.createElement("iiif");
+		for (Element child : childs) {
+			element.appendChild(child);
+		}
+		return element;
+	}
+
+	private Element createIiifServer() {
+		Element server = domDocument.createElement("server");
+		server.setTextContent(externalUrls.getIfffUrl());
+		return server;
+	}
+
+	private Element createIiifIdentifier(DataRecord dataRecord) {
+		Element identifier = domDocument.createElement("identifier");
+		identifier.setTextContent(dataRecord.getId());
+		return identifier;
+	}
+
+	private boolean hasOtherProtocols(DataRecord dataRecord) {
+		return !dataRecord.getProtocols().isEmpty();
 	}
 
 	public DocumentBuilderFactory getDocumentBuilderFactoryOnlyForTest() {

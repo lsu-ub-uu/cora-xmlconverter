@@ -155,4 +155,16 @@ public class OldDataRecordSpy implements DataRecord {
 		return searchId;
 	}
 
+	@Override
+	public void addProtocol(String protocol) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Set<String> getProtocols() {
+		// TODO Auto-generated method stub
+		return Collections.emptySet();
+	}
+
 }

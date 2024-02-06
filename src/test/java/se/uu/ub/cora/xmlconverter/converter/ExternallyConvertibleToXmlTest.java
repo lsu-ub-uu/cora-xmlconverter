@@ -23,6 +23,7 @@ import static org.testng.Assert.assertTrue;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -33,6 +34,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.converter.ConverterException;
+import se.uu.ub.cora.converter.ExternalUrls;
 import se.uu.ub.cora.data.Action;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataGroup;
@@ -51,15 +53,26 @@ public class ExternallyConvertibleToXmlTest {
 
 	private static final String XML_DECLARATION = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 	private static final String SOME_BASE_URL = "https://some.domain.now/rest/record/";
+	private static final String IIIF_URL = "someIiifFUrl";
 	private DocumentBuilderFactory documentBuilderFactory;
 	private TransformerFactory transformerFactory;
 	private ExternallyConvertibleToXml extConvToXml;
+	private ExternalUrls externalUrls;
 
 	@BeforeMethod
 	public void setUp() {
+
+		setExternalUrls();
+
 		documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		transformerFactory = TransformerFactory.newInstance();
 		extConvToXml = new ExternallyConvertibleToXml(documentBuilderFactory, transformerFactory);
+	}
+
+	private void setExternalUrls() {
+		externalUrls = new ExternalUrls();
+		externalUrls.setBaseUrl(SOME_BASE_URL);
+		externalUrls.setIfffUrl(IIIF_URL);
 	}
 
 	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
@@ -350,7 +363,7 @@ public class ExternallyConvertibleToXmlTest {
 		linkSpy.addAttributeByIdWithValue("someAttributeId", "someAttributeValue");
 		person.addChild(linkSpy);
 
-		String xml = extConvToXml.convertWithLinks(person, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(person, externalUrls);
 
 		String expectedXml = XML_DECLARATION;
 		expectedXml += "<person>";
@@ -370,7 +383,7 @@ public class ExternallyConvertibleToXmlTest {
 		linkSpy.addAction(Action.READ);
 		person.addChild(linkSpy);
 
-		String xml = extConvToXml.convertWithLinks(person, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(person, externalUrls);
 
 		String expectedXml = XML_DECLARATION;
 		expectedXml += "<person>";
@@ -402,7 +415,7 @@ public class ExternallyConvertibleToXmlTest {
 
 		person.addChild(linkSpy);
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedXml = XML_DECLARATION;
 		expectedXml += "<record>";
@@ -433,7 +446,7 @@ public class ExternallyConvertibleToXmlTest {
 
 		person.addChild(linkSpy);
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedXml = XML_DECLARATION;
 		expectedXml += "<record>";
@@ -480,7 +493,7 @@ public class ExternallyConvertibleToXmlTest {
 		DataResourceLinkSpy resourceLink = createResourceLink();
 		binary.addChild(resourceLink);
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedXml = XML_DECLARATION;
 		expectedXml += expectedXMLForRecordResourceLink(dataRecord);
@@ -535,7 +548,7 @@ public class ExternallyConvertibleToXmlTest {
 		dataList.addData(dataRecord1);
 		dataList.addData(dataRecord2);
 
-		String xml = extConvToXml.convertWithLinks(dataList, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataList, externalUrls);
 		// String expectedXml = XML_DECLARATION;
 
 		String expectedListXml = XML_DECLARATION;
@@ -586,7 +599,7 @@ public class ExternallyConvertibleToXmlTest {
 		dataGroup1.addChild(linkSpy1);
 		dataGroup2.addChild(linkSpy2);
 
-		String xml = extConvToXml.convertWithLinks(dataList, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataList, externalUrls);
 
 		String expectedListXml = XML_DECLARATION;
 		expectedListXml += "<dataList>";
@@ -684,7 +697,7 @@ public class ExternallyConvertibleToXmlTest {
 	public void testConvertRecordWithLinks_noAction() throws Exception {
 		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions();
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedActionLinksXml = "";
 		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
@@ -694,7 +707,7 @@ public class ExternallyConvertibleToXmlTest {
 	public void testConvertRecordWithLinks_readAction() throws Exception {
 		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.READ);
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedActionLinksXml = "<actionLinks>";
 		expectedActionLinksXml += "<read>";
@@ -711,7 +724,7 @@ public class ExternallyConvertibleToXmlTest {
 	public void testConvertRecordWithLinks_deleteAction() throws Exception {
 		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.DELETE);
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedActionLinksXml = "<actionLinks>";
 		expectedActionLinksXml += "<delete>";
@@ -727,7 +740,7 @@ public class ExternallyConvertibleToXmlTest {
 	public void testConvertRecordWithLinks_updateAction() throws Exception {
 		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.UPDATE);
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedActionLinksXml = "<actionLinks>";
 		expectedActionLinksXml += "<update>";
@@ -746,7 +759,7 @@ public class ExternallyConvertibleToXmlTest {
 		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(
 				Action.READ_INCOMING_LINKS);
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedActionLinksXml = "<actionLinks>";
 		expectedActionLinksXml += "<read_incoming_links>";
@@ -763,7 +776,7 @@ public class ExternallyConvertibleToXmlTest {
 	public void testConvertRecordWithLinks_indexAction() throws Exception {
 		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.INDEX);
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedActionLinksXml = "<actionLinks>";
 		expectedActionLinksXml += "<index>";
@@ -791,7 +804,7 @@ public class ExternallyConvertibleToXmlTest {
 	public void testConvertRecordWithLinks_uploadAction() throws Exception {
 		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.UPLOAD);
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedActionLinksXml = "<actionLinks>";
 		expectedActionLinksXml += "<upload>";
@@ -808,7 +821,7 @@ public class ExternallyConvertibleToXmlTest {
 	public void testConvertRecordWithLinks_searchAction() throws Exception {
 		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.SEARCH);
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String searchId = (String) dataRecord.MCR.getReturnValue("getSearchId", 0);
 
@@ -828,7 +841,7 @@ public class ExternallyConvertibleToXmlTest {
 	public void testConvertRecordWithLinks_createAction() throws Exception {
 		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.CREATE);
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedActionLinksXml = "<actionLinks>";
 		expectedActionLinksXml += "<create>";
@@ -846,7 +859,7 @@ public class ExternallyConvertibleToXmlTest {
 	public void testConvertRecordWithLinks_listAction() throws Exception {
 		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.LIST);
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedActionLinksXml = "<actionLinks>";
 		expectedActionLinksXml += "<list>";
@@ -863,7 +876,7 @@ public class ExternallyConvertibleToXmlTest {
 	public void testConvertRecordWithLinks_batchIndexAction() throws Exception {
 		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.BATCH_INDEX);
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedActionLinksXml = "<actionLinks>";
 		expectedActionLinksXml += "<batch_index>";
@@ -881,7 +894,7 @@ public class ExternallyConvertibleToXmlTest {
 	public void testConvertRecordWithLinks_validateAction() throws Exception {
 		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.VALIDATE);
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedActionLinksXml = "<actionLinks>";
 		expectedActionLinksXml += "<validate>";
@@ -929,7 +942,7 @@ public class ExternallyConvertibleToXmlTest {
 	public void testToXmlWithLinks_noPermissions() {
 		OldDataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(List.of(), List.of());
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedPermissionsXml = "";
 		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedPermissionsXml);
@@ -940,7 +953,7 @@ public class ExternallyConvertibleToXmlTest {
 		OldDataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
 				List.of("readPermissionOne", "readPermissionTwo"), List.of());
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedPermissionsXml = "<permissions>";
 		expectedPermissionsXml += "<read>";
@@ -956,7 +969,7 @@ public class ExternallyConvertibleToXmlTest {
 		OldDataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(List.of(),
 				List.of("writePermissionOne", "writePermissionTwo"));
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedPermissionsXml = "<permissions>";
 		expectedPermissionsXml += "<write>";
@@ -973,7 +986,7 @@ public class ExternallyConvertibleToXmlTest {
 				List.of("readPermissionOne", "readPermissionTwo"),
 				List.of("writePermissionOne", "writePermissionTwo"));
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedPermissionsXml = "<permissions>";
 		expectedPermissionsXml += "<read>";
@@ -1091,7 +1104,7 @@ public class ExternallyConvertibleToXmlTest {
 		OldDataRecordSpy dataRecord2 = createRecordWithLinkAddRecordActions(Action.VALIDATE);
 		dataList.addData(dataRecord2);
 
-		String xml = extConvToXml.convertWithLinks(dataList, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataList, externalUrls);
 
 		String expectedListXml = XML_DECLARATION;
 		expectedListXml += "<dataList>";
@@ -1109,9 +1122,9 @@ public class ExternallyConvertibleToXmlTest {
 		expectedListXml += "</containDataOfType>";
 		expectedListXml += "<data>";
 		expectedListXml += removeXmlDeclaration(
-				extConvToXml.convertWithLinks(dataRecord1, SOME_BASE_URL));
+				extConvToXml.convertWithLinks(dataRecord1, externalUrls));
 		expectedListXml += removeXmlDeclaration(
-				extConvToXml.convertWithLinks(dataRecord2, SOME_BASE_URL));
+				extConvToXml.convertWithLinks(dataRecord2, externalUrls));
 		expectedListXml += "</data>";
 		expectedListXml += "</dataList>";
 
@@ -1126,10 +1139,19 @@ public class ExternallyConvertibleToXmlTest {
 	public void testOtherProtocols() throws Exception {
 
 		DataRecordSpy dataRecord = createDataRecordWithOneLink();
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getId", () -> "someRecordId");
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getProtocols", () -> Set.of("iiif"));
 
-		String xml = extConvToXml.convertWithLinks(dataRecord, SOME_BASE_URL);
+		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
-		assertRecordCorrectWithSuppliedExpectedPart(xml, "");
+		String otherProtocolsXml = "<otherProtocols>";
+		otherProtocolsXml += "<iiif>";
+		otherProtocolsXml += "<server>" + IIIF_URL + "</server>";
+		otherProtocolsXml += "<identifier>someRecordId</identifier>";
+		otherProtocolsXml += "</iiif>";
+		otherProtocolsXml += "</otherProtocols>";
+
+		assertRecordCorrectWithSuppliedExpectedPart(xml, otherProtocolsXml);
 
 	}
 
@@ -1154,23 +1176,18 @@ public class ExternallyConvertibleToXmlTest {
 		return dataRecordLink;
 	}
 
-	// private OldDataRecordSpy createRecordWithReadAndWritePermissions(List<String>
-	// readPermissions,
-	// List<String> writePermissions) {
-	// OldDataRecordSpy dataRecord = new OldDataRecordSpy();
-	// OldDataGroupSpy person = new OldDataGroupSpy("person");
-	// dataRecord.setDataGroup(person);
-	//
-	// OldDataRecordLinkSpy linkSpy = new OldDataRecordLinkSpy("someLinkNameInData", "someType",
-	// "someId");
-	// person.addChild(linkSpy);
-	// LinkedHashSet<String> readSet = new LinkedHashSet<>();
-	// readSet.addAll(readPermissions);
-	// dataRecord.readPermissions = readSet;
-	// LinkedHashSet<String> writeSet = new LinkedHashSet<>();
-	// writeSet.addAll(writePermissions);
-	// dataRecord.writePermissions = writeSet;
-	// return dataRecord;
-	// }
+	@Test
+	public void testConvertWithoutLinkOtherProtocolsShouldNotBeInXML() throws Exception {
 
+		DataRecordSpy dataRecord = createDataRecordWithOneLink();
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getId", () -> "someRecordId");
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getProtocols", () -> Set.of("iiif"));
+
+		String xml = extConvToXml.convert(dataRecord);
+
+		String empty = "";
+
+		assertRecordCorrectWithSuppliedExpectedPart(xml, empty);
+
+	}
 }
