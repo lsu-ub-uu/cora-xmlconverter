@@ -24,7 +24,7 @@
 
 	<properties>
 		<logger.version>2.10.0</logger.version>
-		<coradata.version>8.1-SNAPSHOT</coradata.version>
+		<coradata.version>9.0-SNAPSHOT</coradata.version>
 		<coradata-spies.version>1.7-SNAPSHOT</coradata-spies.version>
 		<converter.version>4.0-SNAPSHOT</converter.version>
 		<json.version>3.9.0</json.version>
