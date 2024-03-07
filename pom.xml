@@ -24,10 +24,10 @@
 
 	<properties>
 		<logger.version>2.10.0</logger.version>
-		<coradata.version>9.0-SNAPSHOT</coradata.version>
-		<coradata-spies.version>1.7-SNAPSHOT</coradata-spies.version>
-		<converter.version>4.0-SNAPSHOT</converter.version>
-		<json.version>3.9.0</json.version>
+		<coradata.version>9.0.0</coradata.version>
+		<coradata-spies.version>1.7.0</coradata-spies.version>
+		<converter.version>4.0.0</converter.version>
+		<json.version>3.10.0</json.version>
 		<testutils.version>1.11.0</testutils.version>
 		<testspies.version>1.2.0</testspies.version>
 	</properties>
