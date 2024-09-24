@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, 2022 Uppsala University Library
+ * Copyright 2019, 2022, 2024 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -21,6 +21,7 @@ package se.uu.ub.cora.xmlconverter;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import javax.xml.XMLConstants;
@@ -29,6 +30,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.converter.ConverterException;
@@ -36,18 +38,24 @@ import se.uu.ub.cora.converter.ConverterFactory;
 import se.uu.ub.cora.converter.ConverterInitializationException;
 import se.uu.ub.cora.converter.ExternallyConvertibleToStringConverter;
 import se.uu.ub.cora.converter.StringToExternallyConvertibleConverter;
-import se.uu.ub.cora.data.DataAtomic;
-import se.uu.ub.cora.data.DataAtomicProvider;
-import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.data.DataProvider;
+import se.uu.ub.cora.data.spies.DataAtomicSpy;
+import se.uu.ub.cora.data.spies.DataFactorySpy;
+import se.uu.ub.cora.data.spies.DataGroupSpy;
 import se.uu.ub.cora.xmlconverter.converter.ExternallyConvertibleToXml;
 import se.uu.ub.cora.xmlconverter.converter.XmlToExternallyConvertible;
-import se.uu.ub.cora.xmlconverter.spy.DataAtomicFactorySpy;
-import se.uu.ub.cora.xmlconverter.spy.DataGroupFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.DocumentBuilderFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.TransformerFactorySpy;
 
 public class XmlConverterFactoryTest {
+
+	private DataFactorySpy dataFactory;
+
+	@BeforeMethod
+	private void beforeMethod() {
+		dataFactory = new DataFactorySpy();
+		DataProvider.onlyForTestSetDataFactory(dataFactory);
+	}
 
 	@Test
 	public void testXmlConverterFactoryImplementsConverterFactory() {
@@ -169,9 +177,12 @@ public class XmlConverterFactoryTest {
 	public void testMaliciousXmlExploitingXxeToRetrieveFiles() {
 		XmlToExternallyConvertible xmlToDataElement = createXmlToDataElementToTestSecurity();
 
-		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<!DOCTYPE doc[\n"
-				+ " <!ENTITY pwd SYSTEM \"file:///etc/passwd23424\">\n" + "]>"
-				+ "<person><firstname>&pwd;</firstname></person>";
+		String xmlToConvert = """
+				<?xml version="1.0" encoding="UTF-8"?> <!DOCTYPE doc[\n"
+				 <!ENTITY pwd SYSTEM "file:///etc/passwd23424">\n" ]>
+				<person>
+					<firstname>&pwd;</firstname>
+				</person>""";
 		xmlToDataElement.convert(xmlToConvert);
 	}
 
@@ -179,38 +190,50 @@ public class XmlConverterFactoryTest {
 	public void testMaliciousXmlExploitingXInclude() {
 		XmlToExternallyConvertible xmlToDataElement = createXmlToDataElementToTestSecurity();
 
-		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<person xmlns:xi=\"http://www.w3.org/2001/XInclude\"><firstname>"
-				+ "<xi:include parse=\"text\" href=\"file:///etc/passwd\"/></firstname></person>";
-		assertXiIncludeAttemptIsParsedAsAttributesInsteadOfBeingIncluded(xmlToDataElement,
-				xmlToConvert);
+		String xmlToConvert = """
+				<?xml version="1.0" encoding="UTF-8"?>
+				<person xmlns:xi="http://www.w3.org/2001/XInclude">
+					<firstname><xi:include parse="text" href="file:///etc/passwd"/></firstname>
+				</person>""";
+
+		DataGroupSpy person = (DataGroupSpy) xmlToDataElement.convert(xmlToConvert);
+
+		assertXiIncludeAttemptIsParsedAsAttributesInsteadOfBeingIncluded(person);
 	}
 
 	private void assertXiIncludeAttemptIsParsedAsAttributesInsteadOfBeingIncluded(
-			XmlToExternallyConvertible xmlToDataElement, String xmlToConvert) {
-		DataGroup person = (DataGroup) xmlToDataElement.convert(xmlToConvert);
-		DataGroup firstname = (DataGroup) person.getFirstChildWithNameInData("firstname");
-		DataAtomic include = (DataAtomic) firstname.getFirstChildWithNameInData("xi:include");
-		assertEquals(include.getAttribute("parse").getValue(), "text");
-		assertEquals(include.getAttribute("href").getValue(), "file:///etc/passwd");
+			DataGroupSpy dataGroup) {
+
+		DataGroupSpy person = (DataGroupSpy) dataFactory.MCR
+				.assertCalledParametersReturn("factorGroupUsingNameInData", "person");
+		DataGroupSpy firstnameGroup = (DataGroupSpy) dataFactory.MCR
+				.assertCalledParametersReturn("factorGroupUsingNameInData", "firstname");
+		DataAtomicSpy xiInclude = (DataAtomicSpy) dataFactory.MCR
+				.assertCalledParametersReturn("factorAtomicUsingNameInDataAndValue", "xi:include");
+		xiInclude.MCR.assertCalledParameters("addAttributeByIdWithValue", "parse", "text");
+		xiInclude.MCR.assertCalledParameters("addAttributeByIdWithValue", "href",
+				"file:///etc/passwd");
+
+		firstnameGroup.MCR.assertParameters("addChild", 0, xiInclude);
+		assertSame(dataGroup, person);
+		dataGroup.MCR.assertParameters("addChild", 0, firstnameGroup);
 	}
 
 	@Test(expectedExceptions = ConverterException.class)
 	public void testMaliciousXmlExploitingXxeToPerformSsrfAttacks() {
 		XmlToExternallyConvertible xmlToDataElement = createXmlToDataElementToTestSecurity();
 
-		String xmlToConvert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<!DOCTYPE test [ <!ENTITY xxe SYSTEM \"https://somewhere/whatever/\"> ]>"
-				+ "<person><firstname>&xxe;</firstname></person>";
+		String xmlToConvert = """
+				<?xml version="1.0" encoding="UTF-8"?>
+				<!DOCTYPE test [ <!ENTITY xxe SYSTEM "https://somewhere/whatever/"> ]>
+				<person>
+					<firstname>&xxe;</firstname>
+				</person>""";
+
 		xmlToDataElement.convert(xmlToConvert);
 	}
 
 	private XmlToExternallyConvertible createXmlToDataElementToTestSecurity() {
-		DataGroupFactorySpy dataGroupFactorySpy = new DataGroupFactorySpy();
-		DataGroupProvider.setDataGroupFactory(dataGroupFactorySpy);
-		DataAtomicFactorySpy dataAtomicFactorySpy = new DataAtomicFactorySpy();
-		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactorySpy);
-
 		XmlConverterFactory xmlConverterFactory = new XmlConverterFactory();
 		return (XmlToExternallyConvertible) xmlConverterFactory
 				.factorStringToExternallyConvertableConverter();

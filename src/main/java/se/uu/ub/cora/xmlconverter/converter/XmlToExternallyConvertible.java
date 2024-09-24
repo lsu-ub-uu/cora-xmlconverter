@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2019, 2024 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -39,10 +39,8 @@ import org.xml.sax.SAXException;
 import se.uu.ub.cora.converter.ConverterException;
 import se.uu.ub.cora.converter.StringToExternallyConvertibleConverter;
 import se.uu.ub.cora.data.DataAtomic;
-import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataChild;
 import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.data.DataProvider;
 import se.uu.ub.cora.data.DataRecordLink;
 import se.uu.ub.cora.data.ExternallyConvertible;
@@ -98,7 +96,7 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 
 	private DataGroup createTopDataGroup(Element domElement) {
 		String nodeName = domElement.getNodeName();
-		DataGroup topDataGroup = DataGroupProvider.getDataGroupUsingNameInData(nodeName);
+		DataGroup topDataGroup = DataProvider.createGroupUsingNameInData(nodeName);
 		XmlAttributes xmlAttributes = extractAttributesAndRepeatId(domElement);
 		ensureNoRepeatId(xmlAttributes.repeatId);
 		addAttributes(topDataGroup, xmlAttributes);
@@ -252,7 +250,7 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 	private void convertDataGroup(DataGroup parentDataGroup, Node currentNode,
 			XmlAttributes xmlAttributes, List<Node> elementNodeChildren) {
 		String nodeName = currentNode.getNodeName();
-		DataGroup dataGroup = DataGroupProvider.getDataGroupUsingNameInData(nodeName);
+		DataGroup dataGroup = DataProvider.createGroupUsingNameInData(nodeName);
 		possiblyAddAttributesAndRepeatId(dataGroup, xmlAttributes);
 		convertChildren(dataGroup, elementNodeChildren);
 		parentDataGroup.addChild(dataGroup);
@@ -269,7 +267,7 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 			XmlAttributes xmlAttributes) {
 		String nodeName = currentNode.getNodeName();
 		String textContent = currentNode.getTextContent().trim();
-		DataAtomic dataAtomic = DataAtomicProvider.getDataAtomicUsingNameInDataAndValue(nodeName,
+		DataAtomic dataAtomic = DataProvider.createAtomicUsingNameInDataAndValue(nodeName,
 				textContent);
 		possiblyAddAttributesAndRepeatId(dataAtomic, xmlAttributes);
 		parentDataGroup.addChild(dataAtomic);

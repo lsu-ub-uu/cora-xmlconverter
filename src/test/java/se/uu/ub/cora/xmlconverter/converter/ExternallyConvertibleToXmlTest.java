@@ -21,6 +21,8 @@ package se.uu.ub.cora.xmlconverter.converter;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,17 +38,22 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.converter.ConverterException;
 import se.uu.ub.cora.converter.ExternalUrls;
 import se.uu.ub.cora.data.Action;
+import se.uu.ub.cora.data.Data;
 import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataChild;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataProvider;
 import se.uu.ub.cora.data.DataResourceLink;
+import se.uu.ub.cora.data.spies.DataFactorySpy;
 import se.uu.ub.cora.data.spies.DataGroupSpy;
+import se.uu.ub.cora.data.spies.DataListSpy;
+import se.uu.ub.cora.data.spies.DataRecordGroupSpy;
 import se.uu.ub.cora.data.spies.DataRecordLinkSpy;
 import se.uu.ub.cora.data.spies.DataRecordSpy;
 import se.uu.ub.cora.data.spies.DataResourceLinkSpy;
 import se.uu.ub.cora.xmlconverter.spy.DocumentBuilderFactorySpy;
 import se.uu.ub.cora.xmlconverter.spy.OldDataAtomicSpy;
 import se.uu.ub.cora.xmlconverter.spy.OldDataGroupSpy;
-import se.uu.ub.cora.xmlconverter.spy.OldDataRecordSpy;
 import se.uu.ub.cora.xmlconverter.spy.TransformerFactorySpy;
 
 public class ExternallyConvertibleToXmlTest {
@@ -58,9 +65,12 @@ public class ExternallyConvertibleToXmlTest {
 	private TransformerFactory transformerFactory;
 	private ExternallyConvertibleToXml extConvToXml;
 	private ExternalUrls externalUrls;
+	DataFactorySpy dataFactorySpy;
 
 	@BeforeMethod
 	public void setUp() {
+		dataFactorySpy = new DataFactorySpy();
+		DataProvider.onlyForTestSetDataFactory(dataFactorySpy);
 
 		setExternalUrls();
 
@@ -405,15 +415,11 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertResourceLink_noRepeatId_noAttributes_noReadAction() {
-		OldDataRecordSpy dataRecord = new OldDataRecordSpy();
-		DataGroup person = new OldDataGroupSpy("binary");
-		dataRecord.setDataGroup(person);
-
 		DataResourceLinkSpy linkSpy = new DataResourceLinkSpy();
 		linkSpy.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> "jp2");
 		linkSpy.MRV.setDefaultReturnValuesSupplier("getMimeType", () -> "image/jp2");
 
-		person.addChild(linkSpy);
+		DataRecordSpy dataRecord = createRecordWithDataResourceLink(linkSpy);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
@@ -431,20 +437,41 @@ public class ExternallyConvertibleToXmlTest {
 		assertEquals(xml, expectedXml);
 	}
 
+	private DataRecordSpy createRecordWithDataResourceLink(DataResourceLink link) {
+		DataRecordSpy dataRecord = new DataRecordSpy();
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getType", () -> "fakeType");
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getId", () -> "fakeId");
+
+		DataRecordGroupSpy personRecordGroup = new DataRecordGroupSpy();
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getDataRecordGroup",
+				() -> personRecordGroup);
+
+		DataGroupSpy person = new DataGroupSpy();
+		dataFactorySpy.MRV.setSpecificReturnValuesSupplier("factorGroupFromDataRecordGroup",
+				() -> person, personRecordGroup);
+
+		person.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> "binary");
+
+		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy();
+		linkSpy.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> "someLinkNameInData");
+		linkSpy.MRV.setDefaultReturnValuesSupplier("getLinkedRecordType", () -> "someType");
+		linkSpy.MRV.setDefaultReturnValuesSupplier("getLinkedRecordId", () -> "someId");
+
+		List<DataChild> personChildren = new ArrayList<>();
+		personChildren.add(link);
+		person.MRV.setDefaultReturnValuesSupplier("getChildren", () -> personChildren);
+		return dataRecord;
+	}
+
 	@Test
 	public void testConvertResourceLink_withRepeatId_noReadAction() {
-		OldDataRecordSpy dataRecord = new OldDataRecordSpy();
-		DataGroup person = new OldDataGroupSpy("binary");
-		dataRecord.setDataGroup(person);
-
 		DataResourceLinkSpy linkSpy = new DataResourceLinkSpy();
 		linkSpy.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> "jp2");
 		linkSpy.MRV.setDefaultReturnValuesSupplier("getMimeType", () -> "image/jp2");
 		linkSpy.MRV.setDefaultReturnValuesSupplier("getRepeatId", () -> "someRepeatId");
-
 		linkSpy.MRV.setAlwaysThrowException("getAttributes", new RuntimeException());
 
-		person.addChild(linkSpy);
+		DataRecordSpy dataRecord = createRecordWithDataResourceLink(linkSpy);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
@@ -464,11 +491,8 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertResourceLink_readActionNoLinksRequested() {
-		OldDataRecordSpy dataRecord = new OldDataRecordSpy();
-		DataGroup binary = new OldDataGroupSpy("binary");
-		dataRecord.setDataGroup(binary);
 		DataResourceLinkSpy linkSpy = createResourceLink();
-		binary.addChild(linkSpy);
+		DataRecordSpy dataRecord = createRecordWithDataResourceLink(linkSpy);
 
 		String xml = extConvToXml.convert(dataRecord);
 
@@ -487,11 +511,8 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertResourceLink_readAction() {
-		OldDataRecordSpy dataRecord = new OldDataRecordSpy();
-		DataGroup binary = new OldDataGroupSpy("binary");
-		dataRecord.setDataGroup(binary);
-		DataResourceLinkSpy resourceLink = createResourceLink();
-		binary.addChild(resourceLink);
+		DataResourceLinkSpy linkSpy = createResourceLink();
+		DataRecordSpy dataRecord = createRecordWithDataResourceLink(linkSpy);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
@@ -511,7 +532,7 @@ public class ExternallyConvertibleToXmlTest {
 		return linkSpy;
 	}
 
-	private String expectedXMLForRecordResourceLink(OldDataRecordSpy dataRecord) {
+	private String expectedXMLForRecordResourceLink(DataRecordSpy dataRecord) {
 
 		String expectedXml = "<record>";
 		expectedXml += "<data>";
@@ -542,14 +563,11 @@ public class ExternallyConvertibleToXmlTest {
 	public void testConvertListWithResourceLink_readAction() throws Exception {
 		// * test for list of records with resourceLink, uses recordType and id from current
 		// record<br>
-		DataListSpy dataList = new DataListSpy();
-		OldDataRecordSpy dataRecord1 = createDataRecordWithResourceLink();
-		OldDataRecordSpy dataRecord2 = createDataRecordWithResourceLink();
-		dataList.addData(dataRecord1);
-		dataList.addData(dataRecord2);
+		DataRecordSpy dataRecord1 = createDataRecordWithResourceLink();
+		DataRecordSpy dataRecord2 = createDataRecordWithResourceLink();
+		DataListSpy dataList = createDataList(dataRecord1, dataRecord2);
 
 		String xml = extConvToXml.convertWithLinks(dataList, externalUrls);
-		// String expectedXml = XML_DECLARATION;
 
 		String expectedListXml = XML_DECLARATION;
 		expectedListXml += "<dataList>";
@@ -575,29 +593,34 @@ public class ExternallyConvertibleToXmlTest {
 
 	}
 
-	private OldDataRecordSpy createDataRecordWithResourceLink() {
-		OldDataRecordSpy dataRecord = new OldDataRecordSpy();
-		DataGroup dataGroup = new OldDataGroupSpy("binary");
-		dataRecord.setDataGroup(dataGroup);
+	private DataListSpy createDataList(Data... data) {
+		DataListSpy dataList = new DataListSpy();
+		dataList.MRV.setDefaultReturnValuesSupplier("getFromNo", () -> "1");
+		dataList.MRV.setDefaultReturnValuesSupplier("getToNo", () -> "99");
+		dataList.MRV.setDefaultReturnValuesSupplier("getTotalNumberOfTypeInStorage", () -> "9999");
+		dataList.MRV.setDefaultReturnValuesSupplier("getContainDataOfType", () -> "mix");
+
+		dataList.MRV.setDefaultReturnValuesSupplier("getDataList", () -> Arrays.asList(data));
+		return dataList;
+	}
+
+	private DataRecordSpy createDataRecordWithResourceLink() {
 		DataResourceLink linkSpy = createResourceLink();
-		dataGroup.addChild(linkSpy);
-		return dataRecord;
+
+		return createRecordWithDataResourceLink(linkSpy);
 	}
 
 	@Test
-	public void testConvertIncomingLinks() throws Exception {
+	public void testConvertIncomingLinksDataGroups() throws Exception {
 		DataListSpy dataList = new DataListSpy();
-		DataGroup dataGroup1 = new OldDataGroupSpy("recordToRecordLink");
-		DataGroup dataGroup2 = new OldDataGroupSpy("recordToRecordLink");
-
-		dataList.addData(dataGroup1);
-		dataList.addData(dataGroup2);
-
-		OldDataRecordLinkSpy linkSpy1 = createLink();
-		OldDataRecordLinkSpy linkSpy2 = createLink();
-
-		dataGroup1.addChild(linkSpy1);
-		dataGroup2.addChild(linkSpy2);
+		dataList.MRV.setDefaultReturnValuesSupplier("getFromNo", () -> "1");
+		dataList.MRV.setDefaultReturnValuesSupplier("getToNo", () -> "99");
+		dataList.MRV.setDefaultReturnValuesSupplier("getTotalNumberOfTypeInStorage", () -> "9999");
+		dataList.MRV.setDefaultReturnValuesSupplier("getContainDataOfType", () -> "mix");
+		DataGroupSpy dataRecord1 = createDataRecordWithOneLinkWithReadAction();
+		DataGroupSpy dataRecord2 = createDataRecordWithOneLinkWithReadAction();
+		dataList.MRV.setDefaultReturnValuesSupplier("getDataList",
+				() -> List.of(dataRecord1, dataRecord2));
 
 		String xml = extConvToXml.convertWithLinks(dataList, externalUrls);
 
@@ -616,16 +639,27 @@ public class ExternallyConvertibleToXmlTest {
 		expectedListXml += dataList.MCR.getReturnValue("getContainDataOfType", 0);
 		expectedListXml += "</containDataOfType>";
 		expectedListXml += "<data>";
-		expectedListXml += expectedXMLForDataGroupWithResourceLink(dataGroup1);
-		expectedListXml += expectedXMLForDataGroupWithResourceLink(dataGroup2);
+		expectedListXml += expectedXMLForDataGroupWithRecordLink();
+		expectedListXml += expectedXMLForDataGroupWithRecordLink();
 		expectedListXml += "</data>";
 		expectedListXml += "</dataList>";
 
 		assertEquals(xml, expectedListXml);
-
 	}
 
-	private String expectedXMLForDataGroupWithResourceLink(DataGroup dataGroup) {
+	private DataGroupSpy createDataRecordWithOneLinkWithReadAction() {
+		DataGroupSpy dataGroup = new DataGroupSpy();
+
+		DataRecordLinkSpy dataRecordLink = createRecordLink("someLinkNameInData", "someType",
+				"someId");
+		dataRecordLink.MRV.setDefaultReturnValuesSupplier("hasReadAction", () -> true);
+
+		dataGroup.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> "recordToRecordLink");
+		dataGroup.MRV.setDefaultReturnValuesSupplier("getChildren", () -> List.of(dataRecordLink));
+		return dataGroup;
+	}
+
+	private String expectedXMLForDataGroupWithRecordLink() {
 
 		String expectedXml = "<recordToRecordLink>";
 		expectedXml += "<someLinkNameInData>";
@@ -642,13 +676,6 @@ public class ExternallyConvertibleToXmlTest {
 		expectedXml += "</someLinkNameInData>";
 		expectedXml += "</recordToRecordLink>";
 		return expectedXml;
-	}
-
-	private OldDataRecordLinkSpy createLink() {
-		OldDataRecordLinkSpy linkSpy = new OldDataRecordLinkSpy("someLinkNameInData", "someType",
-				"someId");
-		linkSpy.addAction(Action.READ);
-		return linkSpy;
 	}
 
 	// "actionLinks": {
@@ -684,7 +711,7 @@ public class ExternallyConvertibleToXmlTest {
 	@Test
 	public void testConvertRecord_forAllActions_hasNoActionLinksInResult() throws Exception {
 		for (Action action : Action.values()) {
-			OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(action);
+			DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(action);
 
 			String xml = extConvToXml.convert(dataRecord);
 
@@ -695,7 +722,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_noAction() throws Exception {
-		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions();
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions();
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
@@ -705,7 +732,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_readAction() throws Exception {
-		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.READ);
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.READ);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
@@ -722,7 +749,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_deleteAction() throws Exception {
-		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.DELETE);
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.DELETE);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
@@ -738,7 +765,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_updateAction() throws Exception {
-		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.UPDATE);
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.UPDATE);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
@@ -756,8 +783,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_incommingLinksAction() throws Exception {
-		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(
-				Action.READ_INCOMING_LINKS);
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.READ_INCOMING_LINKS);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
@@ -774,7 +800,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_indexAction() throws Exception {
-		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.INDEX);
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.INDEX);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
@@ -802,7 +828,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_uploadAction() throws Exception {
-		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.UPLOAD);
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.UPLOAD);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
@@ -819,7 +845,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_searchAction() throws Exception {
-		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.SEARCH);
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.SEARCH);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
@@ -839,7 +865,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_createAction() throws Exception {
-		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.CREATE);
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.CREATE);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
@@ -857,7 +883,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_listAction() throws Exception {
-		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.LIST);
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.LIST);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
@@ -874,7 +900,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_batchIndexAction() throws Exception {
-		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.BATCH_INDEX);
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.BATCH_INDEX);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
@@ -892,7 +918,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertRecordWithLinks_validateAction() throws Exception {
-		OldDataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.VALIDATE);
+		DataRecordSpy dataRecord = createRecordWithLinkAddRecordActions(Action.VALIDATE);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
@@ -908,16 +934,35 @@ public class ExternallyConvertibleToXmlTest {
 		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
 	}
 
-	private OldDataRecordSpy createRecordWithLinkAddRecordActions(Action... actions) {
-		OldDataRecordSpy dataRecord = new OldDataRecordSpy();
-		OldDataGroupSpy person = new OldDataGroupSpy("person");
-		dataRecord.setDataGroup(person);
+	private DataRecordSpy createRecordWithLinkAddRecordActions(Action... actions) {
+		DataRecordSpy dataRecord = new DataRecordSpy();
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getType", () -> "fakeType");
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getId", () -> "fakeId");
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getActions", () -> Arrays.asList(actions));
+		if (actions.length > 0) {
+			dataRecord.MRV.setDefaultReturnValuesSupplier("hasActions", () -> true);
+		}
 
-		OldDataRecordLinkSpy linkSpy = new OldDataRecordLinkSpy("someLinkNameInData", "someType",
-				"someId");
-		person.addChild(linkSpy);
+		DataRecordGroupSpy personRecordGroup = new DataRecordGroupSpy();
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getDataRecordGroup",
+				() -> personRecordGroup);
 
-		dataRecord.actions = List.of(actions);
+		DataGroupSpy person = new DataGroupSpy();
+		dataFactorySpy.MRV.setSpecificReturnValuesSupplier("factorGroupFromDataRecordGroup",
+				() -> person, personRecordGroup);
+
+		person.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> "person");
+
+		DataRecordLinkSpy linkSpy = new DataRecordLinkSpy();
+		linkSpy.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> "someLinkNameInData");
+		linkSpy.MRV.setDefaultReturnValuesSupplier("getLinkedRecordType", () -> "someType");
+		linkSpy.MRV.setDefaultReturnValuesSupplier("getLinkedRecordId", () -> "someId");
+
+		List<DataChild> personChildren = new ArrayList<>();
+		personChildren.add(linkSpy);
+		person.MRV.setDefaultReturnValuesSupplier("getChildren", () -> personChildren);
+		// TODO: make converter return dataGroup for this dataRecordGroup
+
 		return dataRecord;
 	}
 
@@ -940,7 +985,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testToXmlWithLinks_noPermissions() {
-		OldDataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(List.of(), List.of());
+		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(List.of(), List.of());
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
@@ -950,7 +995,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testToXmlWithLinks_ListOfReadPermissions() {
-		OldDataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
+		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
 				List.of("readPermissionOne", "readPermissionTwo"), List.of());
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
@@ -966,7 +1011,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testToXmlWithLinks_ListOfWritePermissions() {
-		OldDataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(List.of(),
+		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(List.of(),
 				List.of("writePermissionOne", "writePermissionTwo"));
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
@@ -982,7 +1027,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testToXmlWithLinks_ListOfReadAndWritePermissions() {
-		OldDataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
+		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
 				List.of("readPermissionOne", "readPermissionTwo"),
 				List.of("writePermissionOne", "writePermissionTwo"));
 
@@ -1004,7 +1049,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testToXmlWithoutLinks_ListOfReadAndWritePermissions() {
-		OldDataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
+		DataRecordSpy dataRecord = createRecordWithReadAndWritePermissions(
 				List.of("readPermissionOne", "readPermissionTwo"),
 				List.of("writePermissionOne", "writePermissionTwo"));
 
@@ -1014,27 +1059,46 @@ public class ExternallyConvertibleToXmlTest {
 		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedPermissionsXml);
 	}
 
-	private OldDataRecordSpy createRecordWithReadAndWritePermissions(List<String> readPermissions,
+	private DataRecordSpy createRecordWithReadAndWritePermissions(List<String> readPermissions,
 			List<String> writePermissions) {
-		OldDataRecordSpy dataRecord = new OldDataRecordSpy();
-		OldDataGroupSpy person = new OldDataGroupSpy("person");
-		dataRecord.setDataGroup(person);
+		DataRecordSpy dataRecord = new DataRecordSpy();
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getType", () -> "fakeType");
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getId", () -> "fakeId");
 
-		OldDataRecordLinkSpy linkSpy = new OldDataRecordLinkSpy("someLinkNameInData", "someType",
+		DataRecordGroupSpy personRecordGroup = new DataRecordGroupSpy();
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getDataRecordGroup",
+				() -> personRecordGroup);
+
+		DataGroupSpy person = new DataGroupSpy();
+		dataFactorySpy.MRV.setSpecificReturnValuesSupplier("factorGroupFromDataRecordGroup",
+				() -> person, personRecordGroup);
+
+		person.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> "person");
+
+		DataRecordLinkSpy dataRecordLink = createRecordLink("someLinkNameInData", "someType",
 				"someId");
-		person.addChild(linkSpy);
+		person.MRV.setDefaultReturnValuesSupplier("getChildren", () -> List.of(dataRecordLink));
+
 		LinkedHashSet<String> readSet = new LinkedHashSet<>();
 		readSet.addAll(readPermissions);
-		dataRecord.readPermissions = readSet;
 		LinkedHashSet<String> writeSet = new LinkedHashSet<>();
 		writeSet.addAll(writePermissions);
-		dataRecord.writePermissions = writeSet;
+
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getReadPermissions", () -> readSet);
+		if (readSet.size() > 0) {
+			dataRecord.MRV.setDefaultReturnValuesSupplier("hasReadPermissions", () -> true);
+		}
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getWritePermissions", () -> writeSet);
+		if (writeSet.size() > 0) {
+			dataRecord.MRV.setDefaultReturnValuesSupplier("hasWritePermissions", () -> true);
+		}
+
 		return dataRecord;
 	}
 
 	@Test
 	public void testToXmlWithoutLinks_ListOfRecordsNoRecord() throws Exception {
-		DataListSpy dataList = new DataListSpy();
+		DataListSpy dataList = createDataList();
 
 		String xml = extConvToXml.convert(dataList);
 
@@ -1061,13 +1125,12 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testToXmlWithoutLinks_ListOfRecordsTwoRecords() throws Exception {
-		DataListSpy dataList = new DataListSpy();
-		OldDataRecordSpy dataRecord1 = createRecordWithReadAndWritePermissions(
+		DataRecordSpy dataRecord1 = createRecordWithReadAndWritePermissions(
 				List.of("readPermissionOne", "readPermissionTwo"),
 				List.of("writePermissionOne", "writePermissionTwo"));
-		dataList.addData(dataRecord1);
-		OldDataRecordSpy dataRecord2 = createRecordWithLinkAddRecordActions(Action.VALIDATE);
-		dataList.addData(dataRecord2);
+		DataRecordSpy dataRecord2 = createRecordWithLinkAddRecordActions(Action.VALIDATE);
+
+		DataListSpy dataList = createDataList(dataRecord1, dataRecord2);
 
 		String xml = extConvToXml.convert(dataList);
 
@@ -1096,13 +1159,12 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testToXmlWithLinks_ListOfRecordsTwoRecords() throws Exception {
-		DataListSpy dataList = new DataListSpy();
-		OldDataRecordSpy dataRecord1 = createRecordWithReadAndWritePermissions(
+		DataRecordSpy dataRecord1 = createRecordWithReadAndWritePermissions(
 				List.of("readPermissionOne", "readPermissionTwo"),
 				List.of("writePermissionOne", "writePermissionTwo"));
-		dataList.addData(dataRecord1);
-		OldDataRecordSpy dataRecord2 = createRecordWithLinkAddRecordActions(Action.VALIDATE);
-		dataList.addData(dataRecord2);
+		DataRecordSpy dataRecord2 = createRecordWithLinkAddRecordActions(Action.VALIDATE);
+
+		DataListSpy dataList = createDataList(dataRecord1, dataRecord2);
 
 		String xml = extConvToXml.convertWithLinks(dataList, externalUrls);
 
@@ -1157,13 +1219,21 @@ public class ExternallyConvertibleToXmlTest {
 
 	private DataRecordSpy createDataRecordWithOneLink() {
 		DataRecordSpy dataRecord = new DataRecordSpy();
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getType", () -> "fakeType");
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getId", () -> "fakeId");
+
+		DataRecordGroupSpy dataRecordGroup = new DataRecordGroupSpy();
+		dataRecord.MRV.setDefaultReturnValuesSupplier("getDataRecordGroup", () -> dataRecordGroup);
+
 		DataGroupSpy dataGroup = new DataGroupSpy();
-		DataRecordLinkSpy dataRecordLink = createRecordLink("someLinkNameInData", "someType",
-				"someId");
+		dataFactorySpy.MRV.setSpecificReturnValuesSupplier("factorGroupFromDataRecordGroup",
+				() -> dataGroup, dataRecordGroup);
 
 		dataGroup.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> "person");
+
+		DataRecordLinkSpy dataRecordLink = createRecordLink("someLinkNameInData", "someType",
+				"someId");
 		dataGroup.MRV.setDefaultReturnValuesSupplier("getChildren", () -> List.of(dataRecordLink));
-		dataRecord.MRV.setDefaultReturnValuesSupplier("getDataGroup", () -> dataGroup);
 		return dataRecord;
 	}
 

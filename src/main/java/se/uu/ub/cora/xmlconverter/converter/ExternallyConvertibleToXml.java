@@ -46,7 +46,9 @@ import se.uu.ub.cora.data.DataChild;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataLink;
 import se.uu.ub.cora.data.DataList;
+import se.uu.ub.cora.data.DataProvider;
 import se.uu.ub.cora.data.DataRecord;
+import se.uu.ub.cora.data.DataRecordGroup;
 import se.uu.ub.cora.data.DataRecordLink;
 import se.uu.ub.cora.data.DataResourceLink;
 import se.uu.ub.cora.data.ExternallyConvertible;
@@ -64,11 +66,9 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	private DocumentBuilderFactory documentBuilderFactory;
 	private TransformerFactory transformerFactory;
 	private Document domDocument;
-	// private String baseUrl;
 	private boolean linksMustBeAdded;
 	private String recordType;
 	private String recordId;
-	// private String iiifUrl;
 	private ExternalUrls externalUrls;
 
 	public ExternallyConvertibleToXml(DocumentBuilderFactory documentBuildeFactory,
@@ -211,7 +211,9 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	}
 
 	private void addTopDataGroup(DataRecord dataRecord, Element dataDomElement) {
-		DataGroup topDataGroup = dataRecord.getDataGroup();
+		DataRecordGroup recordGroup = dataRecord.getDataRecordGroup();
+
+		DataGroup topDataGroup = DataProvider.createGroupFromRecordGroup(recordGroup);
 
 		recordType = dataRecord.getType();
 		recordId = dataRecord.getId();
