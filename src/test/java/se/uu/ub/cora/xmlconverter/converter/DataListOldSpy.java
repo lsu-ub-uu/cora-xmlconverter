@@ -25,7 +25,7 @@ import se.uu.ub.cora.data.Data;
 import se.uu.ub.cora.data.DataList;
 import se.uu.ub.cora.testutils.mcr.MethodCallRecorder;
 
-public class DataListSpy implements DataList {
+public class DataListOldSpy implements DataList {
 	MethodCallRecorder MCR = new MethodCallRecorder();
 	List<Data> list = new ArrayList<>();
 
