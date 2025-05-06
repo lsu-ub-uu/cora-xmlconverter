@@ -359,7 +359,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 	private Element createIndexLink() {
 		Element actionLink = createStandardLink(POST, INDEX, WORK_ORDER);
-		actionLink.appendChild(createContentTypeRecordGroupXML());
+		actionLink.appendChild(createContentTypeRecordXML());
 		actionLink.appendChild(createAcceptRecordXML());
 		actionLink.appendChild(createWorkOrderXML());
 		return actionLink;
