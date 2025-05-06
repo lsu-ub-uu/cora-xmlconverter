@@ -63,6 +63,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	private static final String CONTENT_TYPE = "contentType";
 	private static final String APPLICATION_VND_UUB_RECORD_LIST_XML = "application/vnd.cora.recordList+xml";
 	private static final String APPLICATION_VND_UUB_RECORD_XML = "application/vnd.cora.record+xml";
+	private static final String APPLICATION_VND_UUB_RECORDGROUP_XML = "application/vnd.cora.recordgroup+xml";
 	private DocumentBuilderFactory documentBuilderFactory;
 	private TransformerFactory transformerFactory;
 	private Document domDocument;
@@ -339,7 +340,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 	private Element createCreateLink() {
 		Element actionLink = createStandardLink(POST, "create", recordId);
-		actionLink.appendChild(createContentTypeRecordXML());
+		actionLink.appendChild(createContentTypeRecordGroupXML());
 		actionLink.appendChild(createAcceptRecordXML());
 		return actionLink;
 	}
@@ -358,7 +359,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 	private Element createIndexLink() {
 		Element actionLink = createStandardLink(POST, INDEX, WORK_ORDER);
-		actionLink.appendChild(createContentTypeRecordXML());
+		actionLink.appendChild(createContentTypeRecordGroupXML());
 		actionLink.appendChild(createAcceptRecordXML());
 		actionLink.appendChild(createWorkOrderXML());
 		return actionLink;
@@ -387,7 +388,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 	private Element createUpdateLink() {
 		Element actionLink = createStandardLink(POST, "update", recordType, recordId);
-		actionLink.appendChild(createContentTypeRecordXML());
+		actionLink.appendChild(createContentTypeRecordGroupXML());
 		actionLink.appendChild(createAcceptRecordXML());
 		return actionLink;
 	}
@@ -402,6 +403,10 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 	private Element createContentTypeRecordXML() {
 		return createElementWithTextContent(CONTENT_TYPE, APPLICATION_VND_UUB_RECORD_XML);
+	}
+
+	private Element createContentTypeRecordGroupXML() {
+		return createElementWithTextContent(CONTENT_TYPE, APPLICATION_VND_UUB_RECORDGROUP_XML);
 	}
 
 	private void addDataGroupToDomDocument(DataGroup topDataGroup) {
