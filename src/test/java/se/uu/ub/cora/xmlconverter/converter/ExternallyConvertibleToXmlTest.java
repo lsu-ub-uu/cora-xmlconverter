@@ -61,7 +61,7 @@ public class ExternallyConvertibleToXmlTest {
 	private static final String XML_DECLARATION = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 	private static final String SOME_BASE_URL = "https://some.domain.now/rest/record/";
 	private static final String IIIF_URL = "someIiifFUrl";
-	private static final String APPLICATION_VND_UUB_RECORDGROUP_XML = "application/vnd.cora.recordgroup+xml";
+	private static final String APPLICATION_VND_CORA_RECORDGROUP_XML = "application/vnd.cora.recordgroup+xml";
 	private DocumentBuilderFactory documentBuilderFactory;
 	private TransformerFactory transformerFactory;
 	private ExternallyConvertibleToXml extConvToXml;
@@ -775,7 +775,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<requestMethod>POST</requestMethod>";
 		expectedActionLinksXml += "<rel>update</rel>";
 		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/fakeType/fakeId</url>";
-		expectedActionLinksXml += "<contentType>" + APPLICATION_VND_UUB_RECORDGROUP_XML
+		expectedActionLinksXml += "<contentType>" + APPLICATION_VND_CORA_RECORDGROUP_XML
 				+ "</contentType>";
 		expectedActionLinksXml += "<accept>application/vnd.cora.record+xml</accept>";
 		expectedActionLinksXml += "</update>";
@@ -877,7 +877,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<requestMethod>POST</requestMethod>";
 		expectedActionLinksXml += "<rel>create</rel>";
 		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/fakeId</url>";
-		expectedActionLinksXml += "<contentType>" + APPLICATION_VND_UUB_RECORDGROUP_XML
+		expectedActionLinksXml += "<contentType>" + APPLICATION_VND_CORA_RECORDGROUP_XML
 				+ "</contentType>";
 		expectedActionLinksXml += "<accept>application/vnd.cora.record+xml</accept>";
 		expectedActionLinksXml += "</create>";

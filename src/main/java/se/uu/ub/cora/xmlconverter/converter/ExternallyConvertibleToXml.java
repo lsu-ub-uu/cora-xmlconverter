@@ -61,9 +61,9 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	private static final String GET = "GET";
 	private static final String POST = "POST";
 	private static final String CONTENT_TYPE = "contentType";
-	private static final String APPLICATION_VND_UUB_RECORD_LIST_XML = "application/vnd.cora.recordList+xml";
-	private static final String APPLICATION_VND_UUB_RECORD_XML = "application/vnd.cora.record+xml";
-	private static final String APPLICATION_VND_UUB_RECORDGROUP_XML = "application/vnd.cora.recordgroup+xml";
+	private static final String APPLICATION_VND_CORA_RECORD_LIST_XML = "application/vnd.cora.recordList+xml";
+	private static final String APPLICATION_VND_CORA_RECORD_XML = "application/vnd.cora.record+xml";
+	private static final String APPLICATION_VND_CORA_RECORDGROUP_XML = "application/vnd.cora.recordgroup+xml";
 	private DocumentBuilderFactory documentBuilderFactory;
 	private TransformerFactory transformerFactory;
 	private Document domDocument;
@@ -394,19 +394,19 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	}
 
 	private Element createAcceptRecordXML() {
-		return createElementWithTextContent(ACCEPT, APPLICATION_VND_UUB_RECORD_XML);
+		return createElementWithTextContent(ACCEPT, APPLICATION_VND_CORA_RECORD_XML);
 	}
 
 	private Element createAcceptRecordListXML() {
-		return createElementWithTextContent(ACCEPT, APPLICATION_VND_UUB_RECORD_LIST_XML);
+		return createElementWithTextContent(ACCEPT, APPLICATION_VND_CORA_RECORD_LIST_XML);
 	}
 
 	private Element createContentTypeRecordXML() {
-		return createElementWithTextContent(CONTENT_TYPE, APPLICATION_VND_UUB_RECORD_XML);
+		return createElementWithTextContent(CONTENT_TYPE, APPLICATION_VND_CORA_RECORD_XML);
 	}
 
 	private Element createContentTypeRecordGroupXML() {
-		return createElementWithTextContent(CONTENT_TYPE, APPLICATION_VND_UUB_RECORDGROUP_XML);
+		return createElementWithTextContent(CONTENT_TYPE, APPLICATION_VND_CORA_RECORDGROUP_XML);
 	}
 
 	private void addDataGroupToDomDocument(DataGroup topDataGroup) {
