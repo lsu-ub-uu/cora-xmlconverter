@@ -405,7 +405,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedXml += "<requestMethod>GET</requestMethod>";
 		expectedXml += "<rel>read</rel>";
 		expectedXml += "<url>https://some.domain.now/rest/record/someType/someId</url>";
-		expectedXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedXml += "<accept>application/vnd.cora.record+xml</accept>";
 		expectedXml += "</read>";
 		expectedXml += "</actionLinks>";
 		expectedXml += "</someLinkNameInData>";
@@ -670,7 +670,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedXml += "<requestMethod>GET</requestMethod>";
 		expectedXml += "<rel>read</rel>";
 		expectedXml += "<url>https://some.domain.now/rest/record/someType/someId</url>";
-		expectedXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedXml += "<accept>application/vnd.cora.record+xml</accept>";
 		expectedXml += "</read>";
 		expectedXml += "</actionLinks>";
 		expectedXml += "</someLinkNameInData>";
@@ -741,7 +741,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<requestMethod>GET</requestMethod>";
 		expectedActionLinksXml += "<rel>read</rel>";
 		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/fakeType/fakeId</url>";
-		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedActionLinksXml += "<accept>application/vnd.cora.record+xml</accept>";
 		expectedActionLinksXml += "</read>";
 		expectedActionLinksXml += "</actionLinks>";
 		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
@@ -774,8 +774,8 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<requestMethod>POST</requestMethod>";
 		expectedActionLinksXml += "<rel>update</rel>";
 		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/fakeType/fakeId</url>";
-		expectedActionLinksXml += "<contentType>application/vnd.uub.record+xml</contentType>";
-		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedActionLinksXml += "<contentType>application/vnd.cora.record+xml</contentType>";
+		expectedActionLinksXml += "<accept>application/vnd.cora.record+xml</accept>";
 		expectedActionLinksXml += "</update>";
 		expectedActionLinksXml += "</actionLinks>";
 		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
@@ -792,7 +792,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<requestMethod>GET</requestMethod>";
 		expectedActionLinksXml += "<rel>read_incoming_links</rel>";
 		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/fakeType/fakeId/incomingLinks</url>";
-		expectedActionLinksXml += "<accept>application/vnd.uub.recordList+xml</accept>";
+		expectedActionLinksXml += "<accept>application/vnd.cora.recordList+xml</accept>";
 		expectedActionLinksXml += "</read_incoming_links>";
 		expectedActionLinksXml += "</actionLinks>";
 		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
@@ -809,8 +809,8 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<requestMethod>POST</requestMethod>";
 		expectedActionLinksXml += "<rel>index</rel>";
 		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/workOrder</url>";
-		expectedActionLinksXml += "<contentType>application/vnd.uub.record+xml</contentType>";
-		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedActionLinksXml += "<contentType>application/vnd.cora.record+xml</contentType>";
+		expectedActionLinksXml += "<accept>application/vnd.cora.record+xml</accept>";
 		expectedActionLinksXml += "<body>";
 		expectedActionLinksXml += "<workOrder>";
 		expectedActionLinksXml += "<recordType>";
@@ -857,7 +857,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<rel>search</rel>";
 		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/searchResult/"
 				+ searchId + "</url>";
-		expectedActionLinksXml += "<accept>application/vnd.uub.recordList+xml</accept>";
+		expectedActionLinksXml += "<accept>application/vnd.cora.recordList+xml</accept>";
 		expectedActionLinksXml += "</search>";
 		expectedActionLinksXml += "</actionLinks>";
 		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
@@ -874,8 +874,8 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<requestMethod>POST</requestMethod>";
 		expectedActionLinksXml += "<rel>create</rel>";
 		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/fakeId</url>";
-		expectedActionLinksXml += "<contentType>application/vnd.uub.record+xml</contentType>";
-		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedActionLinksXml += "<contentType>application/vnd.cora.record+xml</contentType>";
+		expectedActionLinksXml += "<accept>application/vnd.cora.record+xml</accept>";
 		expectedActionLinksXml += "</create>";
 		expectedActionLinksXml += "</actionLinks>";
 		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
@@ -892,7 +892,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<requestMethod>GET</requestMethod>";
 		expectedActionLinksXml += "<rel>list</rel>";
 		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/fakeId</url>";
-		expectedActionLinksXml += "<accept>application/vnd.uub.recordList+xml</accept>";
+		expectedActionLinksXml += "<accept>application/vnd.cora.recordList+xml</accept>";
 		expectedActionLinksXml += "</list>";
 		expectedActionLinksXml += "</actionLinks>";
 		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
@@ -909,8 +909,8 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<requestMethod>POST</requestMethod>";
 		expectedActionLinksXml += "<rel>batch_index</rel>";
 		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/index/fakeId</url>";
-		expectedActionLinksXml += "<contentType>application/vnd.uub.record+xml</contentType>";
-		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedActionLinksXml += "<contentType>application/vnd.cora.record+xml</contentType>";
+		expectedActionLinksXml += "<accept>application/vnd.cora.record+xml</accept>";
 		expectedActionLinksXml += "</batch_index>";
 		expectedActionLinksXml += "</actionLinks>";
 		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);
@@ -927,8 +927,8 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<requestMethod>POST</requestMethod>";
 		expectedActionLinksXml += "<rel>validate</rel>";
 		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/workOrder</url>";
-		expectedActionLinksXml += "<contentType>application/vnd.uub.workorder+xml</contentType>";
-		expectedActionLinksXml += "<accept>application/vnd.uub.record+xml</accept>";
+		expectedActionLinksXml += "<contentType>application/vnd.cora.workorder+xml</contentType>";
+		expectedActionLinksXml += "<accept>application/vnd.cora.record+xml</accept>";
 		expectedActionLinksXml += "</validate>";
 		expectedActionLinksXml += "</actionLinks>";
 		assertRecordCorrectWithSuppliedExpectedPart(xml, expectedActionLinksXml);

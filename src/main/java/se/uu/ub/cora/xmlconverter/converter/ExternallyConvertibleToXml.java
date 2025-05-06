@@ -61,8 +61,8 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	private static final String GET = "GET";
 	private static final String POST = "POST";
 	private static final String CONTENT_TYPE = "contentType";
-	private static final String APPLICATION_VND_UUB_RECORD_LIST_XML = "application/vnd.uub.recordList+xml";
-	private static final String APPLICATION_VND_UUB_RECORD_XML = "application/vnd.uub.record+xml";
+	private static final String APPLICATION_VND_UUB_RECORD_LIST_XML = "application/vnd.cora.recordList+xml";
+	private static final String APPLICATION_VND_UUB_RECORD_XML = "application/vnd.cora.record+xml";
 	private DocumentBuilderFactory documentBuilderFactory;
 	private TransformerFactory transformerFactory;
 	private Document domDocument;
@@ -319,7 +319,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	private Element createValidateLink() {
 		Element actionLink = createStandardLink(POST, "validate", WORK_ORDER);
 		actionLink.appendChild(
-				createElementWithTextContent(CONTENT_TYPE, "application/vnd.uub.workorder+xml"));
+				createElementWithTextContent(CONTENT_TYPE, "application/vnd.cora.workorder+xml"));
 		actionLink.appendChild(createAcceptRecordXML());
 		return actionLink;
 	}
