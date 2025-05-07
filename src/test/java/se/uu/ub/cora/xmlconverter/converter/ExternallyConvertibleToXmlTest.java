@@ -811,7 +811,7 @@ public class ExternallyConvertibleToXmlTest {
 		expectedActionLinksXml += "<requestMethod>POST</requestMethod>";
 		expectedActionLinksXml += "<rel>index</rel>";
 		expectedActionLinksXml += "<url>https://some.domain.now/rest/record/workOrder</url>";
-		expectedActionLinksXml += "<contentType>" + "application/vnd.cora.record+xml"
+		expectedActionLinksXml += "<contentType>" + APPLICATION_VND_CORA_RECORDGROUP_XML
 				+ "</contentType>";
 		expectedActionLinksXml += "<accept>application/vnd.cora.record+xml</accept>";
 		expectedActionLinksXml += "<body>";
