@@ -21,6 +21,7 @@ package se.uu.ub.cora.xmlconverter.converter;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -464,6 +465,14 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 	private void populateRecordLink(Document domDocument, DataRecordLink recordLink,
 			Element domElement) {
+		// ---SPIKE---
+		Optional<DataGroup> linkedRecord = recordLink.getLinkedRecord();
+		if (linkedRecord.isPresent()) {
+			DataGroup dataGroup = linkedRecord.get();
+			iterateAndGenerateChildElements(dataGroup, domDocument, domElement);
+		}
+		// ---SPIKE---
+
 		Element xmlLinkedType = domDocument.createElement("linkedRecordType");
 		xmlLinkedType.setTextContent(recordLink.getLinkedRecordType());
 
