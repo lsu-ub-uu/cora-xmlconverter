@@ -721,4 +721,36 @@ public class XmlToExternallyConvertibleTest {
 		dataFactorySpy.MCR
 				.assertNumberOfCallsToMethod("factorRecordLinkUsingNameInDataAndTypeAndId", 1);
 	}
+
+	@Test
+	public void testRemoveActionLinks() {
+		String xmlWithActionLinks = """
+				<?xml version="1.0" encoding="UTF-8"?>
+				<book>
+				    <recordInfo>
+				        <id>asdf</id>
+				        <type>
+				            <linkedRecordType>recordType</linkedRecordType>
+				            <linkedRecordId>demo</linkedRecordId>
+				            <actionLinks>
+				                <read>
+				                    <requestMethod>GET</requestMethod>
+				                    <rel>read</rel>
+				                    <url>http://localhost:38080/systemone/rest/record/recordType/demo</url>
+				                    <accept>application/vnd.cora.record+xml</accept>
+				                </read>
+				            </actionLinks>
+				        </type>
+				    </recordInfo>
+				    <bookTitle>En annan bok</bookTitle>
+				    <keeptHis>4</keeptHis>
+				    <url>http://www.google.com</url>
+				</book>
+				 """;
+
+		xmlToDataElement.convert(xmlWithActionLinks);
+
+		dataFactorySpy.MCR
+				.assertNumberOfCallsToMethod("factorRecordLinkUsingNameInDataAndTypeAndId", 1);
+	}
 }
