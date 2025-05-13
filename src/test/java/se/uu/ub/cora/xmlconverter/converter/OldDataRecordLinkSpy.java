@@ -18,7 +18,12 @@
  */
 package se.uu.ub.cora.xmlconverter.converter;
 
+import java.util.List;
+import java.util.Optional;
+
 import se.uu.ub.cora.data.Action;
+import se.uu.ub.cora.data.DataChild;
+import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataRecordLink;
 import se.uu.ub.cora.xmlconverter.spy.OldDataAtomicSpy;
 import se.uu.ub.cora.xmlconverter.spy.OldDataGroupSpy;
@@ -54,5 +59,23 @@ public class OldDataRecordLinkSpy extends OldDataGroupSpy implements DataRecordL
 	@Override
 	public String getLinkedRecordType() {
 		return linkedType;
+	}
+
+	@Override
+	public <T extends DataChild> List<T> getChildrenOfType(Class<T> type) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setLinkedRecord(DataGroup group) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Optional<DataGroup> getLinkedRecord() {
+		// TODO Auto-generated method stub
+		return Optional.empty();
 	}
 }
