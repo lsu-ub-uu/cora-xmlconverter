@@ -723,7 +723,7 @@ public class XmlToExternallyConvertibleTest {
 	}
 
 	@Test
-	public void testRemoveActionLinks() {
+	public void testRemoveActionLinksFromRecordLink() {
 		String xmlWithActionLinks = """
 				<?xml version="1.0" encoding="UTF-8"?>
 				<book>
@@ -742,15 +742,39 @@ public class XmlToExternallyConvertibleTest {
 				            </actionLinks>
 				        </type>
 				    </recordInfo>
-				    <bookTitle>En annan bok</bookTitle>
-				    <keeptHis>4</keeptHis>
-				    <url>http://www.google.com</url>
 				</book>
 				 """;
 
 		xmlToDataElement.convert(xmlWithActionLinks);
+		dataFactorySpy.MCR.assertCalledParametersReturn(
+				"factorRecordLinkUsingNameInDataAndTypeAndId", "type", "recordType", "demo");
+	}
 
-		dataFactorySpy.MCR
-				.assertNumberOfCallsToMethod("factorRecordLinkUsingNameInDataAndTypeAndId", 1);
+	@Test
+	public void testRemoveActionLinksFromResourceLink() {
+		String xmlWithActionLinks = """
+				<?xml version="1.0" encoding="UTF-8"?>
+				<medium>
+				    <resourceId>binary:597846510460883-medium</resourceId>
+				    <medium>
+				        <actionLinks>
+				            <read>
+				                <requestMethod>GET</requestMethod>
+				                <rel>read</rel>
+				                <url>http://localhost:38080/systemone/rest/record/binary/binary:597846510460883/medium</url>
+				                <accept>image/jpeg</accept>
+				            </read>
+				        </actionLinks>
+				        <mimeType>image/jpeg</mimeType>
+				    </medium>
+				    <fileSize>9796</fileSize>
+				    <mimeType>image/jpeg</mimeType>
+				    <height>63</height>
+				    <width>300</width>
+				</medium>
+				 """;
+
+		xmlToDataElement.convert(xmlWithActionLinks);
+
 	}
 }

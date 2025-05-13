@@ -203,7 +203,7 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 
 	private boolean hasRemovableActionLinks(List<Node> elementNodeChildren) {
 		int size = elementNodeChildren.size();
-		if (!isValidSizeForActionLinks(size)) {
+		if (!isValidSizeForPossibleActionLinks(size)) {
 			return false;
 		}
 		var nodeNames = extractNodeNames(elementNodeChildren);
@@ -211,7 +211,7 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 				|| (size == 3 && nodeNamesContainsLinkChildren(nodeNames));
 	}
 
-	private boolean isValidSizeForActionLinks(int size) {
+	private boolean isValidSizeForPossibleActionLinks(int size) {
 		return size == 2 || size == 3;
 	}
 
