@@ -721,4 +721,60 @@ public class XmlToExternallyConvertibleTest {
 		dataFactorySpy.MCR
 				.assertNumberOfCallsToMethod("factorRecordLinkUsingNameInDataAndTypeAndId", 1);
 	}
+
+	@Test
+	public void testRemoveActionLinksFromRecordLink() {
+		String xmlWithActionLinks = """
+				<?xml version="1.0" encoding="UTF-8"?>
+				<book>
+				    <recordInfo>
+				        <id>asdf</id>
+				        <type>
+				            <linkedRecordType>recordType</linkedRecordType>
+				            <linkedRecordId>demo</linkedRecordId>
+				            <actionLinks>
+				                <read>
+				                    <requestMethod>GET</requestMethod>
+				                    <rel>read</rel>
+				                    <url>http://localhost:38080/systemone/rest/record/recordType/demo</url>
+				                    <accept>application/vnd.cora.record+xml</accept>
+				                </read>
+				            </actionLinks>
+				        </type>
+				    </recordInfo>
+				</book>
+				 """;
+
+		xmlToDataElement.convert(xmlWithActionLinks);
+		dataFactorySpy.MCR.assertCalledParametersReturn(
+				"factorRecordLinkUsingNameInDataAndTypeAndId", "type", "recordType", "demo");
+	}
+
+	@Test
+	public void testRemoveActionLinksFromResourceLink() {
+		String xmlWithActionLinks = """
+				<?xml version="1.0" encoding="UTF-8"?>
+				<medium>
+				    <resourceId>binary:597846510460883-medium</resourceId>
+				    <medium>
+				        <actionLinks>
+				            <read>
+				                <requestMethod>GET</requestMethod>
+				                <rel>read</rel>
+				                <url>http://localhost:38080/systemone/rest/record/binary/binary:597846510460883/medium</url>
+				                <accept>image/jpeg</accept>
+				            </read>
+				        </actionLinks>
+				        <mimeType>image/jpeg</mimeType>
+				    </medium>
+				    <fileSize>9796</fileSize>
+				    <mimeType>image/jpeg</mimeType>
+				    <height>63</height>
+				    <width>300</width>
+				</medium>
+				 """;
+
+		xmlToDataElement.convert(xmlWithActionLinks);
+
+	}
 }

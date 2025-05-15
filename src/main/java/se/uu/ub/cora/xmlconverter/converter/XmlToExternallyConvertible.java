@@ -186,11 +186,41 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 
 	private void convertNodeWithChildren(DataGroup parentDataGroup, Node currentNode,
 			XmlAttributes xmlAttributes, List<Node> elementNodeChildren) {
+		possiblyRemoveActionLinks(elementNodeChildren);
 		if (isLink(elementNodeChildren)) {
 			convertLink(parentDataGroup, currentNode, xmlAttributes, elementNodeChildren);
 		} else {
 			convertDataGroup(parentDataGroup, currentNode, xmlAttributes, elementNodeChildren);
 		}
+	}
+
+	private void possiblyRemoveActionLinks(List<Node> elementNodeChildren) {
+		if (hasRemovableActionLinks(elementNodeChildren)) {
+			elementNodeChildren
+					.removeIf(childNode -> "actionLinks".equals(childNode.getNodeName()));
+		}
+	}
+
+	private boolean hasRemovableActionLinks(List<Node> elementNodeChildren) {
+		int size = elementNodeChildren.size();
+		if (!isValidSizeForPossibleActionLinks(size)) {
+			return false;
+		}
+		var nodeNames = extractNodeNames(elementNodeChildren);
+		return (size == 2 && nodeNamesContainsResourceLinkChildren(nodeNames))
+				|| (size == 3 && nodeNamesContainsLinkChildren(nodeNames));
+	}
+
+	private boolean isValidSizeForPossibleActionLinks(int size) {
+		return size == 2 || size == 3;
+	}
+
+	private List<String> extractNodeNames(List<Node> elementNodeChildren) {
+		return elementNodeChildren.stream().map(Node::getNodeName).toList();
+	}
+
+	private boolean nodeNamesContainsResourceLinkChildren(List<String> nodeNames) {
+		return nodeNames.contains("mimeType") && nodeNames.contains("actionLinks");
 	}
 
 	private boolean isLink(List<Node> elementNodeChildren) {
@@ -201,14 +231,6 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 			}
 		}
 		return false;
-	}
-
-	private List<String> extractNodeNames(List<Node> elementNodeChildren) {
-		List<String> nodeNames = new ArrayList<>(elementNodeChildren.size());
-		for (Node childNode : elementNodeChildren) {
-			nodeNames.add(childNode.getNodeName());
-		}
-		return nodeNames;
 	}
 
 	private boolean nodeNamesContainsLinkChildren(List<String> nodeNames) {
