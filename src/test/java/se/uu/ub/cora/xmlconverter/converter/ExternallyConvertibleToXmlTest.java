@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -44,6 +45,7 @@ import se.uu.ub.cora.data.DataChild;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataProvider;
 import se.uu.ub.cora.data.DataResourceLink;
+import se.uu.ub.cora.data.spies.DataAttributeSpy;
 import se.uu.ub.cora.data.spies.DataFactorySpy;
 import se.uu.ub.cora.data.spies.DataGroupSpy;
 import se.uu.ub.cora.data.spies.DataListSpy;
@@ -388,16 +390,11 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertLink_readAction() {
-		DataGroup person = new OldDataGroupSpy("person");
-		OldDataRecordLinkSpy linkSpy = new OldDataRecordLinkSpy("someLinkNameInData", "someType",
-				"someId");
-		linkSpy.addAction(Action.READ);
-		person.addChild(linkSpy);
-
-		String xml = extConvToXml.convertWithLinks(person, externalUrls);
+		DataGroupSpy group = createDataRecordWithOneLinkWithReadAction();
+		String xml = extConvToXml.convertWithLinks(group, externalUrls);
 
 		String expectedXml = XML_DECLARATION;
-		expectedXml += "<person>";
+		expectedXml += "<recordToRecordLink>";
 		expectedXml += "<someLinkNameInData>";
 		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
 		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
@@ -410,8 +407,164 @@ public class ExternallyConvertibleToXmlTest {
 		expectedXml += "</read>";
 		expectedXml += "</actionLinks>";
 		expectedXml += "</someLinkNameInData>";
-		expectedXml += "</person>";
+		expectedXml += "</recordToRecordLink>";
 		assertEquals(xml, expectedXml);
+	}
+
+	private DataGroupSpy createDataRecordWithOneLinkWithReadAction() {
+		DataRecordLinkSpy dataRecordLink = createRecordLink("someLinkNameInData", "someType",
+				"someId");
+		dataRecordLink.MRV.setDefaultReturnValuesSupplier("hasReadAction", () -> true);
+
+		return createGroupWithNameInDataAndChildren("recordToRecordLink", dataRecordLink);
+	}
+
+	@Test
+	public void testConvertLink_linkedRecord_withOneGroup() {
+		DataGroupSpy group = createDataRecordWithOneLinkWithReadActionAndLinkedRecord();
+		String xml = extConvToXml.convertWithLinks(group, externalUrls);
+
+		String expectedXml = XML_DECLARATION;
+		expectedXml += "<recordToRecordLink>";
+		expectedXml += "<someLinkNameInData>";
+		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
+		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
+		expectedXml += "<linkedRecord>";
+		expectedXml += "<linkedSomeRecord/>";
+		expectedXml += "</linkedRecord>";
+		expectedXml += "<actionLinks>";
+		expectedXml += "<read>";
+		expectedXml += "<requestMethod>GET</requestMethod>";
+		expectedXml += "<rel>read</rel>";
+		expectedXml += "<url>https://some.domain.now/rest/record/someType/someId</url>";
+		expectedXml += "<accept>application/vnd.cora.record+xml</accept>";
+		expectedXml += "</read>";
+		expectedXml += "</actionLinks>";
+		expectedXml += "</someLinkNameInData>";
+		expectedXml += "</recordToRecordLink>";
+		assertEquals(xml, expectedXml);
+	}
+
+	@Test
+	public void testConvertLink_linkedRecord_withOneGroupAndChildren() {
+		DataGroupSpy group = createDataRecordWithOneLinkWithReadActionAndLinkedRecordWithChildren();
+		String xml = extConvToXml.convertWithLinks(group, externalUrls);
+
+		String expectedXml = XML_DECLARATION;
+		expectedXml += "<recordToRecordLink>";
+		expectedXml += "<someLinkNameInData>";
+		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
+		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
+		expectedXml += "<linkedRecord>";
+		expectedXml += "<linkedSomeRecord><groupChild01/><groupChild02/></linkedSomeRecord>";
+		expectedXml += "</linkedRecord>";
+		expectedXml += "<actionLinks>";
+		expectedXml += "<read>";
+		expectedXml += "<requestMethod>GET</requestMethod>";
+		expectedXml += "<rel>read</rel>";
+		expectedXml += "<url>https://some.domain.now/rest/record/someType/someId</url>";
+		expectedXml += "<accept>application/vnd.cora.record+xml</accept>";
+		expectedXml += "</read>";
+		expectedXml += "</actionLinks>";
+		expectedXml += "</someLinkNameInData>";
+		expectedXml += "</recordToRecordLink>";
+		assertEquals(xml, expectedXml);
+	}
+
+	@Test
+	public void testConvertLink_linkedRecord_withOneGroupWithAttributes() {
+		DataGroupSpy group = createDataRecordWithOneLinkWithReadActionAndLinkedRecordWithAttributes();
+		String xml = extConvToXml.convertWithLinks(group, externalUrls);
+
+		String expectedXml = XML_DECLARATION;
+		expectedXml += "<recordToRecordLink>";
+		expectedXml += "<someLinkNameInData>";
+		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
+		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
+		expectedXml += "<linkedRecord>";
+		expectedXml += "<linkedSomeRecord attribute01=\"value01\" attribute02=\"value02\"/>";
+		expectedXml += "</linkedRecord>";
+		expectedXml += "<actionLinks>";
+		expectedXml += "<read>";
+		expectedXml += "<requestMethod>GET</requestMethod>";
+		expectedXml += "<rel>read</rel>";
+		expectedXml += "<url>https://some.domain.now/rest/record/someType/someId</url>";
+		expectedXml += "<accept>application/vnd.cora.record+xml</accept>";
+		expectedXml += "</read>";
+		expectedXml += "</actionLinks>";
+		expectedXml += "</someLinkNameInData>";
+		expectedXml += "</recordToRecordLink>";
+		assertEquals(xml, expectedXml);
+	}
+
+	private DataGroupSpy createDataRecordWithOneLinkWithReadActionAndLinkedRecord() {
+		DataGroupSpy linkedDataGroup = createGroupWithNameInDataAndChildren("linkedSomeRecord");
+
+		DataRecordLinkSpy dataRecordLink = createRecordLink("someLinkNameInData", "someType",
+				"someId");
+		dataRecordLink.MRV.setDefaultReturnValuesSupplier("hasReadAction", () -> true);
+		dataRecordLink.MRV.setDefaultReturnValuesSupplier("getLinkedRecord",
+				() -> Optional.of(linkedDataGroup));
+
+		return createGroupWithNameInDataAndChildren("recordToRecordLink", dataRecordLink);
+	}
+
+	private DataGroupSpy createDataRecordWithOneLinkWithReadActionAndLinkedRecordWithAttributes() {
+		DataGroupSpy linkedDataGroup = createGroupWithNameInDataAndChildren("linkedSomeRecord");
+
+		DataAttributeSpy attribute01 = createAttribute("attribute01", "value01");
+		DataAttributeSpy attribute02 = createAttribute("attribute02", "value02");
+		addAttributesToDataGroup(linkedDataGroup, attribute01, attribute02);
+
+		DataRecordLinkSpy dataRecordLink = createRecordLink("someLinkNameInData", "someType",
+				"someId");
+		dataRecordLink.MRV.setDefaultReturnValuesSupplier("hasReadAction", () -> true);
+		dataRecordLink.MRV.setDefaultReturnValuesSupplier("getLinkedRecord",
+				() -> Optional.of(linkedDataGroup));
+		return createGroupWithNameInDataAndChildren("recordToRecordLink", dataRecordLink);
+	}
+
+	private DataGroupSpy createDataRecordWithOneLinkWithReadActionAndLinkedRecordWithChildren() {
+		DataGroupSpy groupChild01 = createGroupWithNameInData("groupChild01");
+		DataGroupSpy groupChild02 = createGroupWithNameInData("groupChild02");
+		DataGroupSpy linkedDataGroup = createGroupWithNameInDataAndChildren("linkedSomeRecord",
+				groupChild01, groupChild02);
+
+		DataRecordLinkSpy dataRecordLink = createRecordLink("someLinkNameInData", "someType",
+				"someId");
+		dataRecordLink.MRV.setDefaultReturnValuesSupplier("hasReadAction", () -> true);
+		dataRecordLink.MRV.setDefaultReturnValuesSupplier("getLinkedRecord",
+				() -> Optional.of(linkedDataGroup));
+
+		return createGroupWithNameInDataAndChildren("recordToRecordLink", dataRecordLink);
+	}
+
+	private void addAttributesToDataGroup(DataGroupSpy dataGroup, DataAttributeSpy... attributes) {
+		dataGroup.MRV.setDefaultReturnValuesSupplier("getAttributes",
+				() -> Arrays.asList(attributes));
+		dataGroup.MRV.setDefaultReturnValuesSupplier("hasAttributes", () -> true);
+	}
+
+	private DataAttributeSpy createAttribute(String nameInData, String value) {
+		DataAttributeSpy attribute = new DataAttributeSpy();
+		attribute.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> nameInData);
+		attribute.MRV.setDefaultReturnValuesSupplier("getValue", () -> value);
+		return attribute;
+	}
+
+	private DataGroupSpy createGroupWithNameInData(String nameInData) {
+		DataGroupSpy linkedDataGroup = new DataGroupSpy();
+		linkedDataGroup.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> nameInData);
+		return linkedDataGroup;
+	}
+
+	private DataGroupSpy createGroupWithNameInDataAndChildren(String nameInData,
+			DataChild... dataRecordLink) {
+		DataGroupSpy dataGroup = new DataGroupSpy();
+		dataGroup.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> nameInData);
+		dataGroup.MRV.setDefaultReturnValuesSupplier("getChildren",
+				() -> Arrays.asList(dataRecordLink));
+		return dataGroup;
 	}
 
 	@Test
@@ -646,18 +799,6 @@ public class ExternallyConvertibleToXmlTest {
 		expectedListXml += "</dataList>";
 
 		assertEquals(xml, expectedListXml);
-	}
-
-	private DataGroupSpy createDataRecordWithOneLinkWithReadAction() {
-		DataGroupSpy dataGroup = new DataGroupSpy();
-
-		DataRecordLinkSpy dataRecordLink = createRecordLink("someLinkNameInData", "someType",
-				"someId");
-		dataRecordLink.MRV.setDefaultReturnValuesSupplier("hasReadAction", () -> true);
-
-		dataGroup.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> "recordToRecordLink");
-		dataGroup.MRV.setDefaultReturnValuesSupplier("getChildren", () -> List.of(dataRecordLink));
-		return dataGroup;
 	}
 
 	private String expectedXMLForDataGroupWithRecordLink() {

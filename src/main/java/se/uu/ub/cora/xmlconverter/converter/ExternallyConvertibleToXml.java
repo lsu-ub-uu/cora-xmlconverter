@@ -475,20 +475,26 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		domElement.appendChild(xmlLinkedType);
 		domElement.appendChild(xmlLinkedId);
 
-		// ---SPIKE---
+		ifPresentConvertLinkedRecord(domDocument, recordLink, domElement);
+		possiblyAddActionLinks(domDocument, domElement, recordLink);
+	}
+
+	private void ifPresentConvertLinkedRecord(Document domDocument, DataRecordLink recordLink,
+			Element domElement) {
 		Optional<DataGroup> linkedRecord = recordLink.getLinkedRecord();
 		if (linkedRecord.isPresent()) {
-			DataGroup dataGroup = linkedRecord.get();
-			Element xmlLinkedRecord = domDocument.createElement("linkedRecord");
-			Element groupDomElement = domDocument.createElement(dataGroup.getNameInData());
-			addAttributesIfExistsToElementForDataElement(dataGroup, groupDomElement);
-			iterateAndGenerateChildElements(dataGroup, domDocument, groupDomElement);
-			xmlLinkedRecord.appendChild(groupDomElement);
-			domElement.appendChild(xmlLinkedRecord);
+			convertLinkedRecord(domDocument, domElement, linkedRecord.get());
 		}
-		// ---SPIKE---
+	}
 
-		possiblyAddActionLinks(domDocument, domElement, recordLink);
+	private void convertLinkedRecord(Document domDocument, Element domElement,
+			DataGroup dataGroup) {
+		Element xmlLinkedRecord = domDocument.createElement("linkedRecord");
+		Element groupDomElement = domDocument.createElement(dataGroup.getNameInData());
+		addAttributesIfExistsToElementForDataElement(dataGroup, groupDomElement);
+		iterateAndGenerateChildElements(dataGroup, domDocument, groupDomElement);
+		xmlLinkedRecord.appendChild(groupDomElement);
+		domElement.appendChild(xmlLinkedRecord);
 	}
 
 	private boolean isRecordLink(DataChild childDataElement) {
