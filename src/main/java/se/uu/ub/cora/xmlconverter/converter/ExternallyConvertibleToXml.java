@@ -433,16 +433,16 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 			DataChild childDataElement) {
 		Element domElement = createElement(childDataElement);
 		possiblyAddRepeatIdAsAttribute(childDataElement, domElement);
-		if (isAnyDataChildThanResourceLink(childDataElement)) {
-			addAttributesIfExistsToElementForDataElement(childDataElement, domElement);
-		}
+		// if (isAnyDataChildThanResourceLink(childDataElement)) {
+		addAttributesIfExistsToElementForDataElement(childDataElement, domElement);
+		// }
 		populateChildElement(domDocument, childDataElement, domElement);
 		parentXmlDomElement.appendChild(domElement);
 	}
 
-	private boolean isAnyDataChildThanResourceLink(DataChild childDataElement) {
-		return !isResourceLink(childDataElement);
-	}
+	// private boolean isAnyDataChildThanResourceLink(DataChild childDataElement) {
+	// return !isResourceLink(childDataElement);
+	// }
 
 	private boolean isResourceLink(DataChild childDataElement) {
 		return childDataElement instanceof DataResourceLink;
@@ -459,7 +459,6 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		} else {
 			DataGroup childDataGroup = (DataGroup) childDataElement;
 			populateDataGroupElement(domDocument, domElement, childDataGroup);
-
 		}
 	}
 

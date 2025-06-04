@@ -23,6 +23,7 @@ import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -137,9 +138,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	private ExternallyConvertibleToXml setUpDataElementToXmlWithTransformerSpy() {
 		transformerFactory = new TransformerFactorySpy();
-		ExternallyConvertibleToXml dataElementToXml = new ExternallyConvertibleToXml(
-				documentBuilderFactory, transformerFactory);
-		return dataElementToXml;
+		return new ExternallyConvertibleToXml(documentBuilderFactory, transformerFactory);
 	}
 
 	@Test
@@ -619,11 +618,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertResourceLink_withRepeatId_noReadAction() {
-		DataResourceLinkSpy linkSpy = new DataResourceLinkSpy();
-		linkSpy.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> "jp2");
-		linkSpy.MRV.setDefaultReturnValuesSupplier("getMimeType", () -> "image/jp2");
-		linkSpy.MRV.setDefaultReturnValuesSupplier("getRepeatId", () -> "someRepeatId");
-		linkSpy.MRV.setAlwaysThrowException("getAttributes", new RuntimeException());
+		DataResourceLinkSpy linkSpy = createResourceLinkNoReadAction();
 
 		DataRecordSpy dataRecord = createRecordWithDataResourceLink(linkSpy);
 
@@ -645,7 +640,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertResourceLink_readActionNoLinksRequested() {
-		DataResourceLinkSpy linkSpy = createResourceLink();
+		DataResourceLinkSpy linkSpy = createResourceLinkWithReadAction();
 		DataRecordSpy dataRecord = createRecordWithDataResourceLink(linkSpy);
 
 		String xml = extConvToXml.convert(dataRecord);
@@ -665,7 +660,7 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertResourceLink_readAction() {
-		DataResourceLinkSpy linkSpy = createResourceLink();
+		DataResourceLinkSpy linkSpy = createResourceLinkWithReadAction();
 		DataRecordSpy dataRecord = createRecordWithDataResourceLink(linkSpy);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
@@ -676,13 +671,18 @@ public class ExternallyConvertibleToXmlTest {
 		System.out.println(xml);
 	}
 
-	private DataResourceLinkSpy createResourceLink() {
+	private DataResourceLinkSpy createResourceLinkWithReadAction() {
+		DataResourceLinkSpy linkSpy = createResourceLinkNoReadAction();
+		linkSpy.MRV.setDefaultReturnValuesSupplier("hasReadAction", () -> true);
+		return linkSpy;
+	}
+
+	private DataResourceLinkSpy createResourceLinkNoReadAction() {
 		DataResourceLinkSpy linkSpy = new DataResourceLinkSpy();
 		linkSpy.MRV.setDefaultReturnValuesSupplier("getNameInData", () -> "jp2");
 		linkSpy.MRV.setDefaultReturnValuesSupplier("getMimeType", () -> "image/jp2");
 		linkSpy.MRV.setDefaultReturnValuesSupplier("getRepeatId", () -> "someRepeatId");
-		linkSpy.MRV.setDefaultReturnValuesSupplier("hasReadAction", () -> true);
-		linkSpy.MRV.setAlwaysThrowException("getAttributes", new RuntimeException());
+		linkSpy.MRV.setDefaultReturnValuesSupplier("getAttributes", Collections::emptySet);
 		return linkSpy;
 	}
 
@@ -759,7 +759,7 @@ public class ExternallyConvertibleToXmlTest {
 	}
 
 	private DataRecordSpy createDataRecordWithResourceLink() {
-		DataResourceLink linkSpy = createResourceLink();
+		DataResourceLink linkSpy = createResourceLinkWithReadAction();
 
 		return createRecordWithDataResourceLink(linkSpy);
 	}
@@ -819,17 +819,6 @@ public class ExternallyConvertibleToXmlTest {
 		expectedXml += "</recordToRecordLink>";
 		return expectedXml;
 	}
-
-	// "actionLinks": {
-	// "read": {
-	// "requestMethod": "GET",
-	// "rel": "read",
-	// "url":
-	// "https://cora.epc.ub.uu.se/systemone/rest/record/image/image:12081016459542285/master",
-	// "accept": "application/octet-stream"
-	// }
-	// },
-	// "name": "master"
 
 	// TODO:
 	/**
