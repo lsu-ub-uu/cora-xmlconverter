@@ -21,6 +21,7 @@ package se.uu.ub.cora.xmlconverter.converter;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -432,16 +433,16 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 			DataChild childDataElement) {
 		Element domElement = createElement(childDataElement);
 		possiblyAddRepeatIdAsAttribute(childDataElement, domElement);
-		if (isAnyDataChildThanResourceLink(childDataElement)) {
-			addAttributesIfExistsToElementForDataElement(childDataElement, domElement);
-		}
+		// if (isAnyDataChildThanResourceLink(childDataElement)) {
+		addAttributesIfExistsToElementForDataElement(childDataElement, domElement);
+		// }
 		populateChildElement(domDocument, childDataElement, domElement);
 		parentXmlDomElement.appendChild(domElement);
 	}
 
-	private boolean isAnyDataChildThanResourceLink(DataChild childDataElement) {
-		return !isResourceLink(childDataElement);
-	}
+	// private boolean isAnyDataChildThanResourceLink(DataChild childDataElement) {
+	// return !isResourceLink(childDataElement);
+	// }
 
 	private boolean isResourceLink(DataChild childDataElement) {
 		return childDataElement instanceof DataResourceLink;
@@ -458,12 +459,12 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		} else {
 			DataGroup childDataGroup = (DataGroup) childDataElement;
 			populateDataGroupElement(domDocument, domElement, childDataGroup);
-
 		}
 	}
 
 	private void populateRecordLink(Document domDocument, DataRecordLink recordLink,
 			Element domElement) {
+
 		Element xmlLinkedType = domDocument.createElement("linkedRecordType");
 		xmlLinkedType.setTextContent(recordLink.getLinkedRecordType());
 
@@ -472,7 +473,27 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 
 		domElement.appendChild(xmlLinkedType);
 		domElement.appendChild(xmlLinkedId);
+
+		ifPresentConvertLinkedRecord(domDocument, recordLink, domElement);
 		possiblyAddActionLinks(domDocument, domElement, recordLink);
+	}
+
+	private void ifPresentConvertLinkedRecord(Document domDocument, DataRecordLink recordLink,
+			Element domElement) {
+		Optional<DataGroup> linkedRecord = recordLink.getLinkedRecord();
+		if (linkedRecord.isPresent()) {
+			convertLinkedRecord(domDocument, domElement, linkedRecord.get());
+		}
+	}
+
+	private void convertLinkedRecord(Document domDocument, Element domElement,
+			DataGroup dataGroup) {
+		Element xmlLinkedRecord = domDocument.createElement("linkedRecord");
+		Element groupDomElement = domDocument.createElement(dataGroup.getNameInData());
+		addAttributesIfExistsToElementForDataElement(dataGroup, groupDomElement);
+		iterateAndGenerateChildElements(dataGroup, domDocument, groupDomElement);
+		xmlLinkedRecord.appendChild(groupDomElement);
+		domElement.appendChild(xmlLinkedRecord);
 	}
 
 	private boolean isRecordLink(DataChild childDataElement) {

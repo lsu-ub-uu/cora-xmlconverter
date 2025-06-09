@@ -29,7 +29,6 @@
 		<converter.version>4.1.0</converter.version>
 		<json.version>3.10.0</json.version>
 		<testutils.version>1.14.0</testutils.version>
-<!--		<testspies.version>1.2.0</testspies.version>-->
 	</properties>
 
 	<scm>
@@ -82,11 +81,5 @@
 			<version>${testutils.version}</version>
 			<scope>test</scope>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>se.uu.ub.cora</groupId>-->
-<!--			<artifactId>testspies</artifactId>-->
-<!--			<version>${testspies.version}</version>-->
-<!--			<scope>test</scope>-->
-<!--		</dependency>-->
 	</dependencies>
 </project>
