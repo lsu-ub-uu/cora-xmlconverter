@@ -18,7 +18,7 @@
 	</parent>
 
 	<artifactId>xmlconverter</artifactId>
-	<version>3.6.0</version>
+	<version>3.6.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>xmlconverter</name>
 
@@ -35,7 +35,7 @@
 		<connection>scm:git:https://github.com/lsu-ub-uu/cora-xmlconverter.git</connection>
 		<developerConnection>scm:git:https://github.com/lsu-ub-uu/cora-xmlconverter.git</developerConnection>
 		<url>https://github.com/lsu-ub-uu/cora-xmlconverter.git</url>
-		<tag>xmlconverter-3.6.0</tag>
+		<tag>release/3.6</tag>
 	</scm>
 
 	<dependencies>
