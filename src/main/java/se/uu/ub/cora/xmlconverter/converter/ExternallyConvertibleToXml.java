@@ -69,8 +69,8 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	private TransformerFactory transformerFactory;
 	private Document domDocument;
 	private boolean linksMustBeAdded;
-	private String recordType;
-	private String recordId;
+	// private String recordType;
+	// private String recordId;
 	private ExternalUrls externalUrls;
 
 	public ExternallyConvertibleToXml(DocumentBuilderFactory documentBuildeFactory,
@@ -433,16 +433,10 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 			DataChild childDataElement) {
 		Element domElement = createElement(childDataElement);
 		possiblyAddRepeatIdAsAttribute(childDataElement, domElement);
-		// if (isAnyDataChildThanResourceLink(childDataElement)) {
 		addAttributesIfExistsToElementForDataElement(childDataElement, domElement);
-		// }
 		populateChildElement(domDocument, childDataElement, domElement);
 		parentXmlDomElement.appendChild(domElement);
 	}
-
-	// private boolean isAnyDataChildThanResourceLink(DataChild childDataElement) {
-	// return !isResourceLink(childDataElement);
-	// }
 
 	private boolean isResourceLink(DataChild childDataElement) {
 		return childDataElement instanceof DataResourceLink;
