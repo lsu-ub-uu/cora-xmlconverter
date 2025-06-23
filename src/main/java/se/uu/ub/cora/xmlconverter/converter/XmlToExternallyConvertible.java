@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, 2024 Uppsala University Library
+ * Copyright 2019, 2024, 2025 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -43,11 +43,13 @@ import se.uu.ub.cora.data.DataChild;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataProvider;
 import se.uu.ub.cora.data.DataRecordLink;
+import se.uu.ub.cora.data.DataResourceLink;
 import se.uu.ub.cora.data.ExternallyConvertible;
 
 public class XmlToExternallyConvertible implements StringToExternallyConvertibleConverter {
 
-	private static final int NUM_OF_LINK_CHILDREN = 2;
+	private static final int NUM_OF_RECORD_LINK_CHILDREN = 2;
+	private static final int NUM_OF_RESOURCE_LINK_CHILDREN = 3;
 	private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 	private static final String REPEAT_ID = "repeatId";
 	private DocumentBuilderFactory documentBuilderFactory;
@@ -187,57 +189,70 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 	private void convertNodeWithChildren(DataGroup parentDataGroup, Node currentNode,
 			XmlAttributes xmlAttributes, List<Node> elementNodeChildren) {
 		possiblyRemoveActionLinks(elementNodeChildren);
-		if (isLink(elementNodeChildren)) {
-			convertLink(parentDataGroup, currentNode, xmlAttributes, elementNodeChildren);
+		if (isRecordLink(elementNodeChildren)) {
+			convertRecordLink(parentDataGroup, currentNode, xmlAttributes, elementNodeChildren);
+		} else if (isResourceLink(elementNodeChildren)) {
+			convertResourceLink(parentDataGroup, currentNode, xmlAttributes, elementNodeChildren);
 		} else {
 			convertDataGroup(parentDataGroup, currentNode, xmlAttributes, elementNodeChildren);
 		}
 	}
 
+	private void convertResourceLink(DataGroup parentDataGroup, Node currentNode,
+			XmlAttributes xmlAttributes, List<Node> elementNodeChildren) {
+		String nodeName = currentNode.getNodeName();
+		DataResourceLink resourceLink = createResourceLink(elementNodeChildren, nodeName);
+		possiblyAddRepeatId(resourceLink, xmlAttributes);
+		parentDataGroup.addChild(resourceLink);
+	}
+
+	private DataResourceLink createResourceLink(List<Node> elementNodeChildren, String nodeName) {
+		String linkedRecordType = getTextContentForNodeName(elementNodeChildren,
+				"linkedRecordType");
+		String linkedRecordId = getTextContentForNodeName(elementNodeChildren, "linkedRecordId");
+		String mimeType = getTextContentForNodeName(elementNodeChildren, "mimeType");
+		return DataProvider.createResourceLinkUsingNameInDataAndTypeAndIdAndMimeType(nodeName,
+				linkedRecordType, linkedRecordId, mimeType);
+	}
+
 	private void possiblyRemoveActionLinks(List<Node> elementNodeChildren) {
-		if (hasRemovableActionLinks(elementNodeChildren)) {
-			elementNodeChildren
-					.removeIf(childNode -> "actionLinks".equals(childNode.getNodeName()));
-		}
-	}
-
-	private boolean hasRemovableActionLinks(List<Node> elementNodeChildren) {
-		int size = elementNodeChildren.size();
-		if (!isValidSizeForPossibleActionLinks(size)) {
-			return false;
-		}
-		var nodeNames = extractNodeNames(elementNodeChildren);
-		return (size == 2 && nodeNamesContainsResourceLinkChildren(nodeNames))
-				|| (size == 3 && nodeNamesContainsLinkChildren(nodeNames));
-	}
-
-	private boolean isValidSizeForPossibleActionLinks(int size) {
-		return size == 2 || size == 3;
+		elementNodeChildren.removeIf(childNode -> "actionLinks".equals(childNode.getNodeName()));
 	}
 
 	private List<String> extractNodeNames(List<Node> elementNodeChildren) {
 		return elementNodeChildren.stream().map(Node::getNodeName).toList();
 	}
 
-	private boolean nodeNamesContainsResourceLinkChildren(List<String> nodeNames) {
-		return nodeNames.contains("mimeType") && nodeNames.contains("actionLinks");
-	}
-
-	private boolean isLink(List<Node> elementNodeChildren) {
-		if (elementNodeChildren.size() == NUM_OF_LINK_CHILDREN) {
+	private boolean isRecordLink(List<Node> elementNodeChildren) {
+		if (elementNodeChildren.size() == NUM_OF_RECORD_LINK_CHILDREN) {
 			List<String> nodeNames = extractNodeNames(elementNodeChildren);
-			if (nodeNamesContainsLinkChildren(nodeNames)) {
+			if (nodeNamesContainsRecordLinkChildren(nodeNames)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	private boolean nodeNamesContainsLinkChildren(List<String> nodeNames) {
+	private boolean isResourceLink(List<Node> elementNodeChildren) {
+		if (elementNodeChildren.size() == NUM_OF_RESOURCE_LINK_CHILDREN) {
+			List<String> nodeNames = extractNodeNames(elementNodeChildren);
+			if (nodeNamesContainsResourceLinkChildren(nodeNames)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean nodeNamesContainsRecordLinkChildren(List<String> nodeNames) {
 		return nodeNames.contains("linkedRecordType") && nodeNames.contains("linkedRecordId");
 	}
 
-	private void convertLink(DataGroup parentDataGroup, Node currentNode,
+	private boolean nodeNamesContainsResourceLinkChildren(List<String> nodeNames) {
+		return nodeNames.contains("linkedRecordType") && nodeNames.contains("linkedRecordId")
+				&& nodeNames.contains("mimeType");
+	}
+
+	private void convertRecordLink(DataGroup parentDataGroup, Node currentNode,
 			XmlAttributes xmlAttributes, List<Node> elementNodeChildren) {
 		String nodeName = currentNode.getNodeName();
 		DataRecordLink dataRecordLink = createLink(elementNodeChildren, nodeName);
