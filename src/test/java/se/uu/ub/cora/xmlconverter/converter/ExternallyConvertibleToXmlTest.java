@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, 2021, 2024 Uppsala University Library
+ * Copyright 2019, 2021, 2024, 2025 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -581,6 +581,8 @@ public class ExternallyConvertibleToXmlTest {
 		expectedXml += "<data>";
 		expectedXml += "<binary>";
 		expectedXml += "<jp2>";
+		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
+		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
 		expectedXml += "<mimeType>image/jp2</mimeType>";
 		expectedXml += "</jp2>";
 		expectedXml += "</binary>";
@@ -629,6 +631,8 @@ public class ExternallyConvertibleToXmlTest {
 		expectedXml += "<data>";
 		expectedXml += "<binary>";
 		expectedXml += "<jp2 repeatId=\"someRepeatId\">";
+		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
+		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
 		expectedXml += "<mimeType>image/jp2</mimeType>";
 		expectedXml += "</jp2>";
 		expectedXml += "</binary>";
@@ -650,6 +654,8 @@ public class ExternallyConvertibleToXmlTest {
 		expectedXml += "<data>";
 		expectedXml += "<binary>";
 		expectedXml += "<jp2 repeatId=\"someRepeatId\">";
+		expectedXml += "<linkedRecordType>someType</linkedRecordType>";
+		expectedXml += "<linkedRecordId>someId</linkedRecordId>";
 		expectedXml += "<mimeType>image/jp2</mimeType>";
 		expectedXml += "</jp2>";
 		expectedXml += "</binary>";
@@ -660,13 +666,13 @@ public class ExternallyConvertibleToXmlTest {
 
 	@Test
 	public void testConvertResourceLink_readAction() {
-		DataResourceLinkSpy linkSpy = createResourceLinkWithReadAction();
-		DataRecordSpy dataRecord = createRecordWithDataResourceLink(linkSpy);
+		DataResourceLinkSpy resourceLinkSpy = createResourceLinkWithReadAction();
+		DataRecordSpy dataRecord = createRecordWithDataResourceLink(resourceLinkSpy);
 
 		String xml = extConvToXml.convertWithLinks(dataRecord, externalUrls);
 
 		String expectedXml = XML_DECLARATION;
-		expectedXml += expectedXMLForRecordResourceLink(dataRecord);
+		expectedXml += expectedXMLForRecordResourceLink(resourceLinkSpy);
 		assertEquals(xml, expectedXml);
 		System.out.println(xml);
 	}
@@ -686,25 +692,29 @@ public class ExternallyConvertibleToXmlTest {
 		return linkSpy;
 	}
 
-	private String expectedXMLForRecordResourceLink(DataRecordSpy dataRecord) {
+	private String expectedXMLForRecordResourceLink(DataResourceLinkSpy resourceLink) {
 
 		String expectedXml = "<record>";
 		expectedXml += "<data>";
 		expectedXml += "<binary>";
 		expectedXml += "<jp2 repeatId=\"someRepeatId\">";
+		expectedXml += "<linkedRecordType>" + resourceLink.MCR.getReturnValue("getType", 0)
+				+ "</linkedRecordType>";
+		expectedXml += "<linkedRecordId>" + resourceLink.MCR.getReturnValue("getId", 0)
+				+ "</linkedRecordId>";
+		expectedXml += "<mimeType>image/jp2</mimeType>";
 
 		expectedXml += "<actionLinks>";
 		expectedXml += "<read>";
 		expectedXml += "<requestMethod>GET</requestMethod>";
 		expectedXml += "<rel>read</rel>";
 		expectedXml += "<url>https://some.domain.now/rest/record/"
-				+ dataRecord.MCR.getReturnValue("getType", 0) + "/"
-				+ dataRecord.MCR.getReturnValue("getId", 0) + "/jp2</url>";
+				+ resourceLink.MCR.getReturnValue("getType", 0) + "/"
+				+ resourceLink.MCR.getReturnValue("getId", 0) + "/jp2</url>";
 		expectedXml += "<accept>image/jp2</accept>";
 		expectedXml += "</read>";
 		expectedXml += "</actionLinks>";
 
-		expectedXml += "<mimeType>image/jp2</mimeType>";
 		expectedXml += "</jp2>";
 		expectedXml += "</binary>";
 		expectedXml += "</data>";
@@ -717,8 +727,10 @@ public class ExternallyConvertibleToXmlTest {
 	public void testConvertListWithResourceLink_readAction() {
 		// * test for list of records with resourceLink, uses recordType and id from current
 		// record<br>
-		DataRecordSpy dataRecord1 = createDataRecordWithResourceLink();
-		DataRecordSpy dataRecord2 = createDataRecordWithResourceLink();
+		DataResourceLinkSpy resourceLink01 = createResourceLinkWithReadAction();
+		DataRecordSpy dataRecord1 = createRecordWithDataResourceLink(resourceLink01);
+		DataResourceLinkSpy resourceLink02 = createResourceLinkWithReadAction();
+		DataRecordSpy dataRecord2 = createRecordWithDataResourceLink(resourceLink02);
 		DataListSpy dataList = createDataList(dataRecord1, dataRecord2);
 
 		String xml = extConvToXml.convertWithLinks(dataList, externalUrls);
@@ -738,8 +750,8 @@ public class ExternallyConvertibleToXmlTest {
 		expectedListXml += dataList.MCR.getReturnValue("getContainDataOfType", 0);
 		expectedListXml += "</containDataOfType>";
 		expectedListXml += "<data>";
-		expectedListXml += expectedXMLForRecordResourceLink(dataRecord1);
-		expectedListXml += expectedXMLForRecordResourceLink(dataRecord2);
+		expectedListXml += expectedXMLForRecordResourceLink(resourceLink01);
+		expectedListXml += expectedXMLForRecordResourceLink(resourceLink02);
 		expectedListXml += "</data>";
 		expectedListXml += "</dataList>";
 
@@ -756,12 +768,6 @@ public class ExternallyConvertibleToXmlTest {
 
 		dataList.MRV.setDefaultReturnValuesSupplier("getDataList", () -> Arrays.asList(data));
 		return dataList;
-	}
-
-	private DataRecordSpy createDataRecordWithResourceLink() {
-		DataResourceLink linkSpy = createResourceLinkWithReadAction();
-
-		return createRecordWithDataResourceLink(linkSpy);
 	}
 
 	@Test

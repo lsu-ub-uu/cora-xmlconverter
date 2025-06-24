@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, 2021, 2024 Uppsala University Library
+ * Copyright 2019, 2021, 2024, 2025 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -319,7 +319,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	}
 
 	private Element createValidateLink() {
-		Element actionLink = createStandardLink(POST, "validate", WORK_ORDER);
+		Element actionLink = createActionLink(POST, "validate", WORK_ORDER);
 		actionLink.appendChild(
 				createElementWithTextContent(CONTENT_TYPE, "application/vnd.cora.workorder+xml"));
 		actionLink.appendChild(createAcceptRecordXML());
@@ -327,39 +327,39 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	}
 
 	private Element createBatchIndexLink() {
-		Element actionLink = createStandardLink(POST, "batch_index", INDEX, recordId);
+		Element actionLink = createActionLink(POST, "batch_index", INDEX, recordId);
 		actionLink.appendChild(createContentTypeRecordXML());
 		actionLink.appendChild(createAcceptRecordXML());
 		return actionLink;
 	}
 
 	private Element createListLink() {
-		Element actionLink = createStandardLink(GET, "list", recordId);
+		Element actionLink = createActionLink(GET, "list", recordId);
 		actionLink.appendChild(createAcceptRecordListXML());
 		return actionLink;
 	}
 
 	private Element createCreateLink() {
-		Element actionLink = createStandardLink(POST, "create", recordId);
+		Element actionLink = createActionLink(POST, "create", recordId);
 		actionLink.appendChild(createContentTypeRecordGroupXML());
 		actionLink.appendChild(createAcceptRecordXML());
 		return actionLink;
 	}
 
 	private Element createSearchLink(String searchId) {
-		Element actionLink = createStandardLink(GET, "search", "searchResult", searchId);
+		Element actionLink = createActionLink(GET, "search", "searchResult", searchId);
 		actionLink.appendChild(createAcceptRecordListXML());
 		return actionLink;
 	}
 
 	private Element createUploadLink() {
-		Element actionLink = createStandardLink(POST, "upload", recordType, recordId, "master");
+		Element actionLink = createActionLink(POST, "upload", recordType, recordId, "master");
 		actionLink.appendChild(createElementWithTextContent(CONTENT_TYPE, "multipart/form-data"));
 		return actionLink;
 	}
 
 	private Element createIndexLink() {
-		Element actionLink = createStandardLink(POST, INDEX, WORK_ORDER);
+		Element actionLink = createActionLink(POST, INDEX, WORK_ORDER);
 		actionLink.appendChild(createContentTypeRecordGroupXML());
 		actionLink.appendChild(createAcceptRecordXML());
 		actionLink.appendChild(createWorkOrderXML());
@@ -372,23 +372,22 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		body.appendChild(workOrder);
 		Element recordTypeElement = domDocument.createElement("recordType");
 		workOrder.appendChild(recordTypeElement);
-		recordTypeElement
-				.appendChild(createElementWithTextContent("linkedRecordType", "recordType"));
-		recordTypeElement.appendChild(createElementWithTextContent("linkedRecordId", recordType));
-		recordTypeElement.appendChild(createElementWithTextContent("recordId", recordId));
-		recordTypeElement.appendChild(createElementWithTextContent("type", INDEX));
+		appendNewElementWithValueToDom(recordTypeElement, "linkedRecordType", "recordType");
+		appendNewElementWithValueToDom(recordTypeElement, "linkedRecordId", recordType);
+		appendNewElementWithValueToDom(recordTypeElement, "recordId", recordId);
+		appendNewElementWithValueToDom(recordTypeElement, "type", INDEX);
 		return body;
 	}
 
 	private Element createReadIncomingLink() {
-		Element actionLink = createStandardLink(GET, "read_incoming_links", recordType, recordId,
+		Element actionLink = createActionLink(GET, "read_incoming_links", recordType, recordId,
 				"incomingLinks");
 		actionLink.appendChild(createAcceptRecordListXML());
 		return actionLink;
 	}
 
 	private Element createUpdateLink() {
-		Element actionLink = createStandardLink(POST, "update", recordType, recordId);
+		Element actionLink = createActionLink(POST, "update", recordType, recordId);
 		actionLink.appendChild(createContentTypeRecordGroupXML());
 		actionLink.appendChild(createAcceptRecordXML());
 		return actionLink;
@@ -433,16 +432,10 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 			DataChild childDataElement) {
 		Element domElement = createElement(childDataElement);
 		possiblyAddRepeatIdAsAttribute(childDataElement, domElement);
-		// if (isAnyDataChildThanResourceLink(childDataElement)) {
 		addAttributesIfExistsToElementForDataElement(childDataElement, domElement);
-		// }
 		populateChildElement(domDocument, childDataElement, domElement);
 		parentXmlDomElement.appendChild(domElement);
 	}
-
-	// private boolean isAnyDataChildThanResourceLink(DataChild childDataElement) {
-	// return !isResourceLink(childDataElement);
-	// }
 
 	private boolean isResourceLink(DataChild childDataElement) {
 		return childDataElement instanceof DataResourceLink;
@@ -455,7 +448,7 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		} else if (isRecordLink(childDataElement)) {
 			populateRecordLink(domDocument, (DataRecordLink) childDataElement, domElement);
 		} else if (isResourceLink(childDataElement)) {
-			populateResourceLink(domDocument, childDataElement, domElement);
+			populateResourceLink(domDocument, (DataResourceLink) childDataElement, domElement);
 		} else {
 			DataGroup childDataGroup = (DataGroup) childDataElement;
 			populateDataGroupElement(domDocument, domElement, childDataGroup);
@@ -504,24 +497,22 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		return childDataElement instanceof DataAtomic;
 	}
 
-	private void populateResourceLink(Document domDocument, DataChild childDataElement,
+	private void populateResourceLink(Document domDocument, DataResourceLink resourceLink,
 			Element domElement) {
-		DataResourceLink resourceLink = (DataResourceLink) childDataElement;
-		possiblyAddActionLinks(domDocument, domElement, childDataElement);
-		Element mimeType = addMimeType(domDocument, resourceLink);
-		domElement.appendChild(mimeType);
+		appendNewElementWithValueToDom(domElement, "linkedRecordType", resourceLink.getType());
+		appendNewElementWithValueToDom(domElement, "linkedRecordId", resourceLink.getId());
+		appendNewElementWithValueToDom(domElement, "mimeType", resourceLink.getMimeType());
+		possiblyAddActionLinks(domDocument, domElement, resourceLink);
 	}
 
-	private Element addMimeType(Document domDocument, DataResourceLink resourceLink) {
-		Element mimeType = domDocument.createElement("mimeType");
-		mimeType.setTextContent(resourceLink.getMimeType());
-		return mimeType;
+	private void appendNewElementWithValueToDom(Element domElement, String tagName, String value) {
+		Element element = createElementWithTextContent(tagName, value);
+		domElement.appendChild(element);
 	}
 
 	private void populateDataGroupElement(Document domDocument, Element domElement,
 			DataGroup childDataGroup) {
 		iterateAndGenerateChildElements(childDataGroup, domDocument, domElement);
-
 		possiblyAddActionLinks(domDocument, domElement, childDataGroup);
 	}
 
@@ -529,11 +520,11 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		if (isLinkThatShouldBeConverted(child)) {
 			Element actionLinks = domDocument.createElement("actionLinks");
 			domElement.appendChild(actionLinks);
-			addLinkElement(child, actionLinks);
+			addActionLinkElement(child, actionLinks);
 		}
 	}
 
-	private void addLinkElement(DataChild child, Element actionLinks) {
+	private void addActionLinkElement(DataChild child, Element actionLinks) {
 		Element linkElement;
 		if (isRecordLink(child)) {
 			linkElement = createRecordLinkElement((DataRecordLink) child);
@@ -543,10 +534,10 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 		actionLinks.appendChild(linkElement);
 	}
 
-	private Element createResourceLinkElement(DataResourceLink dataResourceLink) {
-		Element readLink = createStandardLink(GET, "read", recordType, recordId,
-				dataResourceLink.getNameInData());
-		readLink.appendChild(createElementWithTextContent(ACCEPT, dataResourceLink.getMimeType()));
+	private Element createResourceLinkElement(DataResourceLink resourceLink) {
+		Element readLink = createActionLink(GET, "read", resourceLink.getType(),
+				resourceLink.getId(), resourceLink.getNameInData());
+		appendNewElementWithValueToDom(readLink, ACCEPT, resourceLink.getMimeType());
 		return readLink;
 	}
 
@@ -568,22 +559,22 @@ public class ExternallyConvertibleToXml implements ExternallyConvertibleToString
 	}
 
 	private Element createReadLink(String linkedRecordType, String linkedRecordId) {
-		Element actionLink = createStandardLink(GET, "read", linkedRecordType, linkedRecordId);
+		Element actionLink = createActionLink(GET, "read", linkedRecordType, linkedRecordId);
 		actionLink.appendChild(createAcceptRecordXML());
 		return actionLink;
 	}
 
-	private Element createStandardLink(String requestMethod, String action, String... urlParts) {
+	private Element createActionLink(String requestMethod, String action, String... urlParts) {
 		String recordURL = externalUrls.getBaseUrl() + String.join("/", urlParts);
 		Element actionLink = domDocument.createElement(action);
-		actionLink.appendChild(createElementWithTextContent("requestMethod", requestMethod));
-		actionLink.appendChild(createElementWithTextContent("rel", action));
-		actionLink.appendChild(createElementWithTextContent("url", recordURL));
+		appendNewElementWithValueToDom(actionLink, "requestMethod", requestMethod);
+		appendNewElementWithValueToDom(actionLink, "rel", action);
+		appendNewElementWithValueToDom(actionLink, "url", recordURL);
 		return actionLink;
 	}
 
 	private Element createDeleteLink() {
-		return createStandardLink("DELETE", "delete", recordType, recordId);
+		return createActionLink("DELETE", "delete", recordType, recordId);
 	}
 
 	private Element createElementWithTextContent(String tagName, String textContent) {
