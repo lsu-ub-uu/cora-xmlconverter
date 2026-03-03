@@ -193,7 +193,9 @@ public class XmlConverterFactoryTest {
 		String xmlToConvert = """
 				<?xml version="1.0" encoding="UTF-8"?>
 				<person xmlns:xi="http://www.w3.org/2001/XInclude">
-					<firstname><xi:include parse="text" href="file:///etc/passwd"/></firstname>
+					<firstname>
+						<xi:include parse="text" href="file:///etc/passwd">someValue</xi:include>
+					</firstname>
 				</person>""";
 
 		DataGroupSpy person = (DataGroupSpy) xmlToDataElement.convert(xmlToConvert);
