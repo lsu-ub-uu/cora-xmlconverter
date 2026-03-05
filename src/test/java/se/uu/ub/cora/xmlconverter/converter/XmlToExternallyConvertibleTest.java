@@ -29,9 +29,7 @@ import org.testng.annotations.Test;
 import org.xml.sax.SAXException;
 
 import se.uu.ub.cora.converter.ConverterException;
-import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataProvider;
-import se.uu.ub.cora.data.ExternallyConvertible;
 import se.uu.ub.cora.data.spies.DataAtomicSpy;
 import se.uu.ub.cora.data.spies.DataFactorySpy;
 import se.uu.ub.cora.data.spies.DataGroupSpy;
@@ -167,7 +165,7 @@ public class XmlToExternallyConvertibleTest {
 	public void testIncompleteRootElementWithSpace() {
 		String xmlToConvert = """
 				<?xml version="1.0" encoding="UTF-8"?>
-				<person></person>""";
+				<person> </person>""";
 
 		xmlToDataElement.convert(xmlToConvert);
 	}
@@ -177,7 +175,7 @@ public class XmlToExternallyConvertibleTest {
 	public void testIncompleteRootElementWithTwoSpace() {
 		String xmlToConvert = """
 				<?xml version="1.0" encoding="UTF-8"?>
-				<person></person>""";
+				<person>  </person>""";
 
 		xmlToDataElement.convert(xmlToConvert);
 	}
@@ -216,7 +214,7 @@ public class XmlToExternallyConvertibleTest {
 
 	@Test
 	public void testConvertXmlWithSingleAtomicChildWithNewLineStartingText() {
-		convertInsideFirstNameTagAndAssertEqual("\nKalle", "Kalle");
+		convertInsideFirstNameTagAndAssertEqual("\nKalle\n", "Kalle");
 	}
 
 	@Test
@@ -309,21 +307,31 @@ public class XmlToExternallyConvertibleTest {
 		convertedDataElement.MCR.assertCalledParameters("addChild", factoredGroup);
 	}
 
-	@Test
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement: Tag firstname has no value. "
+			+ "Tags without values are not allowed.")
 	public void testConvertXmlWithSingleAtomicChildWithoutValue() {
 		String valueToConvert = "";
 		String convertedValue = "";
 		convertInsideFirstNameTagAndAssertEqual(valueToConvert, convertedValue);
 	}
 
-	@Test
-	public void testConvertXmlWithSingleAtomicChildWithoutValue2() {
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement: Tag firstname has no value. "
+			+ "Tags without values are not allowed.")
+	public void testConvertXmlWithSingleAtomicChildWithBlankValue() {
+		String valueToConvert = "    ";
+		String convertedValue = " ";
+		convertInsideFirstNameTagAndAssertEqual(valueToConvert, convertedValue);
+	}
+
+	@Test(expectedExceptions = ConverterException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unable to convert from xml to dataElement: Tag firstname has no value. "
+			+ "Tags without values are not allowed.")
+	public void testConvertXmlWithEmptyTagNotAllowed() {
 		String xmlToConvert = surroundWithTopLevelXmlGroup("<firstname/>");
 
-		ExternallyConvertible convertedDataElement = xmlToDataElement.convert(xmlToConvert);
-
-		DataGroup convertedDataGroup = (DataGroup) convertedDataElement;
-		assertEquals(convertedDataGroup.getFirstAtomicValueWithNameInData("firstname"), "");
+		xmlToDataElement.convert(xmlToConvert);
 	}
 
 	@Test

@@ -304,6 +304,10 @@ public class XmlToExternallyConvertible implements StringToExternallyConvertible
 			XmlAttributes xmlAttributes) {
 		String nodeName = currentNode.getNodeName();
 		String textContent = currentNode.getTextContent().trim();
+		if (textContent.isEmpty() || textContent.isBlank()) {
+			throw new ConverterException(
+					"Tag " + nodeName + " has no value. Tags without values are not allowed.");
+		}
 		DataAtomic dataAtomic = DataProvider.createAtomicUsingNameInDataAndValue(nodeName,
 				textContent);
 		possiblyAddAttributesAndRepeatId(dataAtomic, xmlAttributes);
